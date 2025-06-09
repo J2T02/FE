@@ -1,0 +1,22 @@
+.custom-menu-item {
+  height: 30px;
+  line-height: 30px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+}
+.custom-menu .ant-menu-item-selected {
+  background-color: transparent !important; /* Bỏ màu nền mặc định */
+  position: relative;
+}
+
+.custom-menu .ant-menu-item-selected::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  /* Màu underline */
+  border-radius: 1px;
+}

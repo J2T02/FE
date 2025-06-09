@@ -1,0 +1,27 @@
+import { useState } from "react";
+import Header from "./components/header/Header";
+import Banner from "./components/banner/Banner";
+import WhyUs from "./components/whyus/WhyUs";
+import CardService from "./components/card/cardservice/CardService";
+import CardDoctor from "./components/card/carddoctor/CardDoctor";
+import Footer from "./components/footer/Footer";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <>
+      <Header />
+      <Banner />
+      <WhyUs />
+      <CardService />
+      <div style={{ display: "flex" }}>
+        <CardDoctor />
+        <CardDoctor />
+      </div>
+      <Footer />
+    </>
+  );
+}
+
+export default App;
