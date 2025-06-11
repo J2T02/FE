@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Layout } from "antd";
 import Header from "./components/header/Header";
 import Banner from "./components/banner/Banner";
 import WhyUs from "./components/whyus/WhyUs";
@@ -10,7 +11,7 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
+    <Layout>
       <Header />
       <Banner />
       <WhyUs />
@@ -20,7 +21,7 @@ function App() {
         <CardDoctor />
       </div>
       <Footer />
-    </>
+    </Layout>
   );
 }
 

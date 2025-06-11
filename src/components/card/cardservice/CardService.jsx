@@ -32,7 +32,7 @@ const CardService = () => {
             {/* Left: Image */}
             <div style={{ flex: 1, minWidth: 300 }}>
               <img
-                src="https://storage.googleapis.com/a1aa/image/39e466e4-d07f-4824-8d65-848af7d6f122.jpg"
+                src="https://www.vinmec.com/static/uploads/medium_VMHN_2024day215290_copy_b559e1faec.jpg"
                 alt="IVF lab technician"
                 style={{
                   width: "100%",

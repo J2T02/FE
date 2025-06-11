@@ -1,9 +1,6 @@
 import { Button, Carousel, theme } from "antd";
-import {
-  PhoneOutlined,
-  CalendarOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
+import { FiPhone } from "react-icons/fi";
 import CardItem from "~components/card/carditem/CardItem";
 
 const Banner = () => {
@@ -12,18 +9,17 @@ const Banner = () => {
   const images = [
     "https://storage.googleapis.com/a1aa/image/f6686c9b-d0b9-446c-7a44-4e24600cdfff.jpg",
     "/banner.jpg",
-    "logo.png",
   ];
 
   return (
-    <div style={{ position: "relative", marginBottom: 20 }}>
+    <div style={{ position: "relative" }}>
       {/* Slide Image */}
       <Carousel autoplay>
         {images.map((img, index) => (
           <div key={index}>
             <div
               style={{
-                height: 400,
+                height: 500,
                 width: "100%",
                 position: "relative",
                 backgroundImage: `url(${img})`,
@@ -35,8 +31,8 @@ const Banner = () => {
               <div
                 style={{
                   position: "absolute",
-                  top: -100,
-                  left: "27%",
+                  top: -120,
+                  left: "28%",
                   width: "100%",
                   height: "100%",
                   display: "flex",
@@ -80,12 +76,11 @@ const Banner = () => {
           </div>
         ))}
       </Carousel>
-
       {/* Floating Card Group */}
       <div
         style={{
-          position: "relative",
-          marginTop: -40,
+          position: "absolute",
+          marginTop: -100,
           left: "50%",
           transform: "translateX(-50%)",
           backgroundColor: "#ffffff",
@@ -95,18 +90,13 @@ const Banner = () => {
           display: "flex",
           flexDirection: "row",
           overflow: "hidden",
-          width: "794px",
-
+          width: 795,
           zIndex: 1,
           padding: "28px",
         }}
       >
         <CardItem
-          icon={
-            <PhoneOutlined
-              style={{ color: token.colorPrimary, fontSize: 20 }}
-            />
-          }
+          icon={<FiPhone style={{ color: token.colorPrimary, fontSize: 20 }} />}
           title="Gọi tổng đài"
           description="Tư vấn và giải đáp các vấn đề của bạn"
           showDivider={true}

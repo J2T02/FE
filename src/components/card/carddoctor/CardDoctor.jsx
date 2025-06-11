@@ -4,8 +4,8 @@ const CardDoctor = ({
   name = "TTND.PGS.TS.BSCKII.BSCC Đoàn Hữu Nghị",
   specialty = "Chuyên khoa - Ung bướu",
   description = "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Ung thư Hà Nội",
-  image = "https://storage.googleapis.com/a1aa/image/45867972-2a4d-49bb-02cc-a5ac7c2e525e.jpg",
-  bgImage = "https://storage.googleapis.com/a1aa/image/6ef0f07a-9195-415a-9a4a-5b99ccecef48.jpg",
+  image = "https://medlatec.vn/media/357/catalog/vansang1.png?size=256",
+  bgImage = "",
 }) => {
   const { token } = theme.useToken();
 
@@ -36,7 +36,7 @@ const CardDoctor = ({
         {/* Background circle */}
         <img
           src={bgImage}
-          alt="bg circle"
+          // alt="bg circle"
           style={{
             position: "absolute",
             top: "50%",
@@ -55,8 +55,8 @@ const CardDoctor = ({
           alt="doctor"
           style={{
             position: "relative",
-            width: 224,
-            height: 224,
+            width: 225,
+            height: 225,
             borderRadius: "50%",
             objectFit: "cover",
             zIndex: 1,

@@ -164,7 +164,6 @@ const Footer = () => {
 
       <div
         style={{
-          backgroundColor: "#f9fafb",
           borderTop: "1px solid #e5e7eb",
           fontSize: 10,
           color: "#6b7280",
