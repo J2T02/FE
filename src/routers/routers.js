@@ -9,6 +9,14 @@ const routers = [
     path: "/service",
     component: lazy(() => import("~pages/Service/Service")),
   },
+  {
+    path: "/service/:id",
+    component: lazy(() => import("~pages/Service/ServiceDetail")),
+  },
+  {
+    path: "/admin",
+    component: lazy(() => import("~pages/AdminPage/AdminPage")),
+  },
 ];
 
 export default routers;
