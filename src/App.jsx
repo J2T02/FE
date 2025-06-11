@@ -1,27 +1,25 @@
-import { useState } from "react";
-import { Layout } from "antd";
-import Header from "./components/header/Header";
-import Banner from "./components/banner/Banner";
-import WhyUs from "./components/whyus/WhyUs";
-import CardService from "./components/card/cardservice/CardService";
-import CardDoctor from "./components/card/carddoctor/CardDoctor";
-import Footer from "./components/footer/Footer";
-
+import { Suspense, useState } from "react";
+import routers from "~routers/routers";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <Layout>
-      <Header />
-      <Banner />
-      <WhyUs />
-      <CardService />
-      <div style={{ display: "flex" }}>
-        <CardDoctor />
-        <CardDoctor />
-      </div>
-      <Footer />
-    </Layout>
+    <BrowserRouter>
+      <Suspense fallback={<div>loading...</div>}>
+        <Routes>
+          {routers.map((item, index) => {
+            return (
+              <Route
+                key={index}
+                path={item.path}
+                element={<item.component />}
+              />
+            );
+          })}
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 }
 
