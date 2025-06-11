@@ -1,0 +1,26 @@
+.blog-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.blog-image {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.read-more {
+  color: #1890ff;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.read-more:hover {
+  transform: scale(1.05);
+  text-decoration: underline;
+}

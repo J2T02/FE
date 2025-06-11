@@ -2,19 +2,47 @@ import { Button, Carousel, theme } from "antd";
 import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { FiPhone } from "react-icons/fi";
 import CardItem from "~components/card/carditem/CardItem";
-
+import BookingModal from "../formModal/BookingModal";
+import { useState } from "react";
 const Banner = () => {
+  const [bookingOpen, setBookingOpen] = useState(false);
   const { token } = theme.useToken();
 
   const images = [
     "https://storage.googleapis.com/a1aa/image/f6686c9b-d0b9-446c-7a44-4e24600cdfff.jpg",
     "/banner.jpg",
   ];
+  //data
+  const doctors = [
+    { Doc_ID: 1, Doc_Name: "Dr. Nguyễn Văn A" },
+    { Doc_ID: 2, Doc_Name: "Dr. Trần Thị B" },
+  ];
 
+  const schedules = [
+    {
+      DS_ID: 1,
+      Doc_ID: 1,
+      WorkDate: "2025-06-12",
+      Slot_Start: "08:00",
+      Slot_End: "09:00",
+      isAvailable: true,
+      Room_Number: "101",
+    },
+    {
+      DS_ID: 2,
+      Doc_ID: 1,
+      WorkDate: "2025-06-13",
+      Slot_Start: "09:00",
+      Slot_End: "10:00",
+      isAvailable: true,
+      Room_Number: "102",
+    },
+  ];
+  //
   return (
     <div style={{ position: "relative" }}>
       {/* Slide Image */}
-      <Carousel autoplay>
+      <Carousel autoplay arrows draggable>
         {images.map((img, index) => (
           <div key={index}>
             <div
@@ -105,6 +133,7 @@ const Banner = () => {
           icon={
             <CalendarOutlined
               style={{ color: token.colorPrimary, fontSize: 20 }}
+              onClick={() => setBookingOpen(true)}
             />
           }
           title="Đặt lịch hẹn"
@@ -120,6 +149,15 @@ const Banner = () => {
           showDivider={false}
         />
       </div>
+      <BookingModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        doctors={doctors}
+        schedules={schedules}
+        onSubmit={(values) => {
+          console.log("Booking Info:", values);
+        }}
+      />
     </div>
   );
 };

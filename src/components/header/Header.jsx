@@ -6,8 +6,8 @@ import { Dropdown, Space, Typography } from "antd";
 import "./header.css";
 import { useState } from "react";
 import ItemHeader from "~components/header/itemHeader/ItemHeader";
-import LoginModal from "./loginModal/LoginModal";
-import RegisterModal from "./registerModal/RegisterModal";
+import LoginModal from "~components/formModal/LoginModal";
+import RegisterModal from "../formModal/loginModal/RegisterModal";
 function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -47,11 +47,9 @@ function Header() {
         position: "sticky",
         top: 0,
         zIndex: 99,
-        // width: "100%",
-        // display: "flex",
         padding: 0,
         alignItems: "center",
-        height: 120,
+        height: 170,
       }}
     >
       <div
@@ -60,7 +58,7 @@ function Header() {
           alignItems: "center",
           justifyContent: "space-between",
           margin: "0 200px",
-          paddingBottom: 20,
+          padding: 20,
           borderBottom: `1px solid ${token.colorPrimary}`,
         }}
       >
@@ -73,7 +71,7 @@ function Header() {
         >
           <img
             style={{ width: "153px", height: "53px" }}
-            src="/logo.png"
+            src="/logo.jpg"
             alt=""
           />
         </div>
