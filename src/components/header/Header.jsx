@@ -7,13 +7,15 @@ import "./header.css";
 import { useState } from "react";
 import ItemHeader from "~components/header/itemHeader/ItemHeader";
 import LoginModal from "~components/formModal/LoginModal";
-import RegisterModal from "../formModal/loginModal/RegisterModal";
+import RegisterModal from "../formModal/RegisterModal";
+import { useNavigate } from "react-router-dom";
 function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const { Header } = Layout;
   const { Search } = Input;
   const { token } = theme.useToken();
+  const navigate = useNavigate();
   const items = [
     { key: "0", label: "Bác sĩ", href: "#" },
     { key: "1", label: "Blog", href: "#" },
@@ -33,9 +35,14 @@ function Header() {
     },
   ];
   const handleMenuClick = (e) => {
-    const selectedItem = items.find((item) => item.key === e.key);
-    if (selectedItem) {
-      console.log("Label:", selectedItem.label);
+    console.log(e.key);
+    switch (e.key) {
+      case "2":
+        navigate("/service");
+        break;
+
+      default:
+        break;
     }
   };
   const onSearch = (value) => {
@@ -66,7 +73,7 @@ function Header() {
           className="demo-logo"
           style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
           onClick={() => {
-            console.log("về home");
+            navigate("/");
           }}
         >
           <img
@@ -134,7 +141,6 @@ function Header() {
         <Menu
           // theme="dark"
           mode="horizontal"
-          defaultSelectedKeys={["1"]}
           className="custom-menu"
           style={{
             flex: 1,
@@ -146,6 +152,7 @@ function Header() {
           onClick={handleMenuClick}
         >
           <Menu.Item
+            key={2}
             className="custom-menu-item"
             style={{ borderRadius: "6px" }}
           >

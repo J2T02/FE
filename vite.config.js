@@ -12,6 +12,7 @@ export default defineConfig({
       { find: "~styles", replacement: "/src/assets/styles" },
       { find: "~pages", replacement: "/src/pages" },
       { find: "~routers", replacement: "/src/routers" },
+      { find: "~contexts", replacement: "/src/contexts" },
     ],
   },
 });

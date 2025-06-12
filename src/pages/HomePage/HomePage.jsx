@@ -10,17 +10,17 @@ import BlogCard from "../../components/card/blogCard/BlogCard";
 //data doctor
 const doctors = [
   {
-    name: "TTND.PGS.TS.BSCKII.BSCC Đoàn Hữu Nghị",
-    specialty: "Chuyên khoa - Ung bướu",
+    name: "TTND.PGS.TS.BSCKII.BSCC HuyNM",
+    specialty: "Chuyên IVF",
     description:
-      "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Ung thư Hà Nội",
-    image: "https://medlatec.vn/media/357/catalog/vansang1.png?size=256",
+      "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Hiếm Muộn Hà Nội",
+    image: "/doctorhuy.jpg",
   },
   {
-    name: "BS. Nguyễn Văn A",
-    specialty: "Chuyên khoa - Tim mạch",
+    name: "BS. Nguyễn Hoài Khánh",
+    specialty: "Chuyên Viên Tư Vấn",
     description: "Nguyên bác sĩ BV Bạch Mai\nHơn 20 năm kinh nghiệm",
-    image: "https://via.placeholder.com/300x180?text=Doctor+A",
+    image: "/khanhtuyensinh.jpg",
   },
   {
     name: "BS. Trần Thị B",
@@ -40,7 +40,7 @@ const blogList = [
       "ReactJS là thư viện front-end được phát triển bởi Facebook. Bài viết này sẽ hướng dẫn bạn cách tạo một ứng dụng đầu tiên với ReactJS thông qua công cụ Vite.",
   },
   {
-    image: "/huydoctor.jpg",
+    image: "/doctorhuy.jpg",
     title: "Ant Design 5 - Những cập nhật quan trọng",
     content:
       "Ant Design version 5 mang đến nhiều cải tiến về hiệu năng, giao diện và khả năng tùy biến. Hãy cùng điểm qua những thay đổi quan trọng trong bản cập nhật này.",
@@ -89,8 +89,16 @@ function HomePage() {
           Dịch Vụ Điều Trị
         </h1>
         <p style={{ color: "#4B5563" }}>Demo</p>
-        <CardService />
-        <CardService />
+        <CardService
+          image="/IVF.jpg"
+          title="IVF - Dịch vụ thụ tinh trong ống nghiệm"
+          content="Hành trình làm cha làm mẹ là điều thiêng liêng và quý giá nhất trong cuộc đời mỗi người. Tuy nhiên, với nhiều cặp vợ chồng, con đường này không phải lúc nào cũng suôn sẻ. Tại Vinmec, chúng tôi không tính bằng số ca chuyển phôi hay số ca có thai mà tính bằng số em bé được đón về nhà an toàn lên tới 60%. Vinmec không chỉ ươm mầm hạnh phúc cho hàng nghìn gia đình hiếm muộn có thai, mà còn đồng hành trọn vẹn trong quá trình chăm sóc thai kỳ và đảm bảo em bé khỏe mạnh chào đời. Với mô hình chăm sóc đa chuyên khoa khép kín, kết hợp công nghệ tiên tiến và đội ngũ chuyên gia đầu ngành là lời cam kết mạnh mẽ của Vinmec trong hành trình “đón em bé về nhà”"
+        />
+        <CardService
+          image="/IVF.jpg"
+          title="IVF - Dịch vụ thụ tinh trong ống nghiệm"
+          content="Hành trình làm cha làm mẹ là điều thiêng liêng và quý giá nhất trong cuộc đời mỗi người. Tuy nhiên, với nhiều cặp vợ chồng, con đường này không phải lúc nào cũng suôn sẻ. Tại Vinmec, chúng tôi không tính bằng số ca chuyển phôi hay số ca có thai mà tính bằng số em bé được đón về nhà an toàn lên tới 60%. Vinmec không chỉ ươm mầm hạnh phúc cho hàng nghìn gia đình hiếm muộn có thai, mà còn đồng hành trọn vẹn trong quá trình chăm sóc thai kỳ và đảm bảo em bé khỏe mạnh chào đời. Với mô hình chăm sóc đa chuyên khoa khép kín, kết hợp công nghệ tiên tiến và đội ngũ chuyên gia đầu ngành là lời cam kết mạnh mẽ của Vinmec trong hành trình “đón em bé về nhà”"
+        />
       </div>
       <div
         className="DoctorList"

@@ -1,7 +1,8 @@
 import { theme, Button } from "antd";
-
-const CardService = () => {
+import { useNavigate } from "react-router-dom";
+const CardService = ({ image, title, content }) => {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
   return (
     <div style={{ backgroundColor: "#f8f9fa", padding: "2rem" }}>
       <div
@@ -32,7 +33,7 @@ const CardService = () => {
             {/* Left: Image */}
             <div style={{ flex: 1, minWidth: 300 }}>
               <img
-                src="https://www.vinmec.com/static/uploads/medium_VMHN_2024day215290_copy_b559e1faec.jpg"
+                src={image}
                 alt="IVF lab technician"
                 style={{
                   width: "100%",
@@ -53,7 +54,7 @@ const CardService = () => {
                   lineHeight: 1.4,
                 }}
               >
-                IVF - Dịch vụ thụ tinh trong ống nghiệm
+                {title}
               </h2>
               <div
                 style={{
@@ -70,17 +71,7 @@ const CardService = () => {
                   lineHeight: 1.7,
                 }}
               >
-                Hành trình làm cha làm mẹ là điều thiêng liêng và quý giá nhất
-                trong cuộc đời mỗi người. Tuy nhiên, với nhiều cặp vợ chồng, con
-                đường này không phải lúc nào cũng suôn sẻ. Tại Vinmec, chúng tôi
-                không tính bằng số ca chuyển phôi hay số ca có thai mà tính bằng
-                số em bé được đón về nhà an toàn lên tới 60%. Vinmec không chỉ
-                ươm mầm hạnh phúc cho hàng nghìn gia đình hiếm muộn có thai, mà
-                còn đồng hành trọn vẹn trong quá trình chăm sóc thai kỳ và đảm
-                bảo em bé khỏe mạnh chào đời. Với mô hình chăm sóc đa chuyên
-                khoa khép kín, kết hợp công nghệ tiên tiến và đội ngũ chuyên gia
-                đầu ngành là lời cam kết mạnh mẽ của Vinmec trong hành trình
-                “đón em bé về nhà”
+                {content}
               </p>
               <Button
                 type="primary"
@@ -92,6 +83,7 @@ const CardService = () => {
                   padding: "8px 16px",
                   borderRadius: 6,
                 }}
+                onClick={() => navigate("/service/:id")}
               >
                 Tham khảo thêm
               </Button>

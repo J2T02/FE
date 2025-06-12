@@ -2,16 +2,12 @@ import { Button, Carousel, theme } from "antd";
 import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { FiPhone } from "react-icons/fi";
 import CardItem from "~components/card/carditem/CardItem";
-import BookingModal from "../formModal/BookingModal";
-import { useState } from "react";
+import { useBooking } from "~contexts/BookingContext";
 const Banner = () => {
-  const [bookingOpen, setBookingOpen] = useState(false);
+  const { showBooking } = useBooking();
   const { token } = theme.useToken();
 
-  const images = [
-    "https://storage.googleapis.com/a1aa/image/f6686c9b-d0b9-446c-7a44-4e24600cdfff.jpg",
-    "/banner.jpg",
-  ];
+  const images = ["/anhcuongbanner.jpg", "/banner.jpg"];
   //data
   const doctors = [
     { Doc_ID: 1, Doc_Name: "Dr. Nguyễn Văn A" },
@@ -53,10 +49,11 @@ const Banner = () => {
                 backgroundImage: `url(${img})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
+                cursor: "pointer",
               }}
             >
               {/* Overlay Content */}
-              <div
+              {/* <div
                 style={{
                   position: "absolute",
                   top: -120,
@@ -99,7 +96,7 @@ const Banner = () => {
                     Xem thêm
                   </Button>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         ))}
@@ -133,7 +130,7 @@ const Banner = () => {
           icon={
             <CalendarOutlined
               style={{ color: token.colorPrimary, fontSize: 20 }}
-              onClick={() => setBookingOpen(true)}
+              onClick={showBooking}
             />
           }
           title="Đặt lịch hẹn"
@@ -149,15 +146,6 @@ const Banner = () => {
           showDivider={false}
         />
       </div>
-      <BookingModal
-        open={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-        doctors={doctors}
-        schedules={schedules}
-        onSubmit={(values) => {
-          console.log("Booking Info:", values);
-        }}
-      />
     </div>
   );
 };

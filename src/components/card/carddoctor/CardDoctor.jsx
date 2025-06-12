@@ -1,14 +1,22 @@
 import { Button, theme } from "antd";
-
+import { useBooking } from "~/contexts/BookingContext";
 const CardDoctor = ({
   name = "TTND.PGS.TS.BSCKII.BSCC Đoàn Hữu Nghị",
   specialty = "Chuyên khoa - Ung bướu",
   description = "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Ung thư Hà Nội",
   image = "https://medlatec.vn/media/357/catalog/vansang1.png?size=256",
-  bgImage = "",
+  bgImage = "https://kasmweb.com/docs/feature_KASM-3949_sizing_recommends/_images/background2.jpg",
 }) => {
   const { token } = theme.useToken();
-
+  const { showBooking } = useBooking();
+  const handleBooking = () => {
+    showBooking({
+      // doctorId: doctor.Doc_ID,
+      // serviceId: doctor.serviceIds?.[0] ?? null, // hoặc truyền kèm service từ card
+      doctorId: 1,
+      serviceId: 1,
+    });
+  };
   return (
     <div
       style={{
@@ -100,6 +108,7 @@ const CardDoctor = ({
           height: "auto",
           border: "none",
         }}
+        onClick={handleBooking}
       >
         Đặt lịch
       </Button>
