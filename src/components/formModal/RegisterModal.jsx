@@ -1,13 +1,28 @@
-import { Modal, Form, Input, Button } from "antd";
-import React from "react";
-
+import { Modal, Form, Input, Button, message } from "antd";
+import { register } from "../../apis/authService";
 const RegisterModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
 
-  const handleFinish = (values) => {
+  const handleFinish = async (values) => {
     console.log("Thông tin đăng ký:", values);
-    onClose();
-    form.resetFields();
+    const body = {
+      accName: values.username,
+      password: values.password,
+      phone: values.phone,
+      mail: values.email,
+    };
+    console.log("body:", body);
+    await register(body)
+      .then((res) => {
+        console.log(res);
+        message.success("Đăng Ký Thành Công");
+        onClose();
+        form.resetFields();
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Đăng Ký Thất Bại");
+      });
   };
 
   return (

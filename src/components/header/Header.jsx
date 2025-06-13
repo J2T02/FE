@@ -1,14 +1,27 @@
-import { Layout, Menu, theme, Button, Input } from "antd";
+import {
+  Layout,
+  Menu,
+  theme,
+  Button,
+  Input,
+  Avatar,
+  Dropdown,
+  Space,
+  Typography,
+} from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { FaPhone } from "react-icons/fa6";
 import { LuMessageCircleMore } from "react-icons/lu";
-import { Dropdown, Space, Typography } from "antd";
+import { IoSettingsOutline } from "react-icons/io5";
+import { IoIosLogOut } from "react-icons/io";
 import "./header.css";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ItemHeader from "~components/header/itemHeader/ItemHeader";
 import LoginModal from "~components/formModal/LoginModal";
 import RegisterModal from "../formModal/RegisterModal";
 import { useNavigate } from "react-router-dom";
+import { StoreContext } from "../../contexts/StoreProvider";
+import { UserOutlined } from "@ant-design/icons";
 function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -16,6 +29,7 @@ function Header() {
   const { Search } = Input;
   const { token } = theme.useToken();
   const navigate = useNavigate();
+  const { userInfo, setUserId, handleLogout } = useContext(StoreContext);
   const items = [
     { key: "0", label: "Bác sĩ", href: "#" },
     { key: "1", label: "Blog", href: "#" },
@@ -105,37 +119,75 @@ function Header() {
           title="Liên hệ"
           content="Hỗ trợ khách hàng"
         />
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 16,
-              color: token.colorPrimary,
-              cursor: "pointer",
+        {userInfo ? (
+          <Dropdown
+            placement="bottomRight"
+            menu={{
+              items: [
+                {
+                  key: "profile",
+                  icon: <IoSettingsOutline style={{ fontSize: 20 }} />,
+                  label: "Hồ sơ",
+                  onClick: () => navigate("/profile"),
+                },
+                {
+                  key: "logout",
+                  icon: (
+                    <IoIosLogOut
+                      style={{ fontSize: 20, color: token.colorError }}
+                    />
+                  ),
+                  label: "Đăng xuất",
+                  onClick: handleLogout,
+                },
+              ],
             }}
-            onClick={() => setIsRegisterModalOpen(true)}
           >
-            Đăng Ký
+            <div
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Avatar
+                src={userInfo.avatar || null}
+                icon={!userInfo.avatar && <UserOutlined />}
+                style={{ backgroundColor: "#f78db3" }}
+              />
+              <span style={{ fontWeight: 600, color: token.colorPrimary }}>
+                {userInfo.name || "Tài khoản"}
+              </span>
+            </div>
+          </Dropdown>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: 16,
+                color: token.colorPrimary,
+                cursor: "pointer",
+              }}
+              onClick={() => setIsRegisterModalOpen(true)}
+            >
+              Đăng Ký
+            </div>
+            <div style={{ width: 2, backgroundColor: "#eee", height: 17 }} />
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: 16,
+                color: token.colorPrimary,
+                cursor: "pointer",
+              }}
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              Đăng nhập
+            </div>
           </div>
-          <div
-            style={{
-              width: 2,
-              backgroundColor: "#eee",
-              height: 17,
-            }}
-          />
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 16,
-              color: token.colorPrimary,
-              cursor: "pointer",
-            }}
-            onClick={() => setIsLoginModalOpen(true)}
-          >
-            Đăng nhập
-          </div>
-        </div>
+        )}
       </div>
       <div style={{ paddingTop: 20 }}>
         <Menu
@@ -187,6 +239,7 @@ function Header() {
       <LoginModal
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        setUserId={setUserId}
       />
       <RegisterModal
         open={isRegisterModalOpen}

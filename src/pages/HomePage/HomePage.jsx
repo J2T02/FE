@@ -28,6 +28,12 @@ const doctors = [
     description: "BS nội tiết giỏi Hà Nội\nCông tác tại BV Nội tiết TW",
     image: "https://via.placeholder.com/300x180?text=Doctor+B",
   },
+  {
+    name: "BS. Trần Thị B",
+    specialty: "Chuyên khoa - Nội tiết",
+    description: "BS nội tiết giỏi Hà Nội\nCông tác tại BV Nội tiết TW",
+    image: "https://via.placeholder.com/300x180?text=Doctor+B",
+  },
 ];
 //
 //data blog
@@ -131,7 +137,14 @@ function HomePage() {
           </h1>
           <p style={{ color: "#4B5563" }}>số 1 thế giới</p>
         </div>
-        <div style={{ width: "70%", margin: "60px auto", paddingLeft: "10%" }}>
+        <div
+          style={{
+            width: "70%",
+            margin: "60px auto",
+            backgroundColor: token.colorBgBase,
+            cursor: "pointer",
+          }}
+        >
           <SlideListItem>
             {doctors.map((doctor, index) => (
               <div key={index} style={{ padding: "10px" }}>

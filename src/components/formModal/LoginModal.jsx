@@ -2,9 +2,10 @@
 
 import { Modal, Form, Input, Button } from "antd";
 
-const LoginModal = ({ open, onClose }) => {
+const LoginModal = ({ open, onClose, setUserId }) => {
   const handleFinish = (values) => {
     console.log("Thông tin đăng nhập:", values);
+    setUserId(1);
     onClose(); // Đóng modal sau khi đăng nhập
   };
 
