@@ -1,17 +1,25 @@
-import { Modal, Form, Input, Button } from "antd";
+import { Modal, Form, Input, Button, message } from "antd";
 import { signIn } from "../../apis/authService";
-const LoginModal = ({ open, onClose, setUserId }) => {
+import Cookies from "js-cookie";
+const LoginModal = ({ open, onClose, setUserId, setUserRole }) => {
   const handleFinish = async (values) => {
-    console.log("Thông tin đăng nhập:", values);
     const body = {
       userName: values.email,
       password: values.password,
     };
-    // await signIn(body).then((res) => {
-    //   console.log(res.data);
-    // });
-    setUserId(1);
-    onClose(); // Đóng modal sau khi đăng nhập
+    await signIn(body).then((res) => {
+      if (res.data.success) {
+        const { role, token, userId } = res.data.data;
+        setUserRole(role);
+        setUserId(userId);
+        Cookies.set("userId", userId);
+        Cookies.set("userRole", role);
+        Cookies.set("token", token);
+        onClose(); // Đóng modal sau khi đăng nhập
+      } else {
+        message.error(res.data.message);
+      }
+    });
   };
 
   return (

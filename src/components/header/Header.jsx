@@ -29,7 +29,8 @@ function Header() {
   const { Search } = Input;
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const { userInfo, setUserId, handleLogout } = useContext(StoreContext);
+  const { userInfo, setUserRole, setUserId, handleLogout } =
+    useContext(StoreContext);
   const items = [
     { key: "0", label: "Bác sĩ", href: "#" },
     { key: "1", label: "Blog", href: "#" },
@@ -240,6 +241,7 @@ function Header() {
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         setUserId={setUserId}
+        setUserRole={setUserRole}
       />
       <RegisterModal
         open={isRegisterModalOpen}

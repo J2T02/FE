@@ -5,7 +5,7 @@ const CardDoctor = ({
   specialty = "Chuyên khoa - Ung bướu",
   description = "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Ung thư Hà Nội",
   image = "https://medlatec.vn/media/357/catalog/vansang1.png?size=256",
-  bgImage = "https://kasmweb.com/docs/feature_KASM-3949_sizing_recommends/_images/background2.jpg",
+  bgImage = "/bgDoctor.png",
 }) => {
   const { token } = theme.useToken();
   const { showBooking } = useBooking();
