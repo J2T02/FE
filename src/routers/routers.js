@@ -17,6 +17,10 @@ const routers = [
     path: "/admin",
     component: lazy(() => import("~pages/AdminPage/AdminPage")),
   },
+  {
+    path: "/Doctor-Login",
+    component: lazy(() => import("~pages/DoctorPage/LoginDoctor")),
+  },
 ];
 
 export default routers;
