@@ -8,8 +8,8 @@ export const StoreProvider = ({ children }) => {
   const [userId, setUserId] = useState(Cookies.get("userId"));
   const handleLogout = () => {
     setUserId(null);
-    // Cookies.remove("token");
-    // Cookies.remove("userId");
+    Cookies.remove("token");
+    Cookies.remove("userId");
     setUserInfo(null);
     window.location.reload();
   };

@@ -14,10 +14,14 @@ const RegisterModal = ({ open, onClose }) => {
     console.log("body:", body);
     await register(body)
       .then((res) => {
-        console.log(res);
-        message.success("Đăng Ký Thành Công");
-        onClose();
-        form.resetFields();
+        console.log(res.data);
+        if (res.data.success) {
+          message.success(res.data.message);
+          onClose();
+          form.resetFields();
+        } else {
+          message.error(res.data.message);
+        }
       })
       .catch((err) => {
         console.log(err);

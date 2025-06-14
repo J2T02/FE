@@ -64,14 +64,14 @@ function WhyUs() {
         <Row gutter={[32, 32]} align="top">
           <Col xs={24} md={8} style={{ textAlign: "center" }}>
             <img
-              src="https://www.vinmec.com/static/uploads/wepik_export_20230610051550k_Azj_1_1_de0e3052ea.png"
+              src="/anhthinhbg.png"
               alt="doctor"
               style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
                 borderRadius: token.borderRadius * 1.5,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                // boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               }}
             />
           </Col>

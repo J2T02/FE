@@ -23,16 +23,40 @@ const doctors = [
     image: "/khanhtuyensinh.jpg",
   },
   {
-    name: "BS. Trần Thị B",
-    specialty: "Chuyên khoa - Nội tiết",
-    description: "BS nội tiết giỏi Hà Nội\nCông tác tại BV Nội tiết TW",
-    image: "https://via.placeholder.com/300x180?text=Doctor+B",
+    name: "BS.Quốc Anh",
+    specialty: "Chuyên khoa - IUI",
+    description: "BS IUI giỏi Hà Nội\nCông tác tại BV Quốc Tế TW",
+    image: "/quocanh.jpg",
   },
   {
-    name: "BS. Trần Thị B",
-    specialty: "Chuyên khoa - Nội tiết",
+    name: "BS. Mai Hà",
+    specialty: "Chuyên khoa - Bio Sample",
     description: "BS nội tiết giỏi Hà Nội\nCông tác tại BV Nội tiết TW",
-    image: "https://via.placeholder.com/300x180?text=Doctor+B",
+    image: "/maihadoctor.jpg",
+  },
+  {
+    name: "BS. Đỗ Phúc Thịnh",
+    specialty: "Chuyên khoa - IVF",
+    description: "ở đâu có drama\nở đó có bác sĩ Thịnh",
+    image: "/anhthinh.jpg",
+  },
+  {
+    name: "BS. Đỗ Tấn Nhàn",
+    specialty: "Chuyên khoa - IVF",
+    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
+    image: "/anhnhan.jpg",
+  },
+  {
+    name: "BS. Trần Trọng Huỳnh",
+    specialty: "Chuyên khoa - IVF",
+    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
+    image: "/anhhuynh.png",
+  },
+  {
+    name: "BS. Đào Văn Kết",
+    specialty: "Chuyên khoa - IVF",
+    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
+    image: "/anhket.jpg",
   },
 ];
 //
