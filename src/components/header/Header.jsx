@@ -22,6 +22,7 @@ import RegisterModal from "../formModal/RegisterModal";
 import { useNavigate } from "react-router-dom";
 import { StoreContext } from "../../contexts/StoreProvider";
 import { UserOutlined } from "@ant-design/icons";
+import { LuHistory } from "react-icons/lu";
 function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -132,7 +133,13 @@ function Header() {
                   onClick: () => navigate("/profile"),
                 },
                 {
-                  key: "logout",
+                  key: "historyBooking",
+                  icon: <LuHistory style={{ fontSize: 20 }} />,
+                  label: "Lịch sử đặt lịch",
+                  onClick: () => navigate("/customer/booking"),
+                },
+                {
+                  key: "Logout",
                   icon: (
                     <IoIosLogOut
                       style={{ fontSize: 20, color: token.colorError }}
@@ -155,7 +162,7 @@ function Header() {
               <Avatar
                 src={userInfo.avatar || null}
                 icon={!userInfo.avatar && <UserOutlined />}
-                style={{ backgroundColor: "#f78db3" }}
+                style={{ backgroundColor: token.colorPrimary }}
               />
               <span style={{ fontWeight: 600, color: token.colorPrimary }}>
                 {userInfo.name || "Tài khoản"}

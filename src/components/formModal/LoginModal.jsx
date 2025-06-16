@@ -7,19 +7,23 @@ const LoginModal = ({ open, onClose, setUserId, setUserRole }) => {
       userName: values.email,
       password: values.password,
     };
-    await signIn(body).then((res) => {
-      if (res.data.success) {
-        const { role, token, userId } = res.data.data;
-        setUserRole(role);
-        setUserId(userId);
-        Cookies.set("userId", userId);
-        Cookies.set("userRole", role);
-        Cookies.set("token", token);
-        onClose(); // Đóng modal sau khi đăng nhập
-      } else {
-        message.error(res.data.message);
-      }
-    });
+    await signIn(body)
+      .then((res) => {
+        if (res.data.success) {
+          const { role, token, userId } = res.data.data;
+          setUserRole(role);
+          setUserId(userId);
+          Cookies.set("userId", userId);
+          Cookies.set("userRole", role);
+          Cookies.set("token", token);
+          onClose(); // Đóng modal sau khi đăng nhập
+        } else {
+          message.error(res.data.message);
+        }
+      })
+      .catch((err) => {
+        message.error(err.message);
+      });
   };
 
   return (

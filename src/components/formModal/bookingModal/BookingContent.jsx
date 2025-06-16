@@ -82,6 +82,7 @@ const BookingContent = ({ form, services, doctors, schedules, doctor }) => {
       setAvailableDates(uniqueDates);
     }
   }, [doctor, doctors, schedules]);
+
   return (
     <Form layout="vertical" form={form} name="step1">
       <Form.Item
