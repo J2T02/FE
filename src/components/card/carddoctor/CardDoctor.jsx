@@ -1,22 +1,13 @@
-import { Button, theme } from "antd";
-import { useBooking } from "~/contexts/BookingContext";
-const CardDoctor = ({
-  name = "TTND.PGS.TS.BSCKII.BSCC Đoàn Hữu Nghị",
-  specialty = "Chuyên khoa - Ung bướu",
-  description = "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Ung thư Hà Nội",
-  image = "https://medlatec.vn/media/357/catalog/vansang1.png?size=256",
-  bgImage = "/bgDoctor.png",
-}) => {
+import { Button, Rate, theme } from "antd";
+
+const CardDoctor = ({ doctor, showBooking }) => {
   const { token } = theme.useToken();
-  const { showBooking } = useBooking();
+  const { doctorId, doctorName, image, star, certification = [] } = doctor;
+
   const handleBooking = () => {
-    showBooking({
-      // doctorId: doctor.Doc_ID,
-      // serviceId: doctor.serviceIds?.[0] ?? null, // hoặc truyền kèm service từ card
-      doctorId: 1,
-      serviceId: 1,
-    });
+    showBooking(doctorId);
   };
+
   return (
     <div
       style={{
@@ -32,7 +23,7 @@ const CardDoctor = ({
         transition: "transform 0.3s ease",
       }}
     >
-      {/* Image block */}
+      {/* Ảnh bác sĩ */}
       <div
         style={{
           position: "relative",
@@ -41,10 +32,7 @@ const CardDoctor = ({
           margin: "0 auto 24px",
         }}
       >
-        {/* Background circle */}
-        <img
-          src={bgImage}
-          // alt="bg circle"
+        <div
           style={{
             position: "absolute",
             top: "50%",
@@ -53,18 +41,17 @@ const CardDoctor = ({
             width: 224,
             height: 224,
             borderRadius: "50%",
-            objectFit: "cover",
+            backgroundColor: "#f0f0f0",
             zIndex: 0,
           }}
         />
-        {/* Portrait */}
         <img
           src={image}
-          alt="doctor"
+          alt={doctorName}
           style={{
             position: "relative",
-            width: 225,
-            height: 225,
+            width: 224,
+            height: 224,
             borderRadius: "50%",
             objectFit: "cover",
             zIndex: 1,
@@ -72,31 +59,35 @@ const CardDoctor = ({
         />
       </div>
 
-      {/* Text Content */}
-      <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{name}</h3>
-      <a
-        href="#"
+      {/* Thông tin bác sĩ */}
+      <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
+        {doctorName}
+      </h3>
+
+      {/* Đánh giá sao */}
+      <div style={{ marginBottom: 12 }}>
+        <Rate disabled defaultValue={star} />
+      </div>
+
+      {/* Chứng chỉ */}
+      <div
         style={{
           fontSize: 13,
-          fontWeight: 600,
-          color: token.colorPrimary,
-          marginBottom: 8,
-          display: "inline-block",
-        }}
-      >
-        {specialty}
-      </a>
-      <p
-        style={{
-          fontSize: 12,
           color: "#666",
-          whiteSpace: "pre-line",
           marginBottom: 16,
         }}
       >
-        {description}
-      </p>
+        <strong>Chứng chỉ:</strong>
+        <ul style={{ paddingLeft: 16, margin: 0 }}>
+          {certification.map((cert, index) => (
+            <li key={index} style={{ marginBottom: 4 }}>
+              {cert}
+            </li>
+          ))}
+        </ul>
+      </div>
 
+      {/* Nút đặt lịch */}
       <Button
         type="primary"
         style={{

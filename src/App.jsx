@@ -9,8 +9,8 @@ function App() {
   return (
     <BrowserRouter>
       <Suspense fallback={<div>loading...</div>}>
-        <BookingProvider>
-          <StoreProvider>
+        <StoreProvider>
+          <BookingProvider>
             <Routes>
               {routers.map((item, index) => {
                 return (
@@ -22,8 +22,8 @@ function App() {
                 );
               })}
             </Routes>
-          </StoreProvider>
-        </BookingProvider>
+          </BookingProvider>
+        </StoreProvider>
       </Suspense>
     </BrowserRouter>
   );

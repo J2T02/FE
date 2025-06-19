@@ -1,24 +1,24 @@
 import { Tabs } from "antd";
-import { useState } from "react";
 
 const tabItems = [
   { key: "all", label: "Tất cả" },
-  { key: "confirmed", label: "Đã xác nhận" },
-  { key: "pending", label: "Đang chờ" },
-  { key: "completed", label: "Đã khám" },
-  { key: "cancelled", label: "Đã hủy" },
+  { key: "chờ xác nhận", label: "Chờ xác nhận" },
+  { key: "đã xác nhận", label: "Đã xác nhận" },
+  { key: "hoàn thành", label: "Hoàn thành" },
+  { key: "đã hủy", label: "Đã hủy" },
 ];
 
 const BookingTabs = ({ onChangeTab }) => {
-  const [activeKey, setActiveKey] = useState("all");
-
-  const handleChange = (key) => {
-    setActiveKey(key);
-    onChangeTab?.(key);
-  };
-
   return (
-    <Tabs activeKey={activeKey} onChange={handleChange} items={tabItems} />
+    <Tabs
+      defaultActiveKey="all"
+      onChange={onChangeTab}
+      items={tabItems.map((tab) => ({
+        key: tab.key,
+        label: tab.label,
+      }))}
+      style={{ marginBottom: 16 }}
+    />
   );
 };
 

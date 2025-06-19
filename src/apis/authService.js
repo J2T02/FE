@@ -11,5 +11,23 @@ const signIn = async (body) => {
 const getCusInfo = async (userId) => {
   return await axiosClients.get(`/Customer/${userId}`);
 };
+const createCustomer = async (payload) => {
+  return new Promise((resolve) => {
+    console.log("📤 Tạo khách hàng với dữ liệu:", payload);
 
-export { register, signIn, getCusInfo };
+    setTimeout(() => {
+      resolve({
+        data: {
+          success: true,
+          message: "Tạo khách hàng thành công",
+          data: {
+            cusId: "CUS12345",
+            ...payload,
+          },
+        },
+      });
+    }, 1000);
+  });
+};
+
+export { register, signIn, getCusInfo, createCustomer };

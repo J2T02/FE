@@ -8,8 +8,7 @@ import {
   AppstoreOutlined,
 } from "@ant-design/icons";
 import AdminHeader from "./components/AdminHeader";
-import DoctorManagement from "./components/DoctorManagement";
-
+import DoctorModule from "./features/doctor/DoctorModule";
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
 
@@ -19,7 +18,7 @@ const AdminPanel = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
-        return <DoctorManagement />;
+        return <DoctorModule />;
       case "2":
         return <Title level={3}>Quản lý booking</Title>;
       case "3":

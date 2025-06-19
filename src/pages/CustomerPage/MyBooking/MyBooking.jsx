@@ -1,79 +1,110 @@
 import { Typography, Card, message } from "antd";
-import BookingTabs from "./components/BookingTabs ";
 import { useState } from "react";
-import BookingFilter from "./components/BookingFilter";
+import BookingTabs from "./components/BookingTabs ";
 import BookingList from "./components/BookingList";
+
 function MyBooking() {
   const bookings = [
     {
-      id: "A123",
-      status: "confirmed",
+      bookingId: "A123",
+      status: "đã xác nhận",
       doctorName: "Nguyễn Văn A",
-      serviceName: "Khám hiếm muộn",
-      appointmentTime: "15/06/2025 14:00",
-      location: "Phòng 301, Cơ sở chính",
+      createAt: "2025-06-10T09:00:00Z",
+      note: "Khám hiếm muộn",
+      schedule: {
+        scheduleId: 1,
+        doctorId: 1,
+        date: "2025-06-20",
+        slotId: 2,
+        isAvailable: true,
+        maxBooking: 5,
+      },
     },
     {
-      id: "B456",
-      status: "pending",
+      bookingId: "B456",
+      status: "chờ xác nhận",
       doctorName: "Trần Thị B",
-      serviceName: "IVF",
-      appointmentTime: "18/06/2025 09:30",
-      location: "Phòng 202, Cơ sở 2",
+      createAt: "2025-06-12T10:30:00Z",
+      note: "IVF",
+      schedule: {
+        scheduleId: 2,
+        doctorId: 2,
+        date: "2025-06-22",
+        slotId: 1,
+        isAvailable: true,
+        maxBooking: 4,
+      },
     },
     {
-      id: "B678",
-      status: "completed",
+      bookingId: "B678",
+      status: "hoàn thành",
       doctorName: "Lê Văn V",
-      serviceName: "IVF",
-      appointmentTime: "18/06/2025 09:30",
-      location: "Phòng 202, Cơ sở 2",
+      createAt: "2025-05-30T14:00:00Z",
+      note: "Tái khám IVF",
+      schedule: {
+        scheduleId: 3,
+        doctorId: 3,
+        date: "2025-06-10",
+        slotId: 2,
+        isAvailable: false,
+        maxBooking: 0,
+      },
     },
     {
-      id: "B003",
-      status: "cancelled",
+      bookingId: "B003",
+      status: "đã hủy",
       doctorName: "Lê Văn V",
-      serviceName: "IVF",
-      appointmentTime: "18/06/2025 09:30",
-      location: "Phòng 202, Cơ sở 2",
+      createAt: "2025-06-01T08:00:00Z",
+      note: "Khám tổng quát",
+      schedule: {
+        scheduleId: 4,
+        doctorId: 3,
+        date: "2025-06-18",
+        slotId: 1,
+        isAvailable: false,
+        maxBooking: 0,
+      },
     },
   ];
-  const [filters, setFilters] = useState({});
+
   const [activeTab, setActiveTab] = useState("all");
   const { Title } = Typography;
+
   const handleTabChange = (tabKey) => {
-    console.log("Tab được chọn:", tabKey);
-    // Sau này sẽ lọc booking theo trạng thái
+    setActiveTab(tabKey);
   };
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    console.log("Bộ lọc hiện tại:", newFilters);
-  };
+
   const handleView = (booking) => {
-    message.info(`Xem chi tiết lịch hẹn: ${booking.id}`);
+    message.info(`Xem chi tiết lịch hẹn: ${booking.bookingId}`);
   };
 
   const handleReschedule = (booking) => {
-    message.info(`Đặt lại lịch: ${booking.id}`);
+    message.info(`Đặt lại lịch: ${booking.bookingId}`);
   };
 
   const handleCancel = (booking) => {
-    message.warning(`Yêu cầu hủy lịch: ${booking.id}`);
+    message.warning(`Yêu cầu hủy lịch: ${booking.bookingId}`);
   };
+
+  // Lọc booking theo tab
+  const filteredBookings =
+    activeTab === "all"
+      ? bookings
+      : bookings.filter((b) => b.status === activeTab);
+
   return (
     <div style={{ padding: 24 }}>
       <Title level={2}>Lịch hẹn của tôi</Title>
-
-      {/* Sau này sẽ thêm component danh sách lịch hẹn ở đây */}
       <BookingTabs onChangeTab={handleTabChange} />
-      <BookingFilter onFilterChange={handleFilterChange} />
       <BookingList
-        bookings={bookings}
+        bookings={filteredBookings}
         onView={handleView}
         onReschedule={handleReschedule}
         onCancel={handleCancel}
       />
-      <Card>Đang tải lịch hẹn...</Card>
+      {filteredBookings.length === 0 && (
+        <Card style={{ marginTop: 16 }}>Không có lịch hẹn nào.</Card>
+      )}
     </div>
   );
 }

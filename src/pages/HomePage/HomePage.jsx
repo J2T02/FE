@@ -7,64 +7,12 @@ import CardDoctor from "~components/card/carddoctor/CardDoctor";
 import Footer from "~components/footer/Footer";
 import SlideListItem from "~components/slideder/SlideListItem";
 import BlogCard from "../../components/card/blogCard/BlogCard";
-//data doctor
-const doctors = [
-  {
-    name: "TTND.PGS.TS.BSCKII.BSCC HuyNM",
-    specialty: "Chuyên IVF",
-    description:
-      "Nguyên Giám đốc Bệnh viện E,\nNguyên Phó Giám đốc Bệnh viện K,\nPhó Chủ tịch Hội Hiếm Muộn Hà Nội",
-    image: "/doctorhuy.jpg",
-  },
-  {
-    name: "BS. Nguyễn Hoài Khánh",
-    specialty: "Chuyên Viên Tư Vấn",
-    description: "Nguyên bác sĩ BV Bạch Mai\nHơn 20 năm kinh nghiệm",
-    image: "/khanhtuyensinh.jpg",
-  },
-  {
-    name: "BS.Quốc Anh",
-    specialty: "Chuyên khoa - IUI",
-    description: "BS IUI giỏi Hà Nội\nCông tác tại BV Quốc Tế TW",
-    image: "/quocanh.jpg",
-  },
-  {
-    name: "BS. Mai Hà",
-    specialty: "Chuyên khoa - Bio Sample",
-    description: "BS nội tiết giỏi Hà Nội\nCông tác tại BV Nội tiết TW",
-    image: "/maihadoctor.jpg",
-  },
-  {
-    name: "BS. Đỗ Phúc Thịnh",
-    specialty: "Chuyên khoa - IVF",
-    description: "ở đâu có drama\nở đó có bác sĩ Thịnh",
-    image: "/anhthinh.jpg",
-  },
-  {
-    name: "BS. Đỗ Tấn Nhàn",
-    specialty: "Chuyên khoa - IVF",
-    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
-    image: "/anhnhan.jpg",
-  },
-  {
-    name: "BS. Trần Trọng Huỳnh",
-    specialty: "Chuyên khoa - IVF",
-    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
-    image: "/anhhuynh.png",
-  },
-  {
-    name: "BS. Đào Văn Kết",
-    specialty: "Chuyên khoa - IVF",
-    description: "BS IVF Hồ CHí Minh\nBV Bạch Mai",
-    image: "/anhket.jpg",
-  },
-];
-//
+import { useBooking } from "~contexts/BookingContext";
+
 //data blog
 const blogList = [
   {
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80",
+    image: "/anhket.jpg",
     title: "Bắt đầu với ReactJS javascript",
     content:
       "ReactJS là thư viện front-end được phát triển bởi Facebook. Bài viết này sẽ hướng dẫn bạn cách tạo một ứng dụng đầu tiên với ReactJS thông qua công cụ Vite.",
@@ -82,8 +30,7 @@ const blogList = [
       "Hooks trong React giúp tái sử dụng logic một cách dễ dàng. Bài viết này chia sẻ mẹo sử dụng useMemo, useCallback và useEffect hiệu quả trong dự án thực tế.",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80",
+    image: "/anhthinh.jpg",
     title: "Hướng dẫn triển khai Blog với Strapi",
     content:
       "Strapi là CMS mã nguồn mở cực mạnh mẽ cho các ứng dụng headless. Hãy xem cách tích hợp Strapi với React và xây dựng hệ thống blog linh hoạt, dễ mở rộng.",
@@ -92,6 +39,7 @@ const blogList = [
 //
 function HomePage() {
   const { token } = theme.useToken();
+  const { doctors, showBooking } = useBooking();
   return (
     <Layout>
       <Header />
@@ -170,14 +118,9 @@ function HomePage() {
           }}
         >
           <SlideListItem>
-            {doctors.map((doctor, index) => (
+            {doctors?.map((doctor, index) => (
               <div key={index} style={{ padding: "10px" }}>
-                <CardDoctor
-                  name={doctor.name}
-                  specialty={doctor.specialty}
-                  description={doctor.description}
-                  image={doctor.image}
-                />
+                <CardDoctor doctor={doctor} showBooking={showBooking} />
               </div>
             ))}
           </SlideListItem>

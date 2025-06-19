@@ -8,33 +8,7 @@ const Banner = () => {
   const { token } = theme.useToken();
 
   const images = ["/anhcuongbanner.jpg", "/banner.jpg"];
-  //data
-  const doctors = [
-    { Doc_ID: 1, Doc_Name: "Dr. Nguyễn Văn A" },
-    { Doc_ID: 2, Doc_Name: "Dr. Trần Thị B" },
-  ];
 
-  const schedules = [
-    {
-      DS_ID: 1,
-      Doc_ID: 1,
-      WorkDate: "2025-06-12",
-      Slot_Start: "08:00",
-      Slot_End: "09:00",
-      isAvailable: true,
-      Room_Number: "101",
-    },
-    {
-      DS_ID: 2,
-      Doc_ID: 1,
-      WorkDate: "2025-06-13",
-      Slot_Start: "09:00",
-      Slot_End: "10:00",
-      isAvailable: true,
-      Room_Number: "102",
-    },
-  ];
-  //
   return (
     <div style={{ position: "relative" }}>
       {/* Slide Image */}
