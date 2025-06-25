@@ -9,6 +9,10 @@ import {
 import { FaUserDoctor } from "react-icons/fa6";
 import AdminHeader from "./components/AdminHeader";
 import DoctorModule from "./features/doctor/DoctorModule";
+import ServiceManagement from "./ServiceManagement/ServiceManagement";
+import PatientManagement from "./PatientManagement/PatientManagement";
+import BookingManagement from "./BookingManagement/BookingManagement";
+import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
 
@@ -20,13 +24,13 @@ const AdminPanel = () => {
       case "1":
         return <DoctorModule />;
       case "2":
-        return <Title level={3}>Quản lý booking</Title>;
+        return <BookingManagement/>;
       case "3":
-        return <Title level={3}>Quản lý bệnh nhân</Title>;
+        return <PatientManagement/>;
       case "4":
-        return <Title level={3}>Quản lý hồ sơ bệnh nhân</Title>;
+        return <TreatmentplanManagement/>;
       case "5":
-        return <Title level={3}>Quản lý dịch vụ</Title>;
+        return <ServiceManagement/>;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
