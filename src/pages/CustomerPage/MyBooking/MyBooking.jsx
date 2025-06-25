@@ -1,110 +1,109 @@
-import { Typography, Card, message } from "antd";
-import { useState } from "react";
-import BookingTabs from "./components/BookingTabs ";
-import BookingList from "./components/BookingList";
+import { Typography, Card, Button, Tag, Space, message } from "antd";
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import { BookingHistory } from "../../../apis/bookingService";
+
+const SLOT_LABELS = {
+  1: "08:00 - 12:00",
+  2: "13:00 - 17:00",
+};
+
+const STATUS_COLORS = {
+  "đã xác nhận": "green",
+  "chờ xác nhận": "gold",
+  "hoàn thành": "blue",
+  "đã hủy": "red",
+  "đã khám": "blue",
+};
 
 function MyBooking() {
-  const bookings = [
-    {
-      bookingId: "A123",
-      status: "đã xác nhận",
-      doctorName: "Nguyễn Văn A",
-      createAt: "2025-06-10T09:00:00Z",
-      note: "Khám hiếm muộn",
-      schedule: {
-        scheduleId: 1,
-        doctorId: 1,
-        date: "2025-06-20",
-        slotId: 2,
-        isAvailable: true,
-        maxBooking: 5,
-      },
-    },
-    {
-      bookingId: "B456",
-      status: "chờ xác nhận",
-      doctorName: "Trần Thị B",
-      createAt: "2025-06-12T10:30:00Z",
-      note: "IVF",
-      schedule: {
-        scheduleId: 2,
-        doctorId: 2,
-        date: "2025-06-22",
-        slotId: 1,
-        isAvailable: true,
-        maxBooking: 4,
-      },
-    },
-    {
-      bookingId: "B678",
-      status: "hoàn thành",
-      doctorName: "Lê Văn V",
-      createAt: "2025-05-30T14:00:00Z",
-      note: "Tái khám IVF",
-      schedule: {
-        scheduleId: 3,
-        doctorId: 3,
-        date: "2025-06-10",
-        slotId: 2,
-        isAvailable: false,
-        maxBooking: 0,
-      },
-    },
-    {
-      bookingId: "B003",
-      status: "đã hủy",
-      doctorName: "Lê Văn V",
-      createAt: "2025-06-01T08:00:00Z",
-      note: "Khám tổng quát",
-      schedule: {
-        scheduleId: 4,
-        doctorId: 3,
-        date: "2025-06-18",
-        slotId: 1,
-        isAvailable: false,
-        maxBooking: 0,
-      },
-    },
-  ];
-
-  const [activeTab, setActiveTab] = useState("all");
+  const [bookings, setBookings] = useState([]);
   const { Title } = Typography;
 
-  const handleTabChange = (tabKey) => {
-    setActiveTab(tabKey);
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await BookingHistory();
+        const data = res.data.data || [];
+
+        // Map và sắp xếp theo ngày giảm dần (mới nhất đầu tiên)
+        const mapped = data
+          .map((item) => ({
+            bookingId: item.bookingId,
+            status: item.status.toLowerCase(),
+            schedule: {
+              date: formatDate(item.scheduleInfo),
+              slotId: item.slotId,
+              slotText: SLOT_LABELS[item.slotId] || "Không rõ",
+            },
+          }))
+          .sort(
+            (a, b) =>
+              dayjs(b.schedule.date).unix() - dayjs(a.schedule.date).unix()
+          );
+
+        setBookings(mapped);
+      } catch (err) {
+        console.error("Lỗi khi tải lịch sử đặt lịch:", err);
+        message.error("Không thể tải lịch sử đặt lịch.");
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  const formatDate = (str) => {
+    if (!str) return "";
+    const [day, month, year] = str.split("/");
+    return `${year}-${month}-${day}`;
   };
 
   const handleView = (booking) => {
     message.info(`Xem chi tiết lịch hẹn: ${booking.bookingId}`);
   };
 
-  const handleReschedule = (booking) => {
-    message.info(`Đặt lại lịch: ${booking.bookingId}`);
-  };
-
-  const handleCancel = (booking) => {
-    message.warning(`Yêu cầu hủy lịch: ${booking.bookingId}`);
-  };
-
-  // Lọc booking theo tab
-  const filteredBookings =
-    activeTab === "all"
-      ? bookings
-      : bookings.filter((b) => b.status === activeTab);
-
   return (
     <div style={{ padding: 24 }}>
       <Title level={2}>Lịch hẹn của tôi</Title>
-      <BookingTabs onChangeTab={handleTabChange} />
-      <BookingList
-        bookings={filteredBookings}
-        onView={handleView}
-        onReschedule={handleReschedule}
-        onCancel={handleCancel}
-      />
-      {filteredBookings.length === 0 && (
-        <Card style={{ marginTop: 16 }}>Không có lịch hẹn nào.</Card>
-      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {bookings.length === 0 ? (
+          <Card>Không có lịch hẹn nào.</Card>
+        ) : (
+          bookings.map((booking) => {
+            const { bookingId, schedule, status } = booking;
+
+            return (
+              <Card
+                key={bookingId}
+                title={`Lịch hẹn #${bookingId}`}
+                extra={
+                  <Tag color={STATUS_COLORS[status] || "default"}>
+                    {status}
+                  </Tag>
+                }
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div>
+                    <strong>Ngày khám:</strong>{" "}
+                    {dayjs(schedule.date).format("DD/MM/YYYY")}
+                  </div>
+                  <div>
+                    <strong>Ca khám:</strong> {schedule.slotText}
+                  </div>
+                  <div>
+                    <Space style={{ marginTop: 8 }}>
+                      <Button onClick={() => handleView(booking)} type="primary">
+                        Xem
+                      </Button>
+                    </Space>
+                  </div>
+                </div>
+              </Card>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
