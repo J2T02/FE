@@ -26,7 +26,7 @@ function MyBooking() {
         const res = await BookingHistory();
         const data = res.data.data || [];
 
-        // Map và sắp xếp theo ngày giảm dần (mới nhất đầu tiên)
+        // Map và sắp xếp theo bookingId giảm dần
         const mapped = data
           .map((item) => ({
             bookingId: item.bookingId,
@@ -37,10 +37,7 @@ function MyBooking() {
               slotText: SLOT_LABELS[item.slotId] || "Không rõ",
             },
           }))
-          .sort(
-            (a, b) =>
-              dayjs(b.schedule.date).unix() - dayjs(a.schedule.date).unix()
-          );
+          .sort((a, b) => b.bookingId - a.bookingId);
 
         setBookings(mapped);
       } catch (err) {
