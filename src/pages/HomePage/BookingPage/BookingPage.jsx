@@ -1,45 +1,97 @@
-import { theme, Layout, Row, Col } from "antd";
-import Header from "~components/header/Header";
-import Footer from "~components/footer/Footer";
-function BookingPage() {
-  const { token } = theme.useToken();
-  return (
-    <Layout>
-      <Header />
-      <div
-        style={{
-          padding: "64px 0",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          backgroundColor: token.colorBgBase,
-        }}
-      >
-        <h1
-          style={{
-            fontWeight: "700",
-            fontFamily: token.fontFamily,
-            fontSize: 36,
-            color: "#111827",
-          }}
-        >
-          Booking
-        </h1>
-        <p style={{ color: "#4B5563" }}>Demo</p>
+import React, { useState } from "react";
+import { Steps, Button, message } from "antd";
+import { useNavigate } from "react-router-dom"; // ⬅️ Thêm dòng này
+import CustomerInfo from "../components/CustomerInfo";
+import DoctorSelection from "../components/DoctorSelection";
+import Schedule from "../components/Schedule";
+import ConfirmBooking from "../components/ConfirmBooking";
+import { Booking } from "../../../apis/bookingService";
 
-        {/* Grid layout */}
-        <div
-          style={{
-            maxWidth: 1200,
-            width: "100%",
-            padding: "0 16px",
-            marginTop: 32,
-          }}
-        ></div>
-      </div>
-      <Footer />
-    </Layout>
+const steps = ["Patient Info", "Select Doctor", "Choose Date", "Confirm"];
+
+const BookingPage = () => {
+  const [current, setCurrent] = useState(0);
+  const [bookingData, setBookingData] = useState({});
+  const navigate = useNavigate(); // ⬅️ Khởi tạo
+
+  const next = () => {
+    if (current === 2 && (!bookingData.date || !bookingData.slot)) {
+      return message.warning("Please select both date and time slot.");
+    }
+    setCurrent(current + 1);
+  };
+
+  const prev = () => setCurrent(current - 1);
+
+  const updateData = (data) => setBookingData((prev) => ({ ...prev, ...data }));
+
+  const submitBooking = async () => {
+    try {
+      const payload = {
+        slotId:
+          bookingData.slot === "morning"
+            ? 1
+            : bookingData.slot === "afternoon"
+            ? 2
+            : bookingData.slot,
+        workDate: bookingData.date,
+        doctorId: bookingData.doctorId || null,
+        note: bookingData.notes || "",
+      };
+
+      console.log("Payload gửi đi:", payload);
+      const res = await Booking(payload);
+      console.log("Booking success:", res.data);
+      message.success("Đặt lịch thành công!");
+
+      // ⬇️ Điều hướng sau khi thành công
+      navigate("/customer/booking");
+    } catch (error) {
+      console.error("Lỗi đặt lịch:", error);
+      message.error(error.response?.data?.message || "Lỗi khi đặt lịch.");
+    }
+  };
+
+  const restart = () => setCurrent(0);
+
+  const contentMap = [
+    <CustomerInfo data={bookingData} onUpdate={updateData} onNext={next} />,
+    <DoctorSelection
+      data={bookingData}
+      onUpdate={updateData}
+      onNext={next}
+      onPrev={prev}
+    />,
+    <Schedule data={bookingData} onUpdate={updateData} />,
+    <ConfirmBooking
+      data={bookingData}
+      onSubmit={submitBooking}
+      onRestart={restart}
+    />,
+  ];
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+      <Steps current={current} style={{ marginBottom: 24 }}>
+        {steps.map((title, idx) => (
+          <Steps.Step key={idx} title={title} />
+        ))}
+      </Steps>
+
+      <div>{contentMap[current]}</div>
+
+      {current < steps.length - 1 && current !== 0 && current !== 1 && (
+        <div style={{ marginTop: 24, textAlign: "right" }}>
+          <Button type="primary" onClick={prev} style={{ marginRight: 8 }}>
+            Previous
+          </Button>
+          <Button type="primary" onClick={next}>
+            Next Step
+          </Button>
+        </div>
+      )}
+    </div>
   );
-}
+};
 
 export default BookingPage;

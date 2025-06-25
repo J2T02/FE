@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import CustomerInfoModal from "../components/formModal/CustomerInfoModal";
 import Cookies from "js-cookie";
 import { message } from "antd";
-import { booking } from "../apis/bookingService";
+
 const BookingContext = createContext();
 export const useBooking = () => useContext(BookingContext);
 
