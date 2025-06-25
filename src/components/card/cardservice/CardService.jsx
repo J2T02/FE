@@ -1,6 +1,6 @@
 import { theme, Button } from "antd";
 import { useNavigate } from "react-router-dom";
-const CardService = ({ image, title, content }) => {
+const CardService = ({ service }) => {
   const { token } = theme.useToken();
   const navigate = useNavigate();
   return (
@@ -33,7 +33,7 @@ const CardService = ({ image, title, content }) => {
             {/* Left: Image */}
             <div style={{ flex: 1, minWidth: 300 }}>
               <img
-                src={image}
+                src={service.filePath}
                 alt="IVF lab technician"
                 style={{
                   width: "100%",
@@ -54,7 +54,7 @@ const CardService = ({ image, title, content }) => {
                   lineHeight: 1.4,
                 }}
               >
-                {title}
+                {service.serName}
               </h2>
               <div
                 style={{
@@ -71,7 +71,7 @@ const CardService = ({ image, title, content }) => {
                   lineHeight: 1.7,
                 }}
               >
-                {content}
+                {service.description}
               </p>
               <Button
                 type="primary"
@@ -83,7 +83,11 @@ const CardService = ({ image, title, content }) => {
                   padding: "8px 16px",
                   borderRadius: 6,
                 }}
-                onClick={() => navigate("/service/:id")}
+                onClick={() =>
+                  navigate(`/service/${service.serId}`, {
+                    state: { serviceData: service },
+                  })
+                }
               >
                 Tham khảo thêm
               </Button>

@@ -6,7 +6,7 @@ const RegisterModal = ({ open, onClose }) => {
   const handleFinish = async (values) => {
     console.log("Thông tin đăng ký:", values);
     const body = {
-      accName: values.username,
+      fullName: values.fullName,
       password: values.password,
       phone: values.phone,
       mail: values.email,
@@ -43,11 +43,11 @@ const RegisterModal = ({ open, onClose }) => {
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Form.Item
-          label="Tên đăng nhập"
-          name="username"
-          rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
+          label="Họ và tên"
+          name="fullName"
+          rules={[{ required: true, message: "Vui lòng nhập Họ tên đầy đủ!" }]}
         >
-          <Input placeholder="Nhập tên đăng nhập" />
+          <Input placeholder="Nguyễn Văn An" />
         </Form.Item>
 
         <Form.Item

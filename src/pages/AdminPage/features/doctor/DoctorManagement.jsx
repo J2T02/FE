@@ -17,8 +17,9 @@ const DoctorManagement = () => {
     setSelectedDoctor,
     selectedWeekStart,
     schedules,
+    certificates,
+    educationLevels,
   } = useDoctor();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
@@ -27,7 +28,7 @@ const DoctorManagement = () => {
     const doctor = {
       ...newDoctor,
       doctorId: Date.now(),
-      status: "Đang làm việc",
+      status: 1,
     };
     dispatch({ type: "ADD_DOCTOR", payload: doctor });
     setIsModalOpen(false);
@@ -86,6 +87,7 @@ const DoctorManagement = () => {
               doctor={selectedDoctor}
               onClose={() => setSelectedDoctor(null)}
               onEdit={() => setIsEditModalOpen(true)}
+              educationLevels={educationLevels}
             />
             <DoctorWeeklySchedule
               doctorId={selectedDoctor.doctorId}
@@ -109,7 +111,7 @@ const DoctorManagement = () => {
 
       <DoctorEditModal
         open={isEditModalOpen}
-        doctor={selectedDoctor}
+        initialValues={selectedDoctor}
         onCancel={() => setIsEditModalOpen(false)}
         onUpdate={handleUpdateDoctor}
       />

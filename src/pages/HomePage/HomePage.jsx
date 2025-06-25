@@ -8,38 +8,11 @@ import Footer from "~components/footer/Footer";
 import SlideListItem from "~components/slideder/SlideListItem";
 import BlogCard from "../../components/card/blogCard/BlogCard";
 import { useBooking } from "~contexts/BookingContext";
-
-//data blog
-const blogList = [
-  {
-    image: "/anhket.jpg",
-    title: "Bắt đầu với ReactJS javascript",
-    content:
-      "ReactJS là thư viện front-end được phát triển bởi Facebook. Bài viết này sẽ hướng dẫn bạn cách tạo một ứng dụng đầu tiên với ReactJS thông qua công cụ Vite.",
-  },
-  {
-    image: "/doctorhuy.jpg",
-    title: "Ant Design 5 - Những cập nhật quan trọng",
-    content:
-      "Ant Design version 5 mang đến nhiều cải tiến về hiệu năng, giao diện và khả năng tùy biến. Hãy cùng điểm qua những thay đổi quan trọng trong bản cập nhật này.",
-  },
-  {
-    image: "/khanhtuyensinh.jpg",
-    title: "Tối ưu hiệu suất với React Hooks",
-    content:
-      "Hooks trong React giúp tái sử dụng logic một cách dễ dàng. Bài viết này chia sẻ mẹo sử dụng useMemo, useCallback và useEffect hiệu quả trong dự án thực tế.",
-  },
-  {
-    image: "/anhthinh.jpg",
-    title: "Hướng dẫn triển khai Blog với Strapi",
-    content:
-      "Strapi là CMS mã nguồn mở cực mạnh mẽ cho các ứng dụng headless. Hãy xem cách tích hợp Strapi với React và xây dựng hệ thống blog linh hoạt, dễ mở rộng.",
-  },
-];
 //
 function HomePage() {
   const { token } = theme.useToken();
-  const { doctors, showBooking } = useBooking();
+  const { doctors, services, blogs } = useBooking();
+  console.log(blogs);
   return (
     <Layout>
       <Header />
@@ -66,17 +39,25 @@ function HomePage() {
         >
           Dịch Vụ Điều Trị
         </h1>
-        <p style={{ color: "#4B5563" }}>Demo</p>
-        <CardService
-          image="/IVF.jpg"
-          title="IVF - Dịch vụ thụ tinh trong ống nghiệm"
-          content="Hành trình làm cha làm mẹ là điều thiêng liêng và quý giá nhất trong cuộc đời mỗi người. Tuy nhiên, với nhiều cặp vợ chồng, con đường này không phải lúc nào cũng suôn sẻ. Tại Vinmec, chúng tôi không tính bằng số ca chuyển phôi hay số ca có thai mà tính bằng số em bé được đón về nhà an toàn lên tới 60%. Vinmec không chỉ ươm mầm hạnh phúc cho hàng nghìn gia đình hiếm muộn có thai, mà còn đồng hành trọn vẹn trong quá trình chăm sóc thai kỳ và đảm bảo em bé khỏe mạnh chào đời. Với mô hình chăm sóc đa chuyên khoa khép kín, kết hợp công nghệ tiên tiến và đội ngũ chuyên gia đầu ngành là lời cam kết mạnh mẽ của Vinmec trong hành trình “đón em bé về nhà”"
-        />
-        <CardService
-          image="/IVF.jpg"
-          title="IVF - Dịch vụ thụ tinh trong ống nghiệm"
-          content="Hành trình làm cha làm mẹ là điều thiêng liêng và quý giá nhất trong cuộc đời mỗi người. Tuy nhiên, với nhiều cặp vợ chồng, con đường này không phải lúc nào cũng suôn sẻ. Tại Vinmec, chúng tôi không tính bằng số ca chuyển phôi hay số ca có thai mà tính bằng số em bé được đón về nhà an toàn lên tới 60%. Vinmec không chỉ ươm mầm hạnh phúc cho hàng nghìn gia đình hiếm muộn có thai, mà còn đồng hành trọn vẹn trong quá trình chăm sóc thai kỳ và đảm bảo em bé khỏe mạnh chào đời. Với mô hình chăm sóc đa chuyên khoa khép kín, kết hợp công nghệ tiên tiến và đội ngũ chuyên gia đầu ngành là lời cam kết mạnh mẽ của Vinmec trong hành trình “đón em bé về nhà”"
-        />
+        <p
+          style={{
+            color: "#4B5563",
+            fontSize: 16,
+            fontWeight: 700,
+            lineHeight: "1.6",
+            maxWidth: 600,
+            textAlign: "center",
+            marginBottom: 24,
+          }}
+        >
+          Các giải pháp điều trị cá nhân hóa cho từng trường hợp vô sinh – hiếm
+          muộn
+        </p>
+        {services?.map((ser, index) => {
+          if (index <= 1) {
+            return <CardService service={ser} />;
+          }
+        })}
       </div>
       <div
         className="DoctorList"
@@ -107,7 +88,19 @@ function HomePage() {
           >
             ĐỘI NGŨ CHUYÊN GIA Y TẾ
           </h1>
-          <p style={{ color: "#4B5563" }}>số 1 thế giới</p>
+          <p
+            style={{
+              color: "#4B5563",
+              fontSize: 16,
+              fontWeight: 700,
+              lineHeight: "1.6",
+              maxWidth: 600,
+              textAlign: "center",
+              marginBottom: 24,
+            }}
+          >
+            Cam kết đồng hành cùng bạn trên hành trình tìm con
+          </p>
         </div>
         <div
           style={{
@@ -120,7 +113,7 @@ function HomePage() {
           <SlideListItem>
             {doctors?.map((doctor, index) => (
               <div key={index} style={{ padding: "10px" }}>
-                <CardDoctor doctor={doctor} showBooking={showBooking} />
+                <CardDoctor doctor={doctor} />
               </div>
             ))}
           </SlideListItem>
@@ -155,17 +148,18 @@ function HomePage() {
             gap: 24,
             width: "1200px",
             flexWrap: "wrap",
-            justifyContent: "space-between",
+            justifyContent: "start",
           }}
         >
-          {blogList.map((blog, index) => (
-            <div key={index} style={{ width: "270px" }}>
-              <BlogCard
-                {...blog}
-                onClick={() => console.log("Go to detail", index)}
-              />
-            </div>
-          ))}
+          {blogs?.map((blog, index) => {
+            if (index <= 3) {
+              return (
+                <div key={index} style={{ width: "270px" }}>
+                  <BlogCard blog={blog} />
+                </div>
+              );
+            }
+          })}
         </div>
       </div>
       <Footer />

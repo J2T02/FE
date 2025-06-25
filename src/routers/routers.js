@@ -1,12 +1,17 @@
 import { lazy } from "react";
 
 const routers = [
+  // Cus and Guest
   {
     path: "/",
     component: lazy(() => import("~pages/HomePage/HomePage")),
   },
   {
-    path: "/service",
+    path: "/booking",
+    component: lazy(() => import("~pages/HomePage/BookingPage/BookingPage")),
+  },
+  {
+    path: "/services",
     component: lazy(() => import("~pages/Service/Service")),
   },
   {
@@ -14,16 +19,35 @@ const routers = [
     component: lazy(() => import("~pages/Service/ServiceDetail")),
   },
   {
-    path: "/admin",
-    component: lazy(() => import("~pages/AdminPage/AdminPage")),
+    path: "/doctors",
+    component: lazy(() => import("~pages/Doctor/DoctorList")),
   },
   {
-    path: "/Doctor-Login",
-    component: lazy(() => import("~pages/DoctorPage/LoginDoctor")),
+    path: "/blog",
+    component: lazy(() => import("~pages/Blog/BlogList")),
   },
   {
     path: "/customer/booking",
     component: lazy(() => import("~pages/CustomerPage/MyBooking/MyBooking")),
+  },
+  //Receptionist
+  {
+    path: "/receptionist", // trang login doctor
+    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
+  },
+  // doctor
+  {
+    path: "/doctorSignin", // trang login doctor
+    component: lazy(() => import("~pages/DoctorPage/LoginDoctor")),
+  },
+  {
+    path: "/doctorDashBoard", // trang login doctor
+    component: lazy(() => import("~pages/DoctorPage/DoctorDashBoard")),
+  },
+  //admin
+  {
+    path: "/admin",
+    component: lazy(() => import("~pages/AdminPage/AdminPage")),
   },
 ];
 

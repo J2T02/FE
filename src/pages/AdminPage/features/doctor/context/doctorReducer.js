@@ -2,6 +2,7 @@ export const initialState = {
   doctors: [],
   schedules: [],
   certificates: [],
+  educationLevels: [],
 };
 
 const doctorReducer = (state, action) => {
@@ -44,8 +45,8 @@ const doctorReducer = (state, action) => {
         ...state,
         schedules: state.schedules.filter((s) => !action.payload(s)),
       };
-    case "SET_CERTIFICATES":
-      return { ...state, certificates: action.payload };
+    case "SET_EDUCATION_LEVELS":
+      return { ...state, educationLevels: action.payload };
     default:
       return state;
   }

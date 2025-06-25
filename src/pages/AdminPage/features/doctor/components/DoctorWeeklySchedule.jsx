@@ -63,8 +63,11 @@ const DoctorWeeklySchedule = ({
                     >
                       <Text>
                         {getSlotLabel(s.slotId)} {s.note ? `(${s.note}) ` : ""}
-                        {s.isAvailable ? "✅ Có khám" : "❌ Không khám"} – SL:{" "}
-                        {s.maxBooking}
+                        {s.isAvailable
+                          ? "✅ Còn nhận booking"
+                          : "❌ Không nhận booking"}
+                        {/* – SL:{" "} */}
+                        {/* {s.maxBooking} */}
                       </Text>
                       <Tooltip title="Chỉnh sửa ca">
                         <EditOutlined

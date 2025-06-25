@@ -1,12 +1,9 @@
 import { Button, Rate, theme } from "antd";
-
-const CardDoctor = ({ doctor, showBooking }) => {
+const CardDoctor = ({ doctor }) => {
   const { token } = theme.useToken();
-  const { doctorId, doctorName, image, star, certification = [] } = doctor;
+  const { doctorId, doctorName, img, star, eduId } = doctor;
 
-  const handleBooking = () => {
-    showBooking(doctorId);
-  };
+  const handleBooking = () => {};
 
   return (
     <div
@@ -46,7 +43,7 @@ const CardDoctor = ({ doctor, showBooking }) => {
           }}
         />
         <img
-          src={image}
+          src={img}
           alt={doctorName}
           style={{
             position: "relative",
@@ -61,7 +58,7 @@ const CardDoctor = ({ doctor, showBooking }) => {
 
       {/* Thông tin bác sĩ */}
       <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-        {doctorName}
+        Bs.{doctorName}
       </h3>
 
       {/* Đánh giá sao */}
@@ -69,7 +66,7 @@ const CardDoctor = ({ doctor, showBooking }) => {
         <Rate disabled defaultValue={star} />
       </div>
 
-      {/* Chứng chỉ */}
+      {/* Trình độ */}
       <div
         style={{
           fontSize: 13,
@@ -77,14 +74,7 @@ const CardDoctor = ({ doctor, showBooking }) => {
           marginBottom: 16,
         }}
       >
-        <strong>Chứng chỉ:</strong>
-        <ul style={{ paddingLeft: 16, margin: 0 }}>
-          {certification.map((cert, index) => (
-            <li key={index} style={{ marginBottom: 4 }}>
-              {cert}
-            </li>
-          ))}
-        </ul>
+        <strong>Trình độ:{eduId}</strong>
       </div>
 
       {/* Nút đặt lịch */}
@@ -99,7 +89,6 @@ const CardDoctor = ({ doctor, showBooking }) => {
           height: "auto",
           border: "none",
         }}
-        onClick={handleBooking}
       >
         Đặt lịch
       </Button>

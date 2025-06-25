@@ -2,12 +2,11 @@ import { Button, Carousel, theme } from "antd";
 import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { FiPhone } from "react-icons/fi";
 import CardItem from "~components/card/carditem/CardItem";
-import { useBooking } from "~contexts/BookingContext";
+
 const Banner = () => {
-  const { showBooking } = useBooking();
   const { token } = theme.useToken();
 
-  const images = ["/anhcuongbanner.jpg", "/banner.jpg"];
+  const images = ["/eventbanner.jpg", "/anhcuongbanner.jpg", "/banner.jpg"];
 
   return (
     <div style={{ position: "relative" }}>
@@ -104,7 +103,6 @@ const Banner = () => {
           icon={
             <CalendarOutlined
               style={{ color: token.colorPrimary, fontSize: 20 }}
-              onClick={showBooking}
             />
           }
           title="Đặt lịch hẹn"

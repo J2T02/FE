@@ -3,13 +3,20 @@ import ServiceBanner from "~components/banner/ServiceBanner";
 import CardList from "~components/card/cardlist/CardList";
 import Footer from "~components/footer/Footer";
 import { Layout, theme } from "antd";
-
+import { useLocation, useParams } from "react-router-dom";
 function ServiceDetail() {
   const { token } = theme.useToken();
+  const { id } = useParams();
+  const location = useLocation();
+  const serviceData = location.state?.serviceData;
   return (
     <Layout>
       <Header />
-      <ServiceBanner />
+      <ServiceBanner
+        title={serviceData?.serName}
+        img={serviceData?.filePath}
+        price={serviceData?.price}
+      />
       <div style={{ padding: 24, margin: "64px 0" }}>
         <div
           style={{
@@ -45,15 +52,7 @@ function ServiceDetail() {
             borderRadius: "8px",
           }}
         >
-          IUI thường được khuyến nghị là phương pháp điều trị đầu tay cho các
-          cặp đôi bị vô sinh không rõ nguyên nhân hoặc các vấn đề nhẹ về khả
-          năng sinh sản. Quy trình này bao gồm việc căn thời gian cẩn thận với
-          chu kỳ tự nhiên của phụ nữ hoặc với các loại thuốc hỗ trợ sinh sản để
-          tăng khả năng thụ thai. Phòng khám của chúng tôi sử dụng các kỹ thuật
-          rửa tinh trùng tiên tiến để cô đặc tinh trùng khỏe mạnh nhất, sau đó
-          được đưa trực tiếp vào tử cung thông qua một ống thông mỏng. Quy trình
-          này bỏ qua các rào cản cổ tử cung tiềm ẩn và đưa tinh trùng đến gần
-          ống dẫn trứng hơn, nơi diễn ra quá trình thụ tinh.
+          {serviceData.description}
         </p>
       </div>
       <Footer />

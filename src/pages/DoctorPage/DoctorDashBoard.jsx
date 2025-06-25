@@ -7,26 +7,23 @@ import {
   AppstoreOutlined,
 } from "@ant-design/icons";
 import { FaUserDoctor } from "react-icons/fa6";
-import AdminHeader from "./components/AdminHeader";
-import DoctorModule from "./features/doctor/DoctorModule";
+import DoctorHeader from "./components/DoctorHeader";
+
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
-
-const AdminPanel = () => {
+function DoctorDashBoard() {
   const [selectedKey, setSelectedKey] = useState("1");
 
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
-        return <DoctorModule />;
+        return <Title>Dashboard</Title>;
       case "2":
-        return <Title level={3}>Quản lý booking</Title>;
+        return <Title level={3}>Quản lý lịch làm việc</Title>;
       case "3":
-        return <Title level={3}>Quản lý bệnh nhân</Title>;
-      case "4":
         return <Title level={3}>Quản lý hồ sơ bệnh nhân</Title>;
-      case "5":
-        return <Title level={3}>Quản lý dịch vụ</Title>;
+      case "4":
+        return <Title level={3}>Quản lý bệnh án</Title>;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -43,7 +40,7 @@ const AdminPanel = () => {
             fontWeight: "bold",
           }}
         >
-          Admin Panel
+          Doctor Panel
         </div>
         <Menu
           mode="inline"
@@ -51,22 +48,22 @@ const AdminPanel = () => {
           onClick={({ key }) => setSelectedKey(key)}
         >
           <Menu.Item key="1" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
-            Quản lý bác sĩ
+            DashBoard
           </Menu.Item>
           <Menu.Item
             key="2"
             icon={<CalendarOutlined style={{ fontSize: 20 }} />}
           >
-            Quản lý booking
+            Lịch làm việc
           </Menu.Item>
           <Menu.Item key="3" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
-            Quản lý bệnh nhân
+            Hồ sơ bệnh nhân
           </Menu.Item>
           <Menu.Item
             key="4"
             icon={<FileTextOutlined style={{ fontSize: 20 }} />}
           >
-            Quản lý hồ sơ bệnh nhân
+            Bệnh án
           </Menu.Item>
           <Menu.Item
             key="5"
@@ -77,13 +74,13 @@ const AdminPanel = () => {
         </Menu>
       </Sider>
       <Layout>
-        <AdminHeader />
+        <DoctorHeader />
         <Content style={{ margin: "24px 16px", padding: 24 }}>
           {renderContent()}
         </Content>
       </Layout>
     </Layout>
   );
-};
+}
 
-export default AdminPanel;
+export default DoctorDashBoard;

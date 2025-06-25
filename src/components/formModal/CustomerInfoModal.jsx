@@ -30,7 +30,7 @@ const CustomerInfoModal = ({ open, onClose, onCreated, accId }) => {
       if (res.data.success) {
         message.success("Cập nhật thông tin thành công!");
         onCreated?.(res.data.data);
-        onClose(); // ✅ Đóng modal khi thành công
+        onClose();
       } else {
         message.error("Đã xảy ra lỗi khi lưu thông tin.");
       }

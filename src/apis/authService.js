@@ -8,8 +8,8 @@ const signIn = async (body) => {
   return await axiosClients.post("/Account/login", body);
 };
 
-const getCusInfo = async (userId) => {
-  return await axiosClients.get(`/Customer/${userId}`);
+const getInfo = async () => {
+  return await axiosClients.get(`/Account`);
 };
 const createCustomer = async (payload) => {
   return new Promise((resolve) => {
@@ -30,4 +30,4 @@ const createCustomer = async (payload) => {
   });
 };
 
-export { register, signIn, getCusInfo, createCustomer };
+export { register, signIn, getInfo, createCustomer };

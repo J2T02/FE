@@ -30,8 +30,7 @@ function Header() {
   const { Search } = Input;
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const { userInfo, setUserRole, setUserId, handleLogout } =
-    useContext(StoreContext);
+  const { userInfo, setAccId, handleLogout } = useContext(StoreContext);
   const items = [
     { key: "0", label: "Bác sĩ", href: "#" },
     { key: "1", label: "Blog", href: "#" },
@@ -39,25 +38,28 @@ function Header() {
   const content = [
     {
       key: "1",
-      label: "Item 1",
+      label: "IVF",
     },
     {
       key: "2",
-      label: "Item 2",
-    },
-    {
-      key: "3",
-      label: "Item 3",
+      label: "IUI",
     },
   ];
   const handleMenuClick = (e) => {
     console.log(e.key);
     switch (e.key) {
+      case "0":
+        navigate("/doctors");
+        break;
+      case "1":
+        navigate("/blog");
+        break;
       case "2":
-        navigate("/service");
+        navigate("/services");
         break;
 
       default:
+        navigate("/");
         break;
     }
   };
@@ -157,15 +159,16 @@ function Header() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
+                marginLeft: 10,
               }}
             >
               <Avatar
-                src={userInfo.avatar || null}
-                icon={!userInfo.avatar && <UserOutlined />}
+                src={userInfo.img || null}
+                icon={!userInfo.img && <UserOutlined />}
                 style={{ backgroundColor: token.colorPrimary }}
               />
               <span style={{ fontWeight: 600, color: token.colorPrimary }}>
-                {userInfo.name || "Tài khoản"}
+                {userInfo.fullName || "Tài khoản"}
               </span>
             </div>
           </Dropdown>
@@ -247,8 +250,7 @@ function Header() {
       <LoginModal
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        setUserId={setUserId}
-        setUserRole={setUserRole}
+        setAccId={setAccId}
       />
       <RegisterModal
         open={isRegisterModalOpen}

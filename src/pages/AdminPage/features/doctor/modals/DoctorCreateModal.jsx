@@ -6,31 +6,62 @@ import {
   Select,
   InputNumber,
   message,
+  Upload, // Import Upload
+  Button, // Import Button for Upload
 } from "antd";
-import { useDoctor } from "../context/DoctorContext";
-import CertificateSelector from "../components/CertificateSelector";
+import { UploadOutlined } from "@ant-design/icons"; // Import icon for Upload button
+import { useState } from "react";
+// Import từ tệp tiện ích mới
+import { uploadFileToCloudinary } from "../../../../../utils/cloudinaryUtils";
+import EducationSelector from "../components/EducationSelector";
 
 const DoctorCreateModal = ({ open, onCancel, onCreate }) => {
   const [form] = Form.useForm();
-  const { certificates } = useDoctor();
+  const [uploadedEducationFile, setUploadedEducationFile] = useState(null); // State mới cho tệp học vấn
+
+  const handleEducationFileChange = (file) => {
+    setUploadedEducationFile(file);
+  };
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      const { yob, eduId, ...restValues } = values; // Lấy eduId từ form, bỏ certificateIds
+
+      let filePathEdu = "";
+      if (uploadedEducationFile) {
+        // Chỉ upload nếu có tệp được chọn
+        filePathEdu = await uploadFileToCloudinary(uploadedEducationFile);
+      }
+
       const payload = {
-        ...values,
-        yob: values.yob.format("YYYY-MM-DD"),
-        certificateIds: values.certificateIds || [],
+        ...restValues,
+        yob: yob.format("YYYY-MM-DD"),
+        eduId: eduId, // Thêm eduId vào payload
+        filePathEdu: filePathEdu, // Thêm filePathEdu vào payload
       };
+
       onCreate(payload);
+      console.log("Payload gửi đi:", payload);
       form.resetFields();
+      setUploadedEducationFile(null); // Reset tệp đã tải lên
     } catch (err) {
-      message.error("Vui lòng điền đầy đủ thông tin");
+      console.error("Lỗi khi tạo bác sĩ:", err);
+      if (err.errorFields) {
+        message.error(
+          "Vui lòng điền đầy đủ và chính xác các thông tin bắt buộc."
+        );
+      } else {
+        message.error(
+          "Đã xảy ra lỗi trong quá trình tạo bác sĩ hoặc tải tệp học vấn."
+        );
+      }
     }
   };
 
   const handleCancel = () => {
     form.resetFields();
+    setUploadedEducationFile(null); // Reset tệp khi hủy
     onCancel();
   };
 
@@ -106,7 +137,11 @@ const DoctorCreateModal = ({ open, onCancel, onCreate }) => {
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
 
-        <CertificateSelector />
+        {/* Component chọn trình độ học vấn và upload file */}
+        <EducationSelector
+          form={form}
+          onFileChange={handleEducationFileChange}
+        />
       </Form>
     </Modal>
   );

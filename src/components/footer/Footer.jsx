@@ -4,7 +4,13 @@ const Footer = () => {
   const { token } = theme.useToken();
   const { Footer } = Layout;
   return (
-    <Footer style={{ width: "100%", borderTop: "1px solid #e5e7eb" }}>
+    <Footer
+      style={{
+        width: "100%",
+        borderTop: "1px solid #e5e7eb",
+        backgroundColor: token["pink-1"],
+      }}
+    >
       <div
         style={{
           maxWidth: 1280,
@@ -19,7 +25,7 @@ const Footer = () => {
           fontWeight: 400,
         }}
       >
-        {/* Hệ thống Vinmec */}
+        {/* Hệ thống */}
         <div style={{ minWidth: 140 }}>
           <h3
             style={{
@@ -29,13 +35,13 @@ const Footer = () => {
               marginBottom: 8,
             }}
           >
-            Hệ thống Vinmec
+            Hệ thống Con Yêu
           </h3>
           <ul style={{ lineHeight: 1.8 }}>
             <li>Tầm nhìn sứ mệnh</li>
             <li>Hệ thống cơ sở y tế</li>
             <li>Tìm bác sĩ</li>
-            <li>Làm việc tại Vinmec</li>
+            <li>Làm việc tại Con Yêu</li>
           </ul>
         </div>
 
@@ -52,7 +58,6 @@ const Footer = () => {
             Dịch vụ
           </h3>
           <ul style={{ lineHeight: 1.8 }}>
-            <li>Chuyên khoa</li>
             <li>Gói dịch vụ</li>
             <li>Bảo hiểm</li>
             <li>Đặt lịch hẹn</li>
@@ -69,7 +74,7 @@ const Footer = () => {
               marginBottom: 8,
             }}
           >
-            Tải App MyVinmec
+            QR
           </h3>
           <img
             src="https://storage.googleapis.com/a1aa/image/d9dad149-3684-46c6-7763-918bf0c5b011.jpg"
@@ -182,8 +187,7 @@ const Footer = () => {
           }}
         >
           <div style={{ textAlign: "center" }}>
-            Bản quyền © 2024 thuộc về Công ty Cổ phần Bệnh viện Đa khoa Quốc tế
-            Vinmec
+            Bản quyền © 2025 thuộc về Công ty Cổ Con Yêu
           </div>
           <div
             style={{
@@ -193,7 +197,7 @@ const Footer = () => {
               gap: 8,
             }}
           >
-            <span>Chính sách bảo vệ dữ liệu cá nhân của Vinmec</span>
+            <span>Chính sách bảo vệ dữ liệu cá nhân của Con Yêu</span>
             <span>|</span>
             <span>GR Privacy</span>
             <span>|</span>
