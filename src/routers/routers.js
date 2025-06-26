@@ -23,6 +23,14 @@ const routers = [
     component: lazy(() => import("~pages/Doctor/DoctorList")),
   },
   {
+    path: "/doctordetail",
+    component: lazy(() => import("~pages/CustomerPage/DoctorDetail/DoctorDetail")),
+  },
+  {
+    path: "/customerdetail",
+    component: lazy(() => import("~pages/CustomerPage/CustomerDetail/CustomerDetail")),
+  },
+  {
     path: "/blog",
     component: lazy(() => import("~pages/Blog/BlogList")),
   },
@@ -48,6 +56,10 @@ const routers = [
   {
     path: "/admin",
     component: lazy(() => import("~pages/AdminPage/AdminPage")),
+  },
+  {
+    path: "/doctordetail/id",
+    component: lazy(() => import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")),
   },
 ];
 
