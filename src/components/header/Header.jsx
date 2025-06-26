@@ -96,7 +96,7 @@ function Header() {
         >
           <img
             style={{ width: "153px", height: "53px" }}
-            src="/logo.jpg"
+            src="/Logo.png"
             alt=""
           />
         </div>
