@@ -1,13 +1,11 @@
 import { Typography, Card, Button, Tag, Space, message } from "antd";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import { BookingHistory } from "../../../apis/bookingService";
 
-const SLOT_LABELS = {
-  1: "08:00 - 12:00",
-  2: "13:00 - 17:00",
-};
-
+const SLOT_LABELS = { 1: "08:00 - 12:00", 2: "13:00 - 17:00" };
 const STATUS_COLORS = {
   "đã xác nhận": "green",
   "chờ xác nhận": "gold",
@@ -16,17 +14,23 @@ const STATUS_COLORS = {
   "đã khám": "blue",
 };
 
-function MyBooking() {
+export default function MyBooking() {
   const [bookings, setBookings] = useState([]);
   const { Title } = Typography;
+  const navigate = useNavigate();            // ← THÊM
+  const formatDate = (str) => {
+    if (!str) return "";
+    const [day, month, year] = str.split("/");
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    (async () => {
       try {
-        const res = await BookingHistory();
+        const id = Cookies.get("accId");
+        const res = await BookingHistory(id);
         const data = res.data.data || [];
 
-        // Map và sắp xếp theo ngày giảm dần (mới nhất đầu tiên)
         const mapped = data
           .map((item) => ({
             bookingId: item.bookingId,
@@ -37,75 +41,62 @@ function MyBooking() {
               slotText: SLOT_LABELS[item.slotId] || "Không rõ",
             },
           }))
-          .sort(
-            (a, b) =>
-              dayjs(b.schedule.date).unix() - dayjs(a.schedule.date).unix()
-          );
+          .sort((a, b) => b.bookingId - a.bookingId);
 
         setBookings(mapped);
       } catch (err) {
         console.error("Lỗi khi tải lịch sử đặt lịch:", err);
         message.error("Không thể tải lịch sử đặt lịch.");
       }
-    };
-
-    fetchHistory();
+    })();
   }, []);
 
-  const formatDate = (str) => {
-    if (!str) return "";
-    const [day, month, year] = str.split("/");
-    return `${year}-${month}-${day}`;
-  };
-
-  const handleView = (booking) => {
-    message.info(`Xem chi tiết lịch hẹn: ${booking.bookingId}`);
-  };
+  /* DI CHUYỂN */
+  const handleView = (id) => navigate(`/bookingDetail/${id}`);
 
   return (
     <div style={{ padding: 24 }}>
       <Title level={2}>Lịch hẹn của tôi</Title>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <Space direction="vertical" size={16} style={{ width: "100%" }}>
         {bookings.length === 0 ? (
           <Card>Không có lịch hẹn nào.</Card>
         ) : (
-          bookings.map((booking) => {
-            const { bookingId, schedule, status } = booking;
-
-            return (
-              <Card
-                key={bookingId}
-                title={`Lịch hẹn #${bookingId}`}
-                extra={
-                  <Tag color={STATUS_COLORS[status] || "default"}>
-                    {status}
-                  </Tag>
-                }
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div>
-                    <strong>Ngày khám:</strong>{" "}
-                    {dayjs(schedule.date).format("DD/MM/YYYY")}
-                  </div>
-                  <div>
-                    <strong>Ca khám:</strong> {schedule.slotText}
-                  </div>
-                  <div>
-                    <Space style={{ marginTop: 8 }}>
-                      <Button onClick={() => handleView(booking)} type="primary">
-                        Xem
-                      </Button>
-                    </Space>
-                  </div>
+          bookings.map(({ bookingId, schedule, status }) => (
+            <Card
+              key={bookingId}
+              hoverable                    // ← hiển thị mouse pointer
+              onClick={() => handleView(bookingId)}   // ← CLICK CẢ CARD
+              title={`Lịch hẹn #${bookingId}`}
+              extra={
+                <Tag color={STATUS_COLORS[status] || "default"}>{status}</Tag>
+              }
+              bodyStyle={{ cursor: "pointer" }}
+            >
+              <Space direction="vertical" size={8}>
+                <div>
+                  <strong>Ngày khám:</strong>{" "}
+                  {dayjs(schedule.date).format("DD/MM/YYYY")}
                 </div>
-              </Card>
-            );
-          })
+                <div>
+                  <strong>Ca khám:</strong> {schedule.slotText}
+                </div>
+                {/* Nếu muốn thêm nút riêng */}
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();       // không kích hoạt onClick Card
+                    handleView(bookingId);
+                  }}
+                >
+                  Xem
+                </Button>
+              </Space>
+            </Card>
+          ))
         )}
-      </div>
+      </Space>
     </div>
   );
 }
-
-export default MyBooking;

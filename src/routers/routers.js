@@ -57,9 +57,15 @@ const routers = [
     path: "/admin",
     component: lazy(() => import("~pages/AdminPage/AdminPage")),
   },
+
   {
-    path: "/doctordetail/id",
-    component: lazy(() => import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")),
+    path: "/bookingDetail/:id",
+    component: lazy(() => import("~pages/CustomerPage/MyBooking/BookingDetail/BookingDetailPage")),
+  },
+
+  {
+    path: "/bookingUpdate/:id",
+    component: lazy(() => import("~pages/HomePage/BookingPage/BookingUpdatePage")),
   },
 ];
 

@@ -12,8 +12,12 @@ const Booking = async (body) => {
   return await axiosClients.post(`/Booking/Booking`, body);
 }
 
-const BookingHistory = async () => {
-  return await axiosClients.get(`/Booking`);
+const BookingHistory = async (id) => {
+  return await axiosClients.get(`/Booking/History/${id}`);
 }
 
-export{GetAllDoctor, GetSchedule, Booking, BookingHistory};
+const BookingDetail = async (id) => {
+  return await axiosClients.get(`/BookingDetail/${id}`);
+}
+
+export{GetAllDoctor, GetSchedule, Booking, BookingHistory, BookingDetail};

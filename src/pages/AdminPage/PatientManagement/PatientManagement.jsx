@@ -5,33 +5,15 @@ import {
   Typography,
   Space,
   Card,
-  Button,
   message,
 } from "antd";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { SearchOutlined } from "@ant-design/icons";
+import { GetAllAccount } from "../../../apis/adminService";
 
 const { Title } = Typography;
 
 const PatientManagement = () => {
-  const [patients, setPatients] = useState([{
-    acc_ID: 1,
-    full_Name: "Nguyễn Thị Lan",
-    phone: "0901234567",
-    mail: "lan@gmail.com"
-  },
-  {
-    acc_ID: 2,
-    full_Name: "Trần Văn B",
-    phone: "0934567890",
-    mail: "tranb@example.com"
-  },
-  {
-    acc_ID: 3,
-    full_Name: "Lê Thị C",
-    phone: "0987654321",
-    mail: "lethic@example.com"
-  }]);
+  const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -42,8 +24,9 @@ const PatientManagement = () => {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/patients"); // API lấy danh sách bệnh nhân
-      setPatients(res.data);
+      const res = await GetAllAccount();
+      console.log("API Response:", res);
+      setPatients(res.data.data); // lấy danh sách từ API
     } catch (error) {
       message.error("Không thể tải danh sách bệnh nhân");
     } finally {
@@ -54,8 +37,8 @@ const PatientManagement = () => {
   const columns = [
     {
       title: "Bệnh nhân",
-      dataIndex: "full_Name",
-      key: "full_Name",
+      dataIndex: "fullName", // ✅ đúng tên theo JSON
+      key: "fullName",
       render: (text) => <b>{text}</b>,
     },
     {
@@ -68,25 +51,25 @@ const PatientManagement = () => {
       ),
     },
     {
-      title: "", // Không có tiêu đề
+      title: "",
       key: "actions",
       align: "right",
-      render: (_, record) => (
-        <a href={`/patients/${record.acc_ID}`} style={{ color: "#1677ff" }}>
+      render: (_, record, index) => (
+        <a href={`/patients/${index}`} style={{ color: "#1677ff" }}>
           Xem chi tiết
         </a>
       ),
     },
   ];
 
-  const filteredPatients = patients.filter((item) =>
-    item.full_Name.toLowerCase().includes(searchKeyword.toLowerCase())
+  const filteredPatients = patients.filter(
+    (item) =>
+      typeof item.fullName === "string" &&
+      item.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   return (
-    <Card
-      title={<Title level={3}>Quản lý bệnh nhân</Title>}
-    >
+    <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
       <Space style={{ marginBottom: 16 }}>
         <Input
           placeholder="Tìm theo tên bệnh nhân"
@@ -97,7 +80,7 @@ const PatientManagement = () => {
       <Table
         columns={columns}
         dataSource={filteredPatients}
-        rowKey="acc_ID"
+        rowKey={(record, index) => index} // ✅ nếu không có acc_ID
         loading={loading}
         pagination={{ pageSize: 5 }}
       />
