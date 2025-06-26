@@ -43,9 +43,9 @@ const BookingPage = () => {
       const res = await Booking(payload);
       console.log("Booking success:", res.data);
       message.success("Đặt lịch thành công!");
-
+      const bookingId = res.data.data.bookingId;
       // ⬇️ Điều hướng sau khi thành công
-      navigate("/customer/booking");
+      navigate(`/bookingDetail/${bookingId}`); // Thay đổi đường dẫn nếu cần
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       message.error(error.response?.data?.message || "Lỗi khi đặt lịch.");
