@@ -73,7 +73,7 @@ const CustomerInfo = ({ onNext, onUpdate, data }) => {
         </Row>
 
         <div style={{ textAlign: "right" }}>
-          <Button type="default" style={{ marginRight: 8 }} onClick={onNext}>
+          <Button type="primary" style={{ marginRight: 8 }} onClick={onNext}>
             Bỏ qua
           </Button>
           <Button type="primary" htmlType="submit">

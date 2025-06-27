@@ -20,4 +20,8 @@ const BookingDetail = async (id) => {
   return await axiosClients.get(`/BookingDetail/${id}`);
 }
 
-export{GetAllDoctor, GetSchedule, Booking, BookingHistory, BookingDetail};
+const GetCustomerInfo = async () => {
+  return await axiosClients.get(`/Customer/id`);
+}
+
+export{GetAllDoctor, GetSchedule, Booking, BookingHistory, BookingDetail, GetCustomerInfo};

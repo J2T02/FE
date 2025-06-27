@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Radio, Typography, Card, message } from "antd";
+import { Calendar, Radio, Typography, Card, Button, message } from "antd";
 import dayjs from "dayjs";
 import { GetSchedule } from "../../../apis/bookingService";
 
 const { Title, Text } = Typography;
 
-const Schedule = ({ data, onUpdate }) => {
+const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSchedules, setAvailableSchedules] = useState([]);
 
-  // Load lại state từ props khi quay lại chỉnh sửa
   useEffect(() => {
     if (data?.date) {
       setSelectedDate(dayjs(data.date));
@@ -19,13 +18,11 @@ const Schedule = ({ data, onUpdate }) => {
       if (data.doctorId) {
         setSelectedSlot(data.slot); // Nếu có bác sĩ thì là slotId
       } else {
-        // Nếu không có bác sĩ thì slot là 1 (sáng) hoặc 2 (chiều)
         setSelectedSlot(data.slot === 1 ? "morning" : "afternoon");
       }
     }
   }, [data]);
 
-  // Fetch schedule khi chọn bác sĩ
   useEffect(() => {
     const fetchSchedule = async () => {
       if (!data?.doctorId) {
@@ -47,13 +44,11 @@ const Schedule = ({ data, onUpdate }) => {
     fetchSchedule();
   }, [data?.doctorId]);
 
-  // Gửi dữ liệu cập nhật khi người dùng chọn ngày và giờ
   useEffect(() => {
     if (selectedDate && selectedSlot) {
       const dateStr = selectedDate.format("YYYY-MM-DD");
 
       if (!data?.doctorId) {
-        // Không có bác sĩ, dùng slot mặc định
         let slotStart = "", slotEnd = "", slotId = null;
         if (selectedSlot === "morning") {
           slotStart = "08:00:00";
@@ -88,13 +83,11 @@ const Schedule = ({ data, onUpdate }) => {
     }
   }, [selectedDate, selectedSlot]);
 
-  // Trả về các lịch của ngày đang chọn
   const getSlotsForSelectedDate = () => {
     const dateStr = selectedDate?.format("YYYY-MM-DD");
     return availableSchedules.filter((s) => s.workDate === dateStr);
   };
 
-  // Chặn chọn ngày nếu không có lịch (nếu có bác sĩ)
   const disabledDate = (current) => {
     if (!data?.doctorId) return false;
     const allDates = availableSchedules.map((s) => s.workDate);
@@ -109,7 +102,7 @@ const Schedule = ({ data, onUpdate }) => {
         value={selectedDate || dayjs()}
         onSelect={(date) => {
           setSelectedDate(date);
-          setSelectedSlot(null); // reset khi chọn ngày mới
+          setSelectedSlot(null);
         }}
         disabledDate={disabledDate}
       />
@@ -137,6 +130,23 @@ const Schedule = ({ data, onUpdate }) => {
                   </Radio.Button>,
                 ]}
           </Radio.Group>
+
+          <div style={{ marginTop: 24, textAlign: "right" }}>
+            <Button type="primary" onClick={onPrev} style={{ marginRight: 8 }}>
+              Quay lại
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => {
+                if (!selectedDate || !selectedSlot) {
+                  return message.warning("Vui lòng chọn ngày và ca khám.");
+                }
+                onNext();
+              }}
+            >
+              Tiếp theo
+            </Button>
+          </div>
         </>
       )}
     </Card>

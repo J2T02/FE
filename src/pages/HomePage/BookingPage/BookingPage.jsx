@@ -1,29 +1,53 @@
-import React, { useState } from "react";
-import { Steps, Button, message } from "antd";
-import { useNavigate } from "react-router-dom"; // ⬅️ Thêm dòng này
+import React, { useState, useEffect } from "react";
+import { Steps, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import CustomerInfo from "../components/CustomerInfo";
 import DoctorSelection from "../components/DoctorSelection";
 import Schedule from "../components/Schedule";
 import ConfirmBooking from "../components/ConfirmBooking";
-import { Booking } from "../../../apis/bookingService";
-
-const steps = ["Patient Info", "Select Doctor", "Choose Date", "Confirm"];
+import { Booking, GetCustomerInfo } from "../../../apis/bookingService";
 
 const BookingPage = () => {
   const [current, setCurrent] = useState(0);
   const [bookingData, setBookingData] = useState({});
-  const navigate = useNavigate(); // ⬅️ Khởi tạo
+  const [showCustomerInfo, setShowCustomerInfo] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCustomerInfo = async () => {
+      try {
+        const res = await GetCustomerInfo();
+        const customerData = res?.data?.data;
+
+        if (customerData) {
+          if (customerData.husName) {
+            setShowCustomerInfo(false);
+          }
+          setBookingData((prev) => ({ ...prev, ...customerData }));
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin khách hàng:", error);
+        message.error("Không thể lấy thông tin khách hàng.");
+      }
+    };
+
+    fetchCustomerInfo();
+  }, []);
+
+  const updateData = (data) =>
+    setBookingData((prev) => ({ ...prev, ...data }));
 
   const next = () => {
-    if (current === 2 && (!bookingData.date || !bookingData.slot)) {
-      return message.warning("Please select both date and time slot.");
+    const isScheduleStep = current === contentComponents.length - 2;
+    if (isScheduleStep && (!bookingData.date || !bookingData.slot)) {
+      return message.warning("Vui lòng chọn đầy đủ ngày và ca khám.");
     }
-    setCurrent(current + 1);
+    setCurrent((prev) => prev + 1);
   };
 
-  const prev = () => setCurrent(current - 1);
+  const prev = () => setCurrent((prev) => prev - 1);
 
-  const updateData = (data) => setBookingData((prev) => ({ ...prev, ...data }));
+  const restart = () => setCurrent(0);
 
   const submitBooking = async () => {
     try {
@@ -39,36 +63,59 @@ const BookingPage = () => {
         note: bookingData.notes || "",
       };
 
-      console.log("Payload gửi đi:", payload);
       const res = await Booking(payload);
-      console.log("Booking success:", res.data);
       message.success("Đặt lịch thành công!");
       const bookingId = res.data.data.bookingId;
-      // ⬇️ Điều hướng sau khi thành công
-      navigate(`/bookingDetail/${bookingId}`); // Thay đổi đường dẫn nếu cần
+      navigate(`/bookingDetail/${bookingId}`);
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
-      message.error(error.response?.data?.message || "Lỗi khi đặt lịch.");
+      message.error(
+        error.response?.data?.message || "Lỗi khi đặt lịch."
+      );
     }
   };
 
-  const restart = () => setCurrent(0);
+  const steps = [
+    ...(showCustomerInfo ? ["Patient Info"] : []),
+    "Select Doctor",
+    "Choose Date",
+    "Confirm",
+  ];
 
-  const contentMap = [
-    <CustomerInfo data={bookingData} onUpdate={updateData} onNext={next} />,
+  const contentComponents = [
+    showCustomerInfo && (
+      <CustomerInfo
+        key="CustomerInfo"
+        data={bookingData}
+        onUpdate={updateData}
+        onNext={next}
+      />
+    ),
     <DoctorSelection
+      key="DoctorSelection"
       data={bookingData}
       onUpdate={updateData}
       onNext={next}
       onPrev={prev}
+      disablePrev={current === 0}
     />,
-    <Schedule data={bookingData} onUpdate={updateData} />,
+    <Schedule
+      key="Schedule"
+      data={bookingData}
+      onUpdate={updateData}
+      onNext={next}
+      onPrev={prev}
+      disablePrev={current === 0}
+    />,
     <ConfirmBooking
+      key="ConfirmBooking"
       data={bookingData}
       onSubmit={submitBooking}
       onRestart={restart}
+      onPrev={prev}
+      disablePrev={current === 0}
     />,
-  ];
+  ].filter(Boolean);
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
@@ -78,18 +125,7 @@ const BookingPage = () => {
         ))}
       </Steps>
 
-      <div>{contentMap[current]}</div>
-
-      {current < steps.length - 1 && current !== 0 && current !== 1 && (
-        <div style={{ marginTop: 24, textAlign: "right" }}>
-          <Button type="primary" onClick={prev} style={{ marginRight: 8 }}>
-            Previous
-          </Button>
-          <Button type="primary" onClick={next}>
-            Next Step
-          </Button>
-        </div>
-      )}
+      <div>{contentComponents[current]}</div>
     </div>
   );
 };
