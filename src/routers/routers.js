@@ -46,10 +46,14 @@ const routers = [
     path: "/customer/booking",
     component: lazy(() => import("~pages/CustomerPage/MyBooking/MyBooking")),
   },
+  {
+    path: "/customer/customerinfoform",
+    component: lazy(() => import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")),
+  },
   //Receptionist
   {
-    path: "/receptionist", // trang login doctor
-    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
+    path: "/receptionist", 
+    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPanel")),
   },
   // doctor
   {
@@ -65,6 +69,17 @@ const routers = [
     path: "/admin",
     component: lazy(() => import("~pages/AdminPage/AdminPage")),
   },
+
+  //receptionist
+   {
+    path: "/receptionist",
+    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
+  },
+  {
+    path: "/receptionist/bookingdetail/id",
+    component: lazy(() => import("~pages/ReceptionistPage/BookingDetail/BookingDetailPage")),
+  },
+
 
   {
     path: "/bookingDetail/:id",

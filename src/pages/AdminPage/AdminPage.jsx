@@ -47,7 +47,11 @@ const AdminPanel = () => {
             fontWeight: "bold",
           }}
         >
-          Admin Panel
+          <img
+            style={{ width: "153px", height: "53px" }}
+            src="/Logo.png"
+            alt=""
+          />
         </div>
         <Menu
           mode="inline"
