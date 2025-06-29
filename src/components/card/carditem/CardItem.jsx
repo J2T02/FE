@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function CardItem({ icon, title, description, showDivider }) {
+function CardItem({ icon, title, description, showDivider, onClick }) {
   const [hover, setHover] = useState(false);
 
   return (
@@ -8,10 +8,10 @@ function CardItem({ icon, title, description, showDivider }) {
       style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={onClick} // ✅ hỗ trợ click chuyển trang
     >
       <div
         style={{
-          // flex: 1,
           display: "flex",
           gap: 12,
           alignItems: "center",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // ← Lấy param từ URL
-import { Layout, Row, Col, Space, Spin, message } from "antd";
+import { useParams } from "react-router-dom";
+import { Layout, Row, Col, Space, Spin } from "antd";
 
 import BackButton from "./components/BackButton";
 import BookingHeader from "./components/BookingHeader";
@@ -9,36 +9,65 @@ import CustomerInfoCard from "./components/CustomerInfoCard";
 import DoctorInfoCard from "./components/DoctorInfoCard";
 import ActionSection from "./components/ActionSection";
 import AppointmentInfoCard from "./components/AppointmentInfoCard";
-import { BookingDetail } from "../../../../apis/bookingService";
 
 const { Content } = Layout;
 
-export default function BookingDetailPage() {
-  const { id } = useParams();              // 👈 Lấy bookingId từ URL
-  const bookingId = parseInt(id);          // 👈 Chuyển thành số nếu cần
+const sampleBookingData = {
+  bookingId: 123,
+  createAt: "2025-06-28T14:30:00",
+  note: "Khách hàng yêu cầu bác sĩ nữ nếu có.",
+  status: {
+    statusId: 1,
+    statusName: "Đang chờ xác nhận",
+  },
+  cus: {
+    husName: "Nguyễn Văn A",
+    wifeName: "Trần Thị B",
+    husYob: 1990,
+    wifeYob: 1992,
+    accCus: {
+      fullName: "Nguyễn Văn A",
+      mail: "nguyenvana@gmail.com",
+      phone: "0901234567",
+    },
+  },
+  doc: {
+    docId: 2,
+    specialty: "Hiếm muộn",
+    experience: 12,
+    accDoc: {
+      fullName: "BS. Trần Thị Lan",
+      mail: "lan.bs88@gmail.com",
+      phone: "0908123456",
+      gender: "Nữ",
+      yob: 1988,
+      education: "Đại học Y Hà Nội",
+      certificates: ["/certs/lan1.pdf", "/certs/lan2.pdf"],
+    },
+  },
+  schedule: {
+    bookingId: 123,
+    date: "2025-07-01",
+    startTime: "09:00",
+    endTime: "10:00",
+    room: "Phòng khám 302",
+    hospital: "Vinmec Central Park",
+  },
+};
 
+export default function BookingDetailPage() {
+  const { id } = useParams();
+  const bookingId = parseInt(id);
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
 
   useEffect(() => {
-    const fetchBooking = async () => {
-      try {
-        const res = await BookingDetail(bookingId);
-        if (res?.data?.success) {
-          setBookingData(res.data.data);
-        } else {
-          message.error("Không thể tải thông tin đặt lịch");
-        }
-      } catch (err) {
-        console.error("Lỗi khi gọi API:", err);
-        message.error("Có lỗi xảy ra khi tải dữ liệu.");
-      }
-      setLoading(false);
-    };
-    fetchBooking();
+    // Gán dữ liệu mẫu để test UI
+    setBookingData(sampleBookingData);
+    setLoading(false);
   }, [bookingId]);
 
-  if (loading) return <Spin fullscreen />;
+  if (loading || !bookingData) return <Spin fullscreen />;
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
@@ -53,10 +82,10 @@ export default function BookingDetailPage() {
               <CustomerInfoCard data={bookingData?.cus} />
             </Col>
             <Col xs={24} md={12}>
-              <DoctorInfoCard data={bookingData?.doc?.accDoc} />
+              <DoctorInfoCard data={bookingData?.doc?.accDoc} docId={bookingData?.doc?.docId} />
             </Col>
             <Col xs={24} md={12}>
-              <AppointmentInfoCard data={bookingData?.schedule} />
+              <AppointmentInfoCard data={{ ...bookingData?.schedule, bookingId }} />
             </Col>
             <Col xs={24} md={12}>
               <ActionSection bookingId={bookingId} />

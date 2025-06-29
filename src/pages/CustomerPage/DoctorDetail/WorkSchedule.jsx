@@ -1,3 +1,5 @@
+// File: WorkSchedule.jsx
+
 import React, { useEffect, useState } from "react";
 import { Select, Typography, Tag, Space, Row, Col } from "antd";
 import dayjs from "dayjs";
@@ -5,9 +7,8 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import isoWeeksInYear from "dayjs/plugin/isoWeeksInYear";
 import isLeapYear from "dayjs/plugin/isLeapYear";
-import axios from "axios";
 
-// Extend các plugin cần thiết cho dayjs
+// Extend dayjs with needed plugins
 dayjs.extend(isoWeek);
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeeksInYear);
@@ -17,21 +18,19 @@ const { Title } = Typography;
 
 const WorkSchedule = ({ doctorId }) => {
   const [scheduleData, setScheduleData] = useState([
-  { "workDate": "2025-06-24", "shift": 1 },
-  { "workDate": "2025-06-24", "shift": 2 },
-  { "workDate": "2025-06-25", "shift": 1 },
-  { "workDate": "2025-06-26", "shift": 2 },
-  { "workDate": "2025-06-27", "shift": 1 }
-]
-);
+    { workDate: "2025-07-01", shift: 1 },
+    { workDate: "2025-07-01", shift: 2 },
+    { workDate: "2025-07-02", shift: 1 },
+    { workDate: "2025-07-03", shift: 2 },
+    { workDate: "2025-07-04", shift: 1 },
+  ]);
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf("isoWeek"));
   const [yearOptions, setYearOptions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
   useEffect(() => {
-    loadDoctorSchedule();
     initYearOptions();
-  }, [doctorId, selectedYear, currentWeek]);
+  }, []);
 
   const initYearOptions = () => {
     const now = dayjs();
@@ -39,27 +38,9 @@ const WorkSchedule = ({ doctorId }) => {
     setYearOptions(years);
   };
 
-  const loadDoctorSchedule = async () => {
-    const startOfWeek = currentWeek.startOf("isoWeek").format("YYYY-MM-DD");
-    const endOfWeek = currentWeek.endOf("isoWeek").format("YYYY-MM-DD");
-
-    try {
-      const res = await axios.get(
-        `/api/doctors/${doctorId}/schedule?from=${startOfWeek}&to=${endOfWeek}`
-      );
-      setScheduleData(res.data); // Dữ liệu dạng: [{ workDate, shift }]
-    } catch (err) {
-      console.error("Lỗi khi tải lịch làm việc:", err);
-    }
-  };
-
   const renderShifts = (date) => {
-    const morning = scheduleData.find(
-      (s) => s.workDate === date && s.shift === 1
-    );
-    const afternoon = scheduleData.find(
-      (s) => s.workDate === date && s.shift === 2
-    );
+    const morning = scheduleData.find((s) => s.workDate === date && s.shift === 1);
+    const afternoon = scheduleData.find((s) => s.workDate === date && s.shift === 2);
 
     return (
       <div>

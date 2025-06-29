@@ -1,24 +1,49 @@
+import React from "react";
+import { Card, Typography, Space, Button } from "antd";
+import { CalendarOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
-import { Card, Typography, Space } from "antd";
-import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
+export default function AppointmentInfoCard({ data }) {
+  const navigate = useNavigate();
 
-export default function AppointmentInfoCard({data}) {
+  const handleChangeSchedule = () => {
+    navigate(`/customer/updatescheduleinbooking/${data?.bookingId}`);
+  };
+
   return (
     <Card title={<><CalendarOutlined /> Thông tin lịch hẹn</>}>
-      <Space direction="vertical" size="large">
+      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Space direction="vertical" size={0}>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             Ngày hẹn
           </Typography.Text>
-          <Typography.Text>Thứ Ba, 15 tháng 7, 2025</Typography.Text>
+          <Typography.Text>
+            {new Date(data?.date).toLocaleDateString("vi-VN", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </Typography.Text>
         </Space>
 
         <Space direction="vertical" size={0}>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             Khung giờ
           </Typography.Text>
-          <Typography.Text>{data?.slotId == 1 ? "8:00-12:00" : "13:00-17:00"}</Typography.Text>
+          <Typography.Text>
+            {data?.startTime} - {data?.endTime}
+          </Typography.Text>
         </Space>
+
+        <Button
+          type="primary"
+          size="small"
+          style={{ marginTop: 4, fontWeight: 500 }}
+          onClick={handleChangeSchedule}
+        >
+          Thay đổi lịch hẹn
+        </Button>
       </Space>
     </Card>
   );

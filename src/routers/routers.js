@@ -47,6 +47,18 @@ const routers = [
     component: lazy(() => import("~pages/CustomerPage/MyBooking/MyBooking")),
   },
   {
+    path: "/customer/updatedoctorinbooking",
+    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateDoctorInBooking")),
+  },
+   {
+    path: "/customer/updatescheduleinbooking",
+    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateScheduleInBooking")),
+  },
+   {
+    path: "/customer/updatebooking",
+    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateBooking")),
+  },
+  {
     path: "/customer/customerinfoform",
     component: lazy(() => import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")),
   },

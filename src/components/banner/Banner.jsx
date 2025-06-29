@@ -1,10 +1,12 @@
 import { Button, Carousel, theme } from "antd";
 import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { FiPhone } from "react-icons/fi";
-import CardItem from "~components/card/carditem/CardItem";
+import { useNavigate } from "react-router-dom";
+import CardItem from "~components/card/carditem/CardItem"; // đường dẫn đúng với dự án của bạn
 
 const Banner = () => {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
 
   const images = ["/eventbanner.jpg", "/anhcuongbanner.jpg", "/banner.jpg"];
 
@@ -24,56 +26,11 @@ const Banner = () => {
                 backgroundPosition: "center",
                 cursor: "pointer",
               }}
-            >
-              {/* Overlay Content */}
-              {/* <div
-                style={{
-                  position: "absolute",
-                  top: -120,
-                  left: "28%",
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    maxWidth: 850,
-                    fontFamily: token.fontFamily,
-                    color: token.colorTextBase,
-                    fontWeight: 600,
-                    fontSize: 26,
-                    lineHeight: 1.3,
-                  }}
-                >
-                  Chăm sóc bằng tài năng,
-                  <br />
-                  y đức và sự thấu cảm
-                  <br />
-                  <Button
-                    type="primary"
-                    style={{
-                      marginTop: 24,
-                      backgroundColor: "#4db6a1",
-                      borderRadius: 24,
-                      fontWeight: "bold",
-                      fontSize: 13,
-                      padding: "6px 20px",
-                      height: "auto",
-                    }}
-                  >
-                    Xem thêm
-                  </Button>
-                </div>
-              </div> */}
-            </div>
+            />
           </div>
         ))}
       </Carousel>
+
       {/* Floating Card Group */}
       <div
         style={{
@@ -108,6 +65,7 @@ const Banner = () => {
           title="Đặt lịch hẹn"
           description="Đặt lịch hẹn nhanh chóng, tiện lợi"
           showDivider={true}
+          onClick={() => navigate("/booking")} // ✅ điều hướng
         />
         <CardItem
           icon={
