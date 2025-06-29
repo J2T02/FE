@@ -1,127 +1,151 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, Button, message, Segmented, Typography, Space } from "antd";
 import dayjs from "dayjs";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  GetSchedule,
+  updatebookingSchedule,
+} from "../../../../apis/bookingService";
 
 const { Title } = Typography;
 
-const SLOT_OPTIONS = {
+const SLOT_LABELS = {
   1: "08:00 - 12:00",
   2: "13:00 - 17:00",
 };
 
-// 🔧 Dữ liệu mẫu
-const mockDoctorSchedules = [
-  { dsId: 1, workDate: "2025-06-29", slotId: 1, isAvailable: true },
-  { dsId: 2, workDate: "2025-06-29", slotId: 2, isAvailable: true },
-  { dsId: 3, workDate: "2025-06-30", slotId: 1, isAvailable: false },
-  { dsId: 4, workDate: "2025-07-01", slotId: 1, isAvailable: true },
-  { dsId: 5, workDate: "2025-07-01", slotId: 2, isAvailable: false },
-];
+const UpdateScheduleInBooking = ({ bookingId = 123, doctorId = 1, onBack }) => {
+  const location = useLocation();
+  const bookingdata = location.state;
+  const navigate = useNavigate();
 
-const UpdateScheduleInBooking = ({
-  bookingId = 123,
-  doctorId = 1,
-  onBack,
-  onUpdated,
-}) => {
   const [availableDates, setAvailableDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
-  const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      setLoading(true);
-      setTimeout(() => {
-        const dateMap = {};
+    const fetchDoctorSchedule = async () => {
+      try {
+        const res = await GetSchedule(2);
+        const schedules = Array.isArray(res?.data?.data) ? res.data.data : [];
 
-        mockDoctorSchedules.forEach((entry) => {
+        const map = {};
+        schedules.forEach((entry) => {
           if (entry.isAvailable) {
             const dateStr = dayjs(entry.workDate).format("YYYY-MM-DD");
-            if (!dateMap[dateStr]) dateMap[dateStr] = [];
-            dateMap[dateStr].push(entry);
+            if (!map[dateStr]) map[dateStr] = [];
+            map[dateStr].push(entry);
           }
         });
 
-        setAvailableDates(dateMap);
-        setLoading(false);
-      }, 300);
+        setAvailableDates(map);
+      } catch (err) {
+        message.error("Lỗi khi tải lịch làm việc của bác sĩ.");
+      }
     };
 
-    fetchSchedule();
+    fetchDoctorSchedule();
   }, [doctorId]);
 
-  const onDateSelect = (date) => {
+  const disabledDate = (date) => {
+    const dateStr = date.format("YYYY-MM-DD");
+    return !availableDates[dateStr];
+  };
+
+  const handleDateSelect = (date) => {
     const dateStr = date.format("YYYY-MM-DD");
 
     if (!availableDates[dateStr]) {
-      message.warning("Bác sĩ không có lịch trống ngày này.");
       return;
     }
 
-    setSelectedDate(dateStr);
-    setAvailableSlots(availableDates[dateStr].map((s) => s.slotId));
+    setSelectedDate(dayjs(dateStr));
     setSelectedSlot(null);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedDate || !selectedSlot) {
       message.warning("Vui lòng chọn ngày và khung giờ.");
       return;
     }
 
-    const schedule = availableDates[selectedDate].find(
-      (s) => s.slotId === selectedSlot
+    const dateStr = selectedDate.format("YYYY-MM-DD");
+    const selectedEntry = availableDates[dateStr].find(
+      (item) => item.slot.slotId === selectedSlot
     );
 
-    if (!schedule) {
-      message.error("Không tìm thấy lịch làm việc hợp lệ.");
+    if (!selectedEntry) {
+      message.error("Không tìm thấy lịch hợp lệ.");
       return;
     }
 
-    console.log("Đã chọn DS_ID:", schedule.dsId);
+    try {
+      const res = await updatebookingSchedule(
+        bookingdata.bookingData.bookingId,
+        {
+          workDate: dateStr,
+          slotId: selectedSlot,
+        }
+      );
+      if (res.data.success) {
+        message.success(res.data.message);
+        navigate(`/bookingDetail/${bookingdata.bookingData.bookingId}`);
+      } else {
+        message.error(res.data.message);
+      }
 
-    message.success("Cập nhật lịch thành công!");
-    onUpdated?.();
+      onBack?.();
+    } catch (err) {
+      console.log(err);
+      message.error("Cập nhật lịch thất bại.");
+    }
+  };
+
+  const renderSlotSelector = () => {
+    if (!selectedDate) return null;
+    const dateStr = selectedDate.format("YYYY-MM-DD");
+    const slots = availableDates[dateStr] || [];
+
+    return (
+      <div style={{ marginTop: 24 }}>
+        <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn khung giờ:</div>
+        <Segmented
+          block
+          options={slots.map((entry) => ({
+            label:
+              SLOT_LABELS[entry.slot.slotId] ||
+              `${entry.slot.slotStart} - ${entry.slot.slotEnd}`,
+            value: entry.slot.slotId,
+          }))}
+          value={selectedSlot}
+          onChange={setSelectedSlot}
+        />
+      </div>
+    );
   };
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <Title level={4}>Chọn ngày khám</Title>
+      <Title level={4}>Cập nhật lịch khám</Title>
 
       <Calendar
         fullscreen={false}
-        onSelect={onDateSelect}
-        disabledDate={(date) => {
-          const dateStr = date.format("YYYY-MM-DD");
-          return !availableDates[dateStr];
-        }}
+        onSelect={handleDateSelect}
+        disabledDate={disabledDate}
       />
 
-      {selectedDate && availableSlots.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <div style={{ fontWeight: 500, marginBottom: 8 }}>Chọn khung giờ:</div>
-          <Segmented
-            options={availableSlots.map((slotId) => ({
-              label: SLOT_OPTIONS[slotId],
-              value: slotId,
-            }))}
-            value={selectedSlot}
-            onChange={setSelectedSlot}
-          />
-        </div>
-      )}
+      {renderSlotSelector()}
 
       <Space style={{ marginTop: 32 }}>
-        <Button onClick={onBack}>Quay lại</Button>
+        <Button type="primary" onClick={onBack}>
+          Quay lại
+        </Button>
         <Button
           type="primary"
-          onClick={handleSubmit}
           disabled={!selectedDate || !selectedSlot}
-          loading={loading}
+          onClick={handleSubmit}
         >
-          Tiếp theo
+          Đổi lịch
         </Button>
       </Space>
     </div>

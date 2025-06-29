@@ -1,15 +1,21 @@
-import { Button, Carousel, theme } from "antd";
+import { Button, Carousel, theme, message } from "antd";
 import { CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { FiPhone } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import CardItem from "~components/card/carditem/CardItem"; // đường dẫn đúng với dự án của bạn
-
+import Cookies from "js-cookie";
 const Banner = () => {
   const { token } = theme.useToken();
   const navigate = useNavigate();
 
   const images = ["/eventbanner.jpg", "/anhcuongbanner.jpg", "/banner.jpg"];
-
+  const handleBooking = () => {
+    if (!Cookies.get("accId")) {
+      message.warning("Vui lòng đăng nhập để đặt lịch!");
+    } else {
+      navigate("/booking");
+    }
+  };
   return (
     <div style={{ position: "relative" }}>
       {/* Slide Image */}
@@ -65,7 +71,7 @@ const Banner = () => {
           title="Đặt lịch hẹn"
           description="Đặt lịch hẹn nhanh chóng, tiện lợi"
           showDivider={true}
-          onClick={() => navigate("/booking")} // ✅ điều hướng
+          onClick={handleBooking} // ✅ điều hướng
         />
         <CardItem
           icon={

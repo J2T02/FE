@@ -22,21 +22,29 @@ const routers = [
     path: "/doctors",
     component: lazy(() => import("~pages/Doctor/DoctorList")),
   },
-   {
+  {
     path: "/doctordetail",
-    component: lazy(() => import("~pages/CustomerPage/DoctorDetail/DoctorDetail")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/DoctorDetail/DoctorDetail")
+    ),
   },
   {
     path: "/customerdetail",
-    component: lazy(() => import("~pages/CustomerPage/CustomerDetail/CustomerDetail")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/CustomerDetail/CustomerDetail")
+    ),
   },
   {
     path: "/doctordetail",
-    component: lazy(() => import("~pages/CustomerPage/DoctorDetail/DoctorDetail")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/DoctorDetail/DoctorDetail")
+    ),
   },
   {
     path: "/customerdetail",
-    component: lazy(() => import("~pages/CustomerPage/CustomerDetail/CustomerDetail")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/CustomerDetail/CustomerDetail")
+    ),
   },
   {
     path: "/blog",
@@ -48,23 +56,35 @@ const routers = [
   },
   {
     path: "/customer/updatedoctorinbooking",
-    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateDoctorInBooking")),
+    component: lazy(() =>
+      import(
+        "~pages/CustomerPage/MyBooking/UpdateBooking/UpdateDoctorInBooking"
+      )
+    ),
   },
-   {
-    path: "/customer/updatescheduleinbooking",
-    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateScheduleInBooking")),
+  {
+    path: "/customer/updatescheduleinbooking/:id",
+    component: lazy(() =>
+      import(
+        "~pages/CustomerPage/MyBooking/UpdateBooking/UpdateScheduleInBooking"
+      )
+    ),
   },
-   {
+  {
     path: "/customer/updatebooking",
-    component: lazy(() => import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateBooking")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/MyBooking/UpdateBooking/UpdateBooking")
+    ),
   },
   {
     path: "/customer/customerinfoform",
-    component: lazy(() => import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")
+    ),
   },
   //Receptionist
   {
-    path: "/receptionist", 
+    path: "/receptionist",
     component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPanel")),
   },
   // doctor
@@ -83,28 +103,35 @@ const routers = [
   },
 
   //receptionist
-   {
+  {
     path: "/receptionist",
     component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
   },
   {
     path: "/receptionist/bookingdetail/id",
-    component: lazy(() => import("~pages/ReceptionistPage/BookingDetail/BookingDetailPage")),
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/BookingDetail/BookingDetailPage")
+    ),
   },
-
 
   {
     path: "/bookingDetail/:id",
-    component: lazy(() => import("~pages/CustomerPage/MyBooking/BookingDetail/BookingDetailPage")),
+    component: lazy(() =>
+      import("~pages/CustomerPage/MyBooking/BookingDetail/BookingDetailPage")
+    ),
   },
 
   {
     path: "/bookingUpdate/:id",
-    component: lazy(() => import("~pages/HomePage/BookingPage/BookingUpdatePage")),
+    component: lazy(() =>
+      import("~pages/HomePage/BookingPage/BookingUpdatePage")
+    ),
   },
   {
     path: "/doctordetail/id",
-    component: lazy(() => import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")),
+    component: lazy(() =>
+      import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")
+    ),
   },
 ];
 

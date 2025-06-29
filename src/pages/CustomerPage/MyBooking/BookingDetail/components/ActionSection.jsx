@@ -3,19 +3,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function ActionSection() {
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSelect = (mode) => {
     navigate(`/bookingUpdate/:id?option=${mode}`); // bookingId cần được lấy từ props hoặc context
-// chuyển sang trang BookingUpdatePage
+    // chuyển sang trang BookingUpdatePage
   };
 
   return (
     <>
       <Card title="Thao tác">
         <Space direction="vertical" style={{ width: "100%" }}>
-          <Button type="primary" block onClick={() => setOpen(true)}>
+          <Button
+            type="primary"
+            block
+            onClick={() => navigate(`/bookingUpdate/:id`)}
+          >
             Chỉnh sửa đặt lịch
           </Button>
           <Button danger block onClick={() => console.log("Hủy đặt lịch")}>
@@ -26,22 +29,6 @@ export default function ActionSection() {
           </Button>
         </Space>
       </Card>
-
-      <Modal
-        title="Chọn hành động chỉnh sửa"
-        open={open}
-        onCancel={() => setOpen(false)}
-        footer={null}
-      >
-        <Space direction="vertical" style={{ width: "100%" }}>
-          <Button type="primary" block onClick={() => handleSelect("schedule")}>
-            Đổi lịch hẹn
-          </Button>
-          <Button type="primary" block onClick={() => handleSelect("doctor")}>
-            Đổi bác sĩ
-          </Button>
-        </Space>
-      </Modal>
     </>
   );
 }

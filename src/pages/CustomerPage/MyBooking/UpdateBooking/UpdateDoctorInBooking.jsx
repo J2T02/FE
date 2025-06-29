@@ -1,73 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { Card, Radio, Typography, Space, Button, message, Tooltip } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  filterDoctor,
+  updatebookingDoctor,
+} from "../../../../apis/bookingService";
 
 const { Title, Text } = Typography;
 
 const UpdateDoctorInBooking = ({ bookingId, currentDoctorId, onBack }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const bookingdata = location.state;
+
+  const { slotId, workDate } = bookingdata.schedule;
+
   const [selectedDoctor, setSelectedDoctor] = useState(currentDoctorId || null);
-  const [doctors, setDoctors] = useState([
-    {
-      doctorId: 1,
-      name: "BS. Nguyễn Văn A",
-      gender: "Nam",
-      yob: 1980,
-      mail: "nguyenvana@example.com",
-      phone: "0909123456",
-      experience: 15,
-    },
-    {
-      doctorId: 2,
-      name: "BS. Trần Thị B",
-      gender: "Nữ",
-      yob: 1985,
-      mail: "tranthib@example.com",
-      phone: "0911234567",
-      experience: 12,
-    },
-    {
-      doctorId: 3,
-      name: "BS. Phạm Văn C",
-      gender: "Nam",
-      yob: 1990,
-      mail: "phamvanc@example.com",
-      phone: "0922345678",
-      experience: 8,
-    },
-    {
-      doctorId: 4,
-      name: "BS. Lê Thị D",
-      gender: "Nữ",
-      yob: 1982,
-      mail: "lethid@example.com",
-      phone: "0933456789",
-      experience: 10,
-    },
-  ]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
   // Load danh sách bác sĩ (nếu dùng API thật)
   useEffect(() => {
-    // const fetchDoctors = async () => {
-    //   try {
-    //     setLoading(true);
-    //     const res = await GetAllDoctor();
-    //     setDoctors(res.data.data || []);
-    //   } catch (error) {
-    //     console.error("Lỗi khi lấy danh sách bác sĩ:", error);
-    //     message.error("Không thể tải danh sách bác sĩ.");
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+    const fetchDoctors = async () => {
+      try {
+        setLoading(true);
+        const res = await filterDoctor(slotId, workDate, workDate);
 
-    // fetchDoctors();
+        setDoctors(res.data.data || []);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách bác sĩ:", error);
+        message.error("Không thể tải danh sách bác sĩ.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctors();
   }, []);
-
   const handleRadioChange = (value) => {
     setSelectedDoctor((prev) => (prev === value ? null : value));
   };
@@ -79,12 +48,17 @@ const UpdateDoctorInBooking = ({ bookingId, currentDoctorId, onBack }) => {
     }
 
     try {
-      setSubmitting(true);
-      await axios.put(`/api/Booking/UpdateDoctor/${bookingId}`, {
-        doctorId: selectedDoctor,
-      });
-      message.success("Cập nhật bác sĩ thành công.");
-      navigate(`/booking-detail/${bookingId}`);
+      const res = await updatebookingDoctor(
+        bookingdata.bookingId,
+        selectedDoctor
+      );
+      if (res.data.success) {
+        navigate(`/bookingDetail/${bookingdata.bookingId}`);
+        message.success("Cập nhật bác sĩ thành công.");
+      } else {
+        message.error(res.data.message);
+      }
+      // navigate(`/booking-detail/${bookingId}`);
     } catch (error) {
       console.error("Lỗi khi cập nhật bác sĩ:", error);
       message.error("Cập nhật thất bại.");
@@ -106,42 +80,54 @@ const UpdateDoctorInBooking = ({ bookingId, currentDoctorId, onBack }) => {
           <Space direction="vertical" style={{ width: "100%" }}>
             {doctors.map((doc) => (
               <Card
-                key={doc.doctorId}
+                key={doc.docId}
                 title={
                   <Space>
-                    {doc.name}
+                    {doc.doctorName}
                     <Tooltip title="Xem chi tiết bác sĩ">
                       <InfoCircleOutlined
-                        onClick={() => navigate(`/doctor-detail/${doc.doctorId}`)}
+                        onClick={() => navigate(`/doctor-detail/${doc.docId}`)}
                         style={{ marginLeft: 4, cursor: "pointer" }}
                       />
                     </Tooltip>
                   </Space>
                 }
-                extra={<Radio value={doc.doctorId} />}
+                extra={<Radio value={doc.docId} />}
                 style={{
                   backgroundColor:
-                    selectedDoctor === doc.doctorId ? "#e6f7ff" : "#fff",
+                    selectedDoctor === doc.docId ? "#e6f7ff" : "#fff",
                   border:
-                    selectedDoctor === doc.doctorId ? "1px solid #1890ff" : undefined,
+                    selectedDoctor === doc.docId
+                      ? "1px solid #1890ff"
+                      : undefined,
                 }}
               >
-                <Text><b>Giới tính:</b> {doc.gender}</Text>
+                <Text>
+                  <b>Giới tính:</b> {doc.gender}
+                </Text>
                 <br />
-                <Text><b>Năm sinh:</b> {doc.yob}</Text>
+                <Text>
+                  <b>Năm sinh:</b> {doc.yob}
+                </Text>
                 <br />
-                <Text><b>Kinh nghiệm:</b> {doc.experience} năm</Text>
+                <Text>
+                  <b>Kinh nghiệm:</b> {doc.experience} năm
+                </Text>
                 <br />
-                <Text><b>Email:</b> {doc.mail}</Text>
+                <Text>
+                  <b>Email:</b> {doc.mail}
+                </Text>
                 <br />
-                <Text><b>Số điện thoại:</b> {doc.phone}</Text>
+                <Text>
+                  <b>Số điện thoại:</b> {doc.phone}
+                </Text>
               </Card>
             ))}
           </Space>
         </Radio.Group>
 
-        <div style={{ marginTop: 24, textAlign: "right" }}>
-          <Button onClick={onBack} style={{ marginRight: 8 }}>
+        <div style={{ marginTop: 24, textAlign: "right", padding: 30 }}>
+          <Button type="primary" onClick={onBack} style={{ marginRight: 8 }}>
             Hủy
           </Button>
           <Button
@@ -149,7 +135,9 @@ const UpdateDoctorInBooking = ({ bookingId, currentDoctorId, onBack }) => {
             onClick={handleUpdateDoctor}
             loading={submitting}
             disabled={
-              !selectedDoctor || selectedDoctor === currentDoctorId || submitting
+              !selectedDoctor ||
+              selectedDoctor === currentDoctorId ||
+              submitting
             }
           >
             Xác nhận thay đổi
