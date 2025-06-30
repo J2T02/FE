@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Button, Card, Checkbox, Form, Input, Typography, theme } from "antd";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Form,
+  Input,
+  Typography,
+  message,
+  theme,
+} from "antd";
 import {
   MailOutlined,
   LockOutlined,
@@ -7,22 +16,41 @@ import {
   EyeTwoTone,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 const { Title, Text, Link } = Typography;
-
+import { loginDoctor } from "../../../apis/doctorService";
 const LoginModel = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { token } = theme.useToken();
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
+    await loginDoctor(values)
+      .then((res) => {
+        setLoading(false);
+        console.log(res);
+        if (res.data.success && res.data.data.isActive) {
+          const { accId, token } = res.data.data;
+          Cookies.set("accDocId", accId);
+          Cookies.set("token", token);
+          message.success(res.data.message);
+          navigate("/doctorDashBoard");
+        } else {
+          message.error(res.data.message);
+        }
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
     console.log("Login attempt:", values);
 
     // Simulate redirect
-    setTimeout(() => {
-      setLoading(false);
-      // window.location.href = "#doctor-dashboard";
-      navigate("/doctorDashBoard");
-    }, 1500);
+    // setTimeout(() => {
+    //   setLoading(false);
+    //   // window.location.href = "#doctor-dashboard";
+    //   // navigate("/doctorDashBoard");
+    // }, 1500);
   };
 
   return (
@@ -52,9 +80,9 @@ const LoginModel = () => {
         <Form name="loginForm" layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Tên đăng nhập"
-            name="AccName"
+            name="mailOrPhone"
             rules={[
-              { required: true, message: "Nhập tên đăng nhập" },
+              { required: true, message: "Email hoặc số điện thoại" },
               { type: "text", message: "Sai tên đăng nhập" },
             ]}
           >
@@ -63,7 +91,7 @@ const LoginModel = () => {
 
           <Form.Item
             label="Mật khẩu"
-            name="Password"
+            name="password"
             rules={[{ required: true, message: "Nhập mật khẩu" }]}
           >
             <Input.Password
@@ -73,10 +101,6 @@ const LoginModel = () => {
                 visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
               }
             />
-          </Form.Item>
-
-          <Form.Item name="remember" valuePropName="checked">
-            <Checkbox>Remember me</Checkbox>
           </Form.Item>
 
           <Form.Item>
@@ -91,20 +115,6 @@ const LoginModel = () => {
           </div>
         </Form>
       </Card>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 16,
-          textAlign: "center",
-          width: "100%",
-          color: "#888",
-          fontSize: 12,
-        }}
-      >
-        © 2025 Hệ thống Quản lý Điều trị Hiếm muộn. Bảo mật và quyền sở hữu bản
-        quyền.
-      </div>
     </div>
   );
 };

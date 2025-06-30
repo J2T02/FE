@@ -89,7 +89,7 @@ const routers = [
   },
   // doctor
   {
-    path: "/doctorSignin", // trang login doctor
+    path: "/doctorsignin", // trang login doctor
     component: lazy(() => import("~pages/DoctorPage/LoginDoctor")),
   },
   {

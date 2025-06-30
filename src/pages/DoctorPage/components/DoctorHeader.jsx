@@ -1,13 +1,13 @@
 import { Layout, Typography, Badge, Avatar, theme, Dropdown } from "antd";
 import { BellOutlined, UserOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-
+import { useContext, useEffect, useState } from "react";
+import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
 const { Header } = Layout;
 const { Title } = Typography;
 
 const DoctorHeader = (account) => {
   const { token } = theme.useToken();
-
+  const { doctorInfo, handleLogout } = useContext(DoctorStoreContext);
   const [notifications, setNotifications] = useState([
     { id: 1, content: "Có đơn hàng mới!" },
     { id: 2, content: "Người dùng A vừa đăng ký." },
@@ -15,7 +15,7 @@ const DoctorHeader = (account) => {
 
   // 👇 Thêm state đếm số thông báo chưa đọc
   const [unreadCount, setUnreadCount] = useState(2);
-
+  console.log(doctorInfo);
   const notificationItems = notifications.length
     ? notifications.map((item) => ({
         key: item.id,
@@ -52,6 +52,12 @@ const DoctorHeader = (account) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Xử lý click menu avatar
+  const handleMenuClick = (info) => {
+    const item = avatarItems.find((i) => i.key === info.key);
+    if (item && item.onClick) item.onClick();
+  };
 
   return (
     <Header
@@ -93,7 +99,7 @@ const DoctorHeader = (account) => {
         />
 
         <Dropdown
-          menu={{ items: avatarItems }}
+          menu={{ items: avatarItems, onClick: handleMenuClick }}
           trigger={["click"]}
           placement="bottomRight"
         >
@@ -107,7 +113,9 @@ const DoctorHeader = (account) => {
           >
             <Avatar
               size="small"
-              icon={<UserOutlined />}
+              // src={doctorInfo.accountInfo.img || null}
+              src={doctorInfo?.accountInfo?.img || null}
+              icon={!doctorInfo?.accountInfo?.img && <UserOutlined />}
               style={{ backgroundColor: token.colorPrimary }}
             />
             <div
@@ -126,7 +134,7 @@ const DoctorHeader = (account) => {
                   fontSize: 12,
                 }}
               >
-                {account ? account.fullName : "unknown"}
+                {doctorInfo ? doctorInfo?.accountInfo?.fullName : "unknown"}
               </span>
             </div>
           </div>
