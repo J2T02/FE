@@ -132,7 +132,7 @@ function Header() {
                   key: "profile",
                   icon: <IoSettingsOutline style={{ fontSize: 20 }} />,
                   label: "Hồ sơ",
-                  onClick: () => navigate("/profile"),
+                  onClick: () => navigate("/customerdetail"),
                 },
                 {
                   key: "historyBooking",

@@ -12,7 +12,7 @@ import { useBooking } from "~contexts/BookingContext";
 function HomePage() {
   const { token } = theme.useToken();
   const { doctors, services, blogs } = useBooking();
-  console.log(blogs);
+
   return (
     <Layout>
       <Header />

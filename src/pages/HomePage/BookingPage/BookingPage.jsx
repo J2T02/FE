@@ -8,7 +8,7 @@ import DoctorSelection from "../components/DoctorSelection";
 import Schedule from "../components/Schedule";
 import ConfirmBooking from "../components/ConfirmBooking";
 import { Booking, GetCustomerInfo } from "../../../apis/bookingService";
-
+import Cookies from "js-cookie";
 const BookingPage = () => {
   const [current, setCurrent] = useState(0);
   const [bookingData, setBookingData] = useState({});
@@ -18,11 +18,14 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchCustomerInfo = async () => {
       try {
-        const res = await GetCustomerInfo();
+        const accCusId = Cookies.get("accId");
+
+        const res = await GetCustomerInfo(accCusId);
         const customerData = res?.data?.data;
 
         if (customerData) {
           if (customerData.husName) {
+            message.success("skip nef");
             setShowCustomerInfo(false);
           }
           setBookingData((prev) => ({ ...prev, ...customerData }));

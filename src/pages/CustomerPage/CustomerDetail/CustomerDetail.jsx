@@ -300,7 +300,9 @@ const CustomerDetail = ({ accountId }) => {
               <Button type="primary" onClick={handleSave}>
                 Lưu
               </Button>{" "}
-              <Button onClick={() => setIsEditing(false)}>Hủy</Button>
+              <Button type="primary" onClick={() => setIsEditing(false)}>
+                Hủy
+              </Button>
             </>
           ) : (
             <Button type="primary" onClick={() => setIsEditing(true)}>

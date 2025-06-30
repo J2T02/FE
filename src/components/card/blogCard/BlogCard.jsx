@@ -7,7 +7,7 @@ const MAX_LENGTH = 100;
 const BlogCard = ({ blog }) => {
   const { title, content, img, authorId, postDate } = blog;
   const { token } = theme.useToken();
-  console.log(title);
+
   const shortContent =
     content?.length > MAX_LENGTH
       ? content.substring(0, MAX_LENGTH) + "..."
