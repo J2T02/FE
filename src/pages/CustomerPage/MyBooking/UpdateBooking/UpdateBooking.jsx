@@ -1,61 +1,64 @@
-// File: pages/CustomerPage/MyBooking/UpdateBooking/UpdateBooking.jsx
-import React, { useState } from "react";
-import { Steps, message, Card } from "antd";
-import DoctorSelection from "./components/DoctorSelection";
-import DoctorScheduleStep from "./components/DoctorScheduleStep";
-import axios from "axios";
-
-const steps = [
-  { title: "Chọn bác sĩ mới" },
-  { title: "Chọn lịch làm việc" },
-];
-
-const UpdateBooking = ({ bookingId, onComplete }) => {
-  const [current, setCurrent] = useState(0);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [selectedSchedule, setSelectedSchedule] = useState(null);
-
-  const next = () => setCurrent((prev) => prev + 1);
-  const prev = () => setCurrent((prev) => prev - 1);
-
-  const handleConfirmUpdate = async () => {
+import { useEffect, useState } from "react";
+import { Card, Typography, Divider, Layout } from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
+import CurrentBookingInfo from "./components/CurrentBookingInfo";
+import NewBookingForm from "./components/NewBookingForm";
+import { GetAllDoctor, BookingDetail } from "../../../../apis/bookingService";
+import { useParams } from "react-router-dom";
+const BookingUpdatePage = () => {
+  const { bookingId } = useParams();
+  const [doctors, setDoctors] = useState([]);
+  const [currentBooking, setCurrentBooking] = useState({});
+  const fetchCurrentBooking = async () => {
     try {
-      await axios.put(`/api/Booking/UpdateDoctorSchedule/${bookingId}`, {
-        doctorId: selectedDoctor.doctorId,
-        doctorScheduleId: selectedSchedule.scheduleId,
-      });
-      message.success("Cập nhật lịch hẹn thành công");
-      onComplete && onComplete();
+      const res = await BookingDetail(bookingId);
+      console.log("Booking Detail:", res);
+      if (res.data.success) {
+        setCurrentBooking(res.data.data);
+      }
     } catch (err) {
-      message.error("Lỗi khi cập nhật lịch hẹn");
-      console.error(err);
+      console.error("Lỗi booking:", err);
     }
   };
 
+  const fetchDoctors = async () => {
+    try {
+      const res = await GetAllDoctor();
+      console.log("Doctor list:", res);
+      if (res.data.success) {
+        setDoctors(res.data.data);
+      }
+    } catch (err) {
+      console.error("Lỗi doctor:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (bookingId) {
+      fetchDoctors();
+      fetchCurrentBooking();
+    } else {
+      console.warn("bookingId chưa có:", bookingId);
+    }
+  }, [bookingId]);
+
+  console.log(currentBooking);
   return (
-    <Card title="Chỉnh sửa lịch hẹn">
-      <Steps current={current} items={steps} style={{ marginBottom: 32 }} />
+    <Layout>
+      <Header />
+      <Card title="Cập nhật lịch hẹn" style={{ padding: "40px 0" }}>
+        <Typography.Title level={4}>Thông tin hiện tại</Typography.Title>
+        <CurrentBookingInfo booking={currentBooking} />
 
-      {current === 0 && (
-        <DoctorSelection
-          selectedDoctor={selectedDoctor}
-          setSelectedDoctor={setSelectedDoctor}
-          onNext={next}
-        />
-      )}
+        <Divider />
 
-      {current === 1 && (
-        <DoctorScheduleStep
-          doctorId={selectedDoctor?.doctorId}
-          onPrev={prev}
-          onSelectSchedule={(schedule) => {
-            setSelectedSchedule(schedule);
-            handleConfirmUpdate();
-          }}
-        />
-      )}
-    </Card>
+        <Typography.Title level={4}>Thông tin mới</Typography.Title>
+        <NewBookingForm bookingId={bookingId} doctors={doctors} />
+      </Card>
+      <Footer />
+    </Layout>
   );
 };
 
-export default UpdateBooking;
+export default BookingUpdatePage;

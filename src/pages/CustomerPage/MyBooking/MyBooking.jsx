@@ -1,4 +1,6 @@
-import { Typography, Card, Button, Tag, Space, message } from "antd";
+import { Typography, Card, Button, Tag, Space, message, Layout } from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +19,7 @@ const STATUS_COLORS = {
 export default function MyBooking() {
   const [bookings, setBookings] = useState([]);
   const { Title } = Typography;
-  const navigate = useNavigate();            // ← THÊM
+  const navigate = useNavigate(); // ← THÊM
   const formatDate = (str) => {
     if (!str) return "";
     const [day, month, year] = str.split("/");
@@ -55,48 +57,52 @@ export default function MyBooking() {
   const handleView = (id) => navigate(`/bookingDetail/${id}`);
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={2}>Lịch hẹn của tôi</Title>
+    <Layout>
+      <Header />
+      <div style={{ padding: 24 }}>
+        <Title level={2}>Lịch hẹn của tôi</Title>
 
-      <Space direction="vertical" size={16} style={{ width: "100%" }}>
-        {bookings.length === 0 ? (
-          <Card>Không có lịch hẹn nào.</Card>
-        ) : (
-          bookings.map(({ bookingId, schedule, status }) => (
-            <Card
-              key={bookingId}
-              hoverable                    // ← hiển thị mouse pointer
-              onClick={() => handleView(bookingId)}   // ← CLICK CẢ CARD
-              title={`Lịch hẹn #${bookingId}`}
-              extra={
-                <Tag color={STATUS_COLORS[status] || "default"}>{status}</Tag>
-              }
-              bodyStyle={{ cursor: "pointer" }}
-            >
-              <Space direction="vertical" size={8}>
-                <div>
-                  <strong>Ngày khám:</strong>{" "}
-                  {dayjs(schedule.date).format("DD/MM/YYYY")}
-                </div>
-                <div>
-                  <strong>Ca khám:</strong> {schedule.slotText}
-                </div>
-                {/* Nếu muốn thêm nút riêng */}
-                <Button
-                  size="small"
-                  type="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();       // không kích hoạt onClick Card
-                    handleView(bookingId);
-                  }}
-                >
-                  Xem
-                </Button>
-              </Space>
-            </Card>
-          ))
-        )}
-      </Space>
-    </div>
+        <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          {bookings.length === 0 ? (
+            <Card>Không có lịch hẹn nào.</Card>
+          ) : (
+            bookings.map(({ bookingId, schedule, status }) => (
+              <Card
+                key={bookingId}
+                hoverable // ← hiển thị mouse pointer
+                onClick={() => handleView(bookingId)} // ← CLICK CẢ CARD
+                title={`Lịch hẹn #${bookingId}`}
+                extra={
+                  <Tag color={STATUS_COLORS[status] || "default"}>{status}</Tag>
+                }
+                bodyStyle={{ cursor: "pointer" }}
+              >
+                <Space direction="vertical" size={8}>
+                  <div>
+                    <strong>Ngày khám:</strong>{" "}
+                    {dayjs(schedule.date).format("DD/MM/YYYY")}
+                  </div>
+                  <div>
+                    <strong>Ca khám:</strong> {schedule.slotText}
+                  </div>
+                  {/* Nếu muốn thêm nút riêng */}
+                  <Button
+                    size="small"
+                    type="primary"
+                    onClick={(e) => {
+                      e.stopPropagation(); // không kích hoạt onClick Card
+                      handleView(bookingId);
+                    }}
+                  >
+                    Xem
+                  </Button>
+                </Space>
+              </Card>
+            ))
+          )}
+        </Space>
+      </div>
+      <Footer />
+    </Layout>
   );
 }

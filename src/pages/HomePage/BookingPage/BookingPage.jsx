@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Steps, message } from "antd";
+import { Steps, message, Layout } from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 import CustomerInfo from "../components/CustomerInfo";
 import DoctorSelection from "../components/DoctorSelection";
@@ -34,8 +36,7 @@ const BookingPage = () => {
     fetchCustomerInfo();
   }, []);
 
-  const updateData = (data) =>
-    setBookingData((prev) => ({ ...prev, ...data }));
+  const updateData = (data) => setBookingData((prev) => ({ ...prev, ...data }));
 
   const next = () => {
     const isScheduleStep = current === contentComponents.length - 2;
@@ -69,9 +70,7 @@ const BookingPage = () => {
       navigate(`/bookingDetail/${bookingId}`);
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
-      message.error(
-        error.response?.data?.message || "Lỗi khi đặt lịch."
-      );
+      message.error(error.response?.data?.message || "Lỗi khi đặt lịch.");
     }
   };
 
@@ -118,15 +117,19 @@ const BookingPage = () => {
   ].filter(Boolean);
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <Steps current={current} style={{ marginBottom: 24 }}>
-        {steps.map((title, idx) => (
-          <Steps.Step key={idx} title={title} />
-        ))}
-      </Steps>
+    <Layout>
+      <Header />
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+        <Steps current={current} style={{ marginBottom: 24 }}>
+          {steps.map((title, idx) => (
+            <Steps.Step key={idx} title={title} />
+          ))}
+        </Steps>
 
-      <div>{contentComponents[current]}</div>
-    </div>
+        <div>{contentComponents[current]}</div>
+      </div>
+      <Footer />
+    </Layout>
   );
 };
 

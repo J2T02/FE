@@ -11,7 +11,9 @@ const filterDoctor = async (slotId, fromDate, toDate) => {
 const GetSchedule = async (id) => {
   return await axiosClients.get(`/Doctor/GetAllDoctorScheduleIsTrue/${id}`);
 };
-
+const GetAllDoctorSchedule = async (id) => {
+  return await axiosClients.get(`/Doctor/GetAllDoctorSchedule/${id}`);
+};
 const Booking = async (body) => {
   return await axiosClients.post(`/Booking/Booking`, body);
 };
@@ -50,4 +52,5 @@ export {
   filterDoctor,
   updatebookingDoctor,
   updatebookingSchedule,
+  GetAllDoctorSchedule,
 };

@@ -2,9 +2,8 @@ import { Card, Button, Space, Modal } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ActionSection() {
+export default function ActionSection({ bookingId }) {
   const navigate = useNavigate();
-
   const handleSelect = (mode) => {
     navigate(`/bookingUpdate/:id?option=${mode}`); // bookingId cần được lấy từ props hoặc context
     // chuyển sang trang BookingUpdatePage
@@ -17,7 +16,7 @@ export default function ActionSection() {
           <Button
             type="primary"
             block
-            onClick={() => navigate(`/bookingUpdate/:id`)}
+            onClick={() => navigate(`/customer/updatebooking/${bookingId}`)}
           >
             Chỉnh sửa đặt lịch
           </Button>

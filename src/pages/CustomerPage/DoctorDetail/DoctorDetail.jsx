@@ -9,7 +9,11 @@ import {
   Space,
   Select,
   Pagination,
+  Layout,
+  theme,
 } from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import dayjs from "dayjs";
 import WorkSchedule from "./WorkSchedule";
 import FeedbackCard from "./FeedbackCard";
@@ -18,6 +22,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const DoctorDetail = ({ doctorId }) => {
+  const { token } = theme.useToken();
   const [doctor, setDoctor] = useState({
     gender: "Nam",
     yob: "1980-03-01",
@@ -93,71 +98,97 @@ const DoctorDetail = ({ doctorId }) => {
   } = doctor;
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={3}>Thông tin bác sĩ</Title>
-      <div style={{ display: "flex", gap: 24 }}>
-        <img
-          src={img}
-          alt="doctor"
-          style={{ width: 160, height: 160, borderRadius: "50%", objectFit: "cover" }}
-        />
-        <div>
-          <Title level={4}>{full_Name}</Title>
-          <Text>{mail}</Text>
-          <br />
-          <Text>{phone}</Text>
-          <br />
-          <Rate disabled defaultValue={avgStar} />
+    <Layout>
+      <Header />
+      <div style={{ padding: "40px 0", backgroundColor: token.colorBgBase }}>
+        <Title level={3}>Thông tin bác sĩ</Title>
+        <div style={{ display: "flex", gap: 24 }}>
+          <img
+            src={img}
+            alt="doctor"
+            style={{
+              width: 160,
+              height: 160,
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
+          />
+          <div>
+            <Title level={4}>{full_Name}</Title>
+            <Text>{mail}</Text>
+            <br />
+            <Text>{phone}</Text>
+            <br />
+            <Rate disabled defaultValue={avgStar} />
+          </div>
         </div>
-      </div>
 
-      <Divider />
-      <div>
-        <p><b>Giới tính:</b> {gender}</p>
-        <p><b>Năm sinh:</b> {dayjs(yob).format("DD/MM/YYYY")}</p>
-        <p><b>Trình độ:</b> <Tag color="blue">{edu_LevelName}</Tag></p>
-        <p><b>Kinh nghiệm làm việc:</b> {experience} năm</p>
-        {certificates.length > 0 && (
-          <p><b>Chứng chỉ:</b> <Space wrap>{certificates.map((cer, idx) => (<Tag key={idx}>{cer}</Tag>))}</Space></p>
+        <Divider />
+        <div>
+          <p>
+            <b>Giới tính:</b> {gender}
+          </p>
+          <p>
+            <b>Năm sinh:</b> {dayjs(yob).format("DD/MM/YYYY")}
+          </p>
+          <p>
+            <b>Trình độ:</b> <Tag color="blue">{edu_LevelName}</Tag>
+          </p>
+          <p>
+            <b>Kinh nghiệm làm việc:</b> {experience} năm
+          </p>
+          {certificates.length > 0 && (
+            <p>
+              <b>Chứng chỉ:</b>{" "}
+              <Space wrap>
+                {certificates.map((cer, idx) => (
+                  <Tag key={idx}>{cer}</Tag>
+                ))}
+              </Space>
+            </p>
+          )}
+        </div>
+
+        <Divider />
+        <Title level={4}>Lịch làm việc trong tuần</Title>
+        <WorkSchedule doctorId={doctorId} />
+
+        <Divider />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Title level={4}>Đánh giá từ bệnh nhân</Title>
+          <Select
+            allowClear
+            placeholder="Lọc theo số sao"
+            value={selectedStar}
+            onChange={handleStarFilter}
+            style={{ width: 160 }}
+          >
+            {[5, 4, 3, 2, 1].map((s) => (
+              <Option key={s} value={s}>
+                {s} sao
+              </Option>
+            ))}
+          </Select>
+        </div>
+
+        {paginatedFeedbacks.map((fb) => (
+          <FeedbackCard key={fb.fb_ID} data={fb} />
+        ))}
+
+        {filteredFeedbacks.length > pageSize && (
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredFeedbacks.length}
+              onChange={(page) => setCurrentPage(page)}
+              showSizeChanger={false}
+            />
+          </div>
         )}
       </div>
-
-      <Divider />
-      <Title level={4}>Lịch làm việc trong tuần</Title>
-      <WorkSchedule doctorId={doctorId} />
-
-      <Divider />
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title level={4}>Đánh giá từ bệnh nhân</Title>
-        <Select
-          allowClear
-          placeholder="Lọc theo số sao"
-          value={selectedStar}
-          onChange={handleStarFilter}
-          style={{ width: 160 }}
-        >
-          {[5, 4, 3, 2, 1].map((s) => (
-            <Option key={s} value={s}>{s} sao</Option>
-          ))}
-        </Select>
-      </div>
-
-      {paginatedFeedbacks.map((fb) => (
-        <FeedbackCard key={fb.fb_ID} data={fb} />
-      ))}
-
-      {filteredFeedbacks.length > pageSize && (
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={filteredFeedbacks.length}
-            onChange={(page) => setCurrentPage(page)}
-            showSizeChanger={false}
-          />
-        </div>
-      )}
-    </div>
+      <Footer />
+    </Layout>
   );
 };
 

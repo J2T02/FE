@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Button, message, Segmented, Typography, Space } from "antd";
+import {
+  Calendar,
+  Button,
+  message,
+  Segmented,
+  Typography,
+  Space,
+  Layout,
+} from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import dayjs from "dayjs";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -125,30 +135,34 @@ const UpdateScheduleInBooking = ({ bookingId = 123, doctorId = 1, onBack }) => {
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <Title level={4}>Cập nhật lịch khám</Title>
+    <Layout>
+      <Header />
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 0" }}>
+        <Title level={4}>Cập nhật lịch khám</Title>
 
-      <Calendar
-        fullscreen={false}
-        onSelect={handleDateSelect}
-        disabledDate={disabledDate}
-      />
+        <Calendar
+          fullscreen={false}
+          onSelect={handleDateSelect}
+          disabledDate={disabledDate}
+        />
 
-      {renderSlotSelector()}
+        {renderSlotSelector()}
 
-      <Space style={{ marginTop: 32 }}>
-        <Button type="primary" onClick={onBack}>
-          Quay lại
-        </Button>
-        <Button
-          type="primary"
-          disabled={!selectedDate || !selectedSlot}
-          onClick={handleSubmit}
-        >
-          Đổi lịch
-        </Button>
-      </Space>
-    </div>
+        <Space style={{ marginTop: 32 }}>
+          <Button type="primary" onClick={() => navigate(-1)}>
+            Quay lại
+          </Button>
+          <Button
+            type="primary"
+            disabled={!selectedDate || !selectedSlot}
+            onClick={handleSubmit}
+          >
+            Đổi lịch
+          </Button>
+        </Space>
+      </div>
+      <Footer />
+    </Layout>
   );
 };
 

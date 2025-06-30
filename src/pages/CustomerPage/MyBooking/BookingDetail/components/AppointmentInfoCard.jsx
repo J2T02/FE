@@ -11,7 +11,7 @@ export default function AppointmentInfoCard({ data, docId }) {
       state: { bookingData: data, docId: docId },
     });
   };
-  console.log(data);
+
   return (
     <Card
       title={

@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Card, Radio, Typography, Space, Button, message, Tooltip } from "antd";
+import {
+  Card,
+  Radio,
+  Typography,
+  Space,
+  Button,
+  message,
+  Tooltip,
+  Layout,
+} from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -68,83 +79,93 @@ const UpdateDoctorInBooking = ({ bookingId, currentDoctorId, onBack }) => {
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        <Title level={3}>Chọn bác sĩ bạn muốn đổi</Title>
+    <Layout>
+      <Header />
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 0" }}>
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          <Title level={3}>Chọn bác sĩ bạn muốn đổi</Title>
 
-        <Radio.Group
-          onChange={(e) => handleRadioChange(e.target.value)}
-          value={selectedDoctor}
-          style={{ width: "100%" }}
-        >
-          <Space direction="vertical" style={{ width: "100%" }}>
-            {doctors.map((doc) => (
-              <Card
-                key={doc.docId}
-                title={
-                  <Space>
-                    {doc.doctorName}
-                    <Tooltip title="Xem chi tiết bác sĩ">
-                      <InfoCircleOutlined
-                        onClick={() => navigate(`/doctor-detail/${doc.docId}`)}
-                        style={{ marginLeft: 4, cursor: "pointer" }}
-                      />
-                    </Tooltip>
-                  </Space>
-                }
-                extra={<Radio value={doc.docId} />}
-                style={{
-                  backgroundColor:
-                    selectedDoctor === doc.docId ? "#e6f7ff" : "#fff",
-                  border:
-                    selectedDoctor === doc.docId
-                      ? "1px solid #1890ff"
-                      : undefined,
-                }}
-              >
-                <Text>
-                  <b>Giới tính:</b> {doc.gender}
-                </Text>
-                <br />
-                <Text>
-                  <b>Năm sinh:</b> {doc.yob}
-                </Text>
-                <br />
-                <Text>
-                  <b>Kinh nghiệm:</b> {doc.experience} năm
-                </Text>
-                <br />
-                <Text>
-                  <b>Email:</b> {doc.mail}
-                </Text>
-                <br />
-                <Text>
-                  <b>Số điện thoại:</b> {doc.phone}
-                </Text>
-              </Card>
-            ))}
-          </Space>
-        </Radio.Group>
-
-        <div style={{ marginTop: 24, textAlign: "right", padding: 30 }}>
-          <Button type="primary" onClick={onBack} style={{ marginRight: 8 }}>
-            Hủy
-          </Button>
-          <Button
-            type="primary"
-            onClick={handleUpdateDoctor}
-            loading={submitting}
-            disabled={
-              !selectedDoctor ||
-              selectedDoctor === currentDoctorId ||
-              submitting
-            }
+          <Radio.Group
+            onChange={(e) => handleRadioChange(e.target.value)}
+            value={selectedDoctor}
+            style={{ width: "100%" }}
           >
-            Xác nhận thay đổi
-          </Button>
-        </div>
-      </Space>
-    </div>
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {doctors.map((doc) => (
+                <Card
+                  key={doc.docId}
+                  title={
+                    <Space>
+                      {doc.doctorName}
+                      <Tooltip title="Xem chi tiết bác sĩ">
+                        <InfoCircleOutlined
+                          onClick={() =>
+                            navigate(`/doctor-detail/${doc.docId}`)
+                          }
+                          style={{ marginLeft: 4, cursor: "pointer" }}
+                        />
+                      </Tooltip>
+                    </Space>
+                  }
+                  extra={<Radio value={doc.docId} />}
+                  style={{
+                    backgroundColor:
+                      selectedDoctor === doc.docId ? "#e6f7ff" : "#fff",
+                    border:
+                      selectedDoctor === doc.docId
+                        ? "1px solid #1890ff"
+                        : undefined,
+                  }}
+                >
+                  <Text>
+                    <b>Giới tính:</b> {doc.gender}
+                  </Text>
+                  <br />
+                  <Text>
+                    <b>Năm sinh:</b> {doc.yob}
+                  </Text>
+                  <br />
+                  <Text>
+                    <b>Kinh nghiệm:</b> {doc.experience} năm
+                  </Text>
+                  <br />
+                  <Text>
+                    <b>Email:</b> {doc.mail}
+                  </Text>
+                  <br />
+                  <Text>
+                    <b>Số điện thoại:</b> {doc.phone}
+                  </Text>
+                </Card>
+              ))}
+            </Space>
+          </Radio.Group>
+
+          <div style={{ marginTop: 24, textAlign: "right", padding: 30 }}>
+            <Button
+              type="primary"
+              onClick={() => navigate(-1)}
+              style={{ marginRight: 8 }}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleUpdateDoctor}
+              loading={submitting}
+              disabled={
+                !selectedDoctor ||
+                selectedDoctor === currentDoctorId ||
+                submitting
+              }
+            >
+              Xác nhận thay đổi
+            </Button>
+          </div>
+        </Space>
+      </div>
+      <Footer />
+    </Layout>
   );
 };
 
