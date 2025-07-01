@@ -1,62 +1,179 @@
 import React from "react";
-import { Card, Typography, Button, Space } from "antd";
+import { Card, Typography, Button, Space, Descriptions, Divider, Spin } from "antd";
+import { UserOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, EditOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const { Title, Text, Paragraph } = Typography;
 
-const ConfirmBooking = ({ data, onSubmit, onRestart }) => {
-  console.log(data);
+const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loading }) => {
+  const formatDate = (dateStr) => {
+    return dayjs(dateStr).format("DD/MM/YYYY");
+  };
+
+  const formatTime = (timeStr) => {
+    return timeStr?.substring(0, 5) || "";
+  };
+
+  const getSlotText = () => {
+    if (data.slotStart && data.slotEnd) {
+      return `${formatTime(data.slotStart)} - ${formatTime(data.slotEnd)}`;
+    }
+    return data.slot === 1 ? "08:00 - 12:00" : "13:00 - 17:00";
+  };
+
+  const getDoctorName = () => {
+    return data.doctorName || "Không chọn bác sĩ cụ thể";
+  };
+
   return (
     <Card>
-      <Title level={4}>Xác nhận lịch hẹn</Title>
-      <Paragraph>
-        {data.date ? (
-          <>
-            <Text strong>Ngày:</Text> {data.date} <br />
-          </>
-        ) : null}
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <div style={{ textAlign: 'center' }}>
+          <Title level={3}>
+            <FileTextOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+            Xác nhận lịch hẹn
+          </Title>
+          <Text type="secondary">
+            Vui lòng kiểm tra lại thông tin trước khi xác nhận
+          </Text>
+        </div>
 
-        {data.slotStart && data.slotEnd ? (
-          <>
-            <Text strong>Khung giờ:</Text> {data.slotStart} - {data.slotEnd}{" "}
-            <br />
-          </>
-        ) : null}
+        <Divider />
 
-        {data.doctorId !== undefined && data.doctorId !== null ? (
-          <>
-            <Text strong>Bác sĩ:</Text> {data.doctorName || `#${data.doctorId}`}{" "}
-            <br />
-          </>
-        ) : null}
+        <Descriptions 
+          title="Thông tin lịch hẹn" 
+          bordered 
+          column={1}
+          size="middle"
+        >
+          <Descriptions.Item 
+            label={
+              <Space>
+                <CalendarOutlined />
+                <Text strong>Ngày khám</Text>
+              </Space>
+            }
+          >
+            <Text>{formatDate(data.date)}</Text>
+          </Descriptions.Item>
 
-        {data.wifeName || data.wifeDob ? (
-          <>
-            <Text strong>Vợ:</Text> {data.wifeName || ""}{" "}
-            {data.wifeDob ? `(${data.wifeDob})` : ""} <br />
-          </>
-        ) : null}
+          <Descriptions.Item 
+            label={
+              <Space>
+                <ClockCircleOutlined />
+                <Text strong>Khung giờ</Text>
+              </Space>
+            }
+          >
+            <Text>{getSlotText()}</Text>
+          </Descriptions.Item>
 
-        {data.husbandName || data.husbandDob ? (
-          <>
-            <Text strong>Chồng:</Text> {data.husbandName || ""}{" "}
-            {data.husbandDob ? `(${data.husbandDob})` : ""} <br />
-          </>
-        ) : null}
+          <Descriptions.Item 
+            label={
+              <Space>
+                <UserOutlined />
+                <Text strong>Bác sĩ</Text>
+              </Space>
+            }
+          >
+            <Text>{getDoctorName()}</Text>
+          </Descriptions.Item>
+        </Descriptions>
 
-        {data.notes && data.notes.trim() !== "" ? (
+        {(data.wifeName || data.husName) && (
           <>
-            <Text strong>Ghi chú:</Text> {data.notes} <br />
-          </>
-        ) : null}
-      </Paragraph>
+            <Divider />
+            <Descriptions 
+              title="Thông tin bệnh nhân" 
+              bordered 
+              column={1}
+              size="middle"
+            >
+              {data.wifeName && (
+                <Descriptions.Item label="Tên vợ">
+                  <Text>{data.wifeName}</Text>
+                  {data.wifeYob && (
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      (Sinh năm: {dayjs(data.wifeYob).format("YYYY")})
+                    </Text>
+                  )}
+                </Descriptions.Item>
+              )}
 
-      <Space>
-        <Button type="primary" onClick={onRestart}>
-          Chỉnh sửa
-        </Button>
-        <Button type="primary" onClick={onSubmit}>
-          Xác nhận
-        </Button>
+              {data.husName && (
+                <Descriptions.Item label="Tên chồng">
+                  <Text>{data.husName}</Text>
+                  {data.husYob && (
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      (Sinh năm: {dayjs(data.husYob).format("YYYY")})
+                    </Text>
+                  )}
+                </Descriptions.Item>
+              )}
+            </Descriptions>
+          </>
+        )}
+
+        {data.notes && data.notes.trim() !== "" && (
+          <>
+            <Divider />
+            <Card size="small" title="Ghi chú">
+              <Paragraph style={{ margin: 0 }}>
+                {data.notes}
+              </Paragraph>
+            </Card>
+          </>
+        )}
+
+        <Divider />
+
+        <div style={{ textAlign: "center" }}>
+          <Space size="large">
+            <Button 
+              type="primary" 
+              onClick={onSubmit}
+              size="large"
+              loading={loading}
+              style={{ minWidth: 140 }}
+            >
+              {loading ? "Đang xử lý..." : "Xác nhận đặt lịch"}
+            </Button>
+            
+            <Button 
+              type="default" 
+              onClick={onRestart}
+              size="large"
+              icon={<EditOutlined />}
+              style={{ 
+                minWidth: 120,
+                borderColor: '#1890ff',
+                color: '#1890ff',
+                fontWeight: 500
+              }}
+            >
+              Chỉnh sửa
+            </Button>
+            
+            {!disablePrev && (
+              <Button 
+                type="text" 
+                onClick={onPrev}
+                size="large"
+              >
+                Quay lại
+              </Button>
+            )}
+          </Space>
+        </div>
+
+        {loading && (
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <Spin size="small" />
+            <Text type="secondary" style={{ marginLeft: 8 }}>
+              Đang tạo lịch hẹn...
+            </Text>
+          </div>
+        )}
       </Space>
     </Card>
   );

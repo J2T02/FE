@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Radio, Typography, Card, Button, message } from "antd";
+import { Calendar, Radio, Typography, Card, Button, message, Spin, Alert, Space, Row, Col } from "antd";
 import dayjs from "dayjs";
 import { GetSchedule } from "../../../apis/bookingService";
+import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
-const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
+const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, loading }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSchedules, setAvailableSchedules] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState(null);
 
   useEffect(() => {
     if (data?.date) {
       setSelectedDate(dayjs(data.date));
     }
     if (data?.slot) {
-      if (data.doctorId) {
-        setSelectedSlot(data.slot); // Nếu có bác sĩ thì là slotId
-      } else {
-        setSelectedSlot(data.slot === 1 ? "morning" : "afternoon");
-      }
+      setSelectedSlot(data.slot);
     }
   }, [data]);
 
@@ -27,17 +26,27 @@ const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
     const fetchSchedule = async () => {
       if (!data?.doctorId) {
         setAvailableSchedules([]);
+        setScheduleError(null);
         return;
       }
+
+      setScheduleLoading(true);
+      setScheduleError(null);
 
       try {
         const res = await GetSchedule(data.doctorId);
         const schedules = Array.isArray(res.data.data) ? res.data.data : [];
         setAvailableSchedules(schedules);
+        
+        if (schedules.length === 0) {
+          setScheduleError("Bác sĩ này chưa có lịch khám trong thời gian tới.");
+        }
       } catch (error) {
         console.error("Lỗi khi tải lịch khám:", error);
-        message.error("Không thể tải lịch khám.");
+        setScheduleError("Không thể tải lịch khám của bác sĩ.");
         setAvailableSchedules([]);
+      } finally {
+        setScheduleLoading(false);
       }
     };
 
@@ -49,6 +58,7 @@ const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
       const dateStr = selectedDate.format("YYYY-MM-DD");
 
       if (!data?.doctorId) {
+        // Không chọn bác sĩ - sử dụng slot cố định
         let slotStart = "", slotEnd = "", slotId = null;
         if (selectedSlot === "morning") {
           slotStart = "08:00:00";
@@ -67,6 +77,7 @@ const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
           slotEnd,
         });
       } else {
+        // Có chọn bác sĩ - sử dụng lịch cụ thể
         const selectedSlotInfo = getSlotsForSelectedDate().find(
           (item) => item.slot.slotId === selectedSlot
         );
@@ -81,7 +92,7 @@ const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
         }
       }
     }
-  }, [selectedDate, selectedSlot]);
+  }, [selectedDate, selectedSlot, data?.doctorId, onUpdate]);
 
   const getSlotsForSelectedDate = () => {
     const dateStr = selectedDate?.format("YYYY-MM-DD");
@@ -89,66 +100,189 @@ const Schedule = ({ data, onUpdate, onNext, onPrev }) => {
   };
 
   const disabledDate = (current) => {
-    if (!data?.doctorId) return false;
-    const allDates = availableSchedules.map((s) => s.workDate);
-    return !allDates.includes(current.format("YYYY-MM-DD"));
+    // Không cho phép chọn ngày trong quá khứ
+    if (current && current < dayjs().startOf('day')) {
+      return true;
+    }
+
+    // Nếu có chọn bác sĩ, chỉ cho phép chọn ngày có lịch
+    if (data?.doctorId) {
+      const allDates = availableSchedules.map((s) => s.workDate);
+      return !allDates.includes(current.format("YYYY-MM-DD"));
+    }
+
+    return false;
+  };
+
+  const getSelectedDoctorName = () => {
+    if (!data?.doctorId) return null;
+    const doctor = doctors.find(d => d.docId === data.doctorId);
+    return doctor?.accountInfo?.fullName || `Bác sĩ #${data.doctorId}`;
+  };
+
+  const handleDateSelect = (date) => {
+    // Kiểm tra xem ngày có hợp lệ không
+    if (date && date < dayjs().startOf('day')) {
+      message.warning("Không thể chọn ngày trong quá khứ.");
+      return;
+    }
+    
+    setSelectedDate(date);
+    setSelectedSlot(null);
+  };
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot);
+  };
+
+  const handleNext = () => {
+    if (!selectedDate || !selectedSlot) {
+      return message.warning("Vui lòng chọn ngày và ca khám.");
+    }
+
+    // Kiểm tra lại ngày trước khi tiếp tục
+    if (selectedDate && selectedDate < dayjs().startOf('day')) {
+      return message.error("Không thể đặt lịch cho ngày trong quá khứ.");
+    }
+
+    onNext();
   };
 
   return (
     <Card>
-      <Title level={4}>Chọn ngày khám</Title>
-      <Calendar
-        fullscreen={false}
-        value={selectedDate || dayjs()}
-        onSelect={(date) => {
-          setSelectedDate(date);
-          setSelectedSlot(null);
-        }}
-        disabledDate={disabledDate}
-      />
-
-      {selectedDate && (
-        <>
-          <Text style={{ display: "block", marginTop: 12 }}>Chọn khung giờ:</Text>
-          <Radio.Group
-            onChange={(e) => setSelectedSlot(e.target.value)}
-            value={selectedSlot}
-            style={{ marginTop: 8 }}
-          >
-            {data?.doctorId
-              ? getSlotsForSelectedDate().map((item) => (
-                  <Radio.Button key={item.dsId} value={item.slot.slotId}>
-                    {item.slot.slotStart} - {item.slot.slotEnd}
-                  </Radio.Button>
-                ))
-              : [
-                  <Radio.Button key="morning" value="morning">
-                    08:00 - 12:00
-                  </Radio.Button>,
-                  <Radio.Button key="afternoon" value="afternoon">
-                    13:00 - 17:00
-                  </Radio.Button>,
-                ]}
-          </Radio.Group>
-
-          <div style={{ marginTop: 24, textAlign: "right" }}>
-            <Button type="primary" onClick={onPrev} style={{ marginRight: 8 }}>
-              Quay lại
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => {
-                if (!selectedDate || !selectedSlot) {
-                  return message.warning("Vui lòng chọn ngày và ca khám.");
-                }
-                onNext();
-              }}
-            >
-              Tiếp theo
-            </Button>
+      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        <div>
+          <Title level={4}>
+            <CalendarOutlined style={{ marginRight: 8 }} />
+            Chọn ngày khám
+          </Title>
+          {data?.doctorId && (
+            <Text type="secondary">
+              Đang xem lịch của: <Text strong>{getSelectedDoctorName()}</Text>
+            </Text>
+          )}
+          <div style={{ marginTop: 8 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              ⚠️ Không thể đặt lịch cho ngày trong quá khứ
+            </Text>
           </div>
-        </>
-      )}
+        </div>
+
+        <Row gutter={24}>
+          <Col span={16}>
+            <Calendar
+              fullscreen={false}
+              value={selectedDate || dayjs()}
+              onSelect={handleDateSelect}
+              disabledDate={disabledDate}
+            />
+          </Col>
+          
+          <Col span={8}>
+            <Card title="Khung giờ khả dụng" size="small">
+              {scheduleLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Spin size="small" tip="Đang tải..." />
+                </div>
+              ) : scheduleError ? (
+                <Alert
+                  message="Lỗi"
+                  description={scheduleError}
+                  type="warning"
+                  showIcon
+                  size="small"
+                />
+              ) : selectedDate ? (
+                <div>
+                  <Text style={{ display: "block", marginBottom: 12 }}>
+                    Ngày: <Text strong>{selectedDate.format("DD/MM/YYYY")}</Text>
+                  </Text>
+                  
+                  <Radio.Group
+                    onChange={(e) => handleSlotSelect(e.target.value)}
+                    value={selectedSlot}
+                    style={{ width: "100%" }}
+                  >
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      {data?.doctorId
+                        ? getSlotsForSelectedDate().map((item) => (
+                            <Radio.Button 
+                              key={item.dsId} 
+                              value={item.slot.slotId}
+                              style={{ width: "100%", textAlign: "center" }}
+                            >
+                              <ClockCircleOutlined style={{ marginRight: 4 }} />
+                              {item.slot.slotStart} - {item.slot.slotEnd}
+                            </Radio.Button>
+                          ))
+                        : [
+                            <Radio.Button 
+                              key="morning" 
+                              value="morning"
+                              style={{ width: "100%", textAlign: "center" }}
+                            >
+                              <ClockCircleOutlined style={{ marginRight: 4 }} />
+                              08:00 - 12:00
+                            </Radio.Button>,
+                            <Radio.Button 
+                              key="afternoon" 
+                              value="afternoon"
+                              style={{ width: "100%", textAlign: "center" }}
+                            >
+                              <ClockCircleOutlined style={{ marginRight: 4 }} />
+                              13:00 - 17:00
+                            </Radio.Button>,
+                          ]}
+                    </Space>
+                  </Radio.Group>
+
+                  {data?.doctorId && getSlotsForSelectedDate().length === 0 && (
+                    <Alert
+                      message="Không có lịch"
+                      description="Bác sĩ không có lịch khám vào ngày này"
+                      type="info"
+                      showIcon
+                      size="small"
+                      style={{ marginTop: 12 }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+                  <CalendarOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+                  <br />
+                  <Text>Vui lòng chọn ngày</Text>
+                </div>
+              )}
+            </Card>
+          </Col>
+        </Row>
+
+        {selectedDate && selectedSlot && (
+          <Card size="small" style={{ backgroundColor: '#f6ffed', borderColor: '#b7eb8f' }}>
+            <Paragraph style={{ margin: 0 }}>
+              <Text strong>Đã chọn:</Text> {selectedDate.format("DD/MM/YYYY")} - 
+              {data?.doctorId 
+                ? ` ${getSlotsForSelectedDate().find(s => s.slot.slotId === selectedSlot)?.slot.slotStart} - ${getSlotsForSelectedDate().find(s => s.slot.slotId === selectedSlot)?.slot.slotEnd}`
+                : ` ${selectedSlot === 'morning' ? '08:00 - 12:00' : '13:00 - 17:00'}`
+              }
+            </Paragraph>
+          </Card>
+        )}
+
+        <div style={{ textAlign: "right" }}>
+          <Button type="primary" onClick={onPrev} style={{ marginRight: 8 }}>
+            Quay lại
+          </Button>
+          <Button
+            type="primary"
+            onClick={handleNext}
+            disabled={!selectedDate || !selectedSlot}
+          >
+            Tiếp theo
+          </Button>
+        </div>
+      </Space>
     </Card>
   );
 };
