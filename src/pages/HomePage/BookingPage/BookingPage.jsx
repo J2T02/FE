@@ -24,8 +24,7 @@ const BookingPage = () => {
         const customerData = res?.data?.data;
 
         if (customerData) {
-          if (customerData.husName) {
-            message.success("skip nef");
+          if (customerData.husName && customerData.wifeName) {
             setShowCustomerInfo(false);
           }
           setBookingData((prev) => ({ ...prev, ...customerData }));

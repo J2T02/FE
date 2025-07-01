@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Space, Button, message } from "antd";
+import { Form, Row, Col, Button, message, Card } from "antd";
 import DoctorSelect from "./DoctorSelect";
 import WorkDateRadioGroup from "./WorkDateRadioGroup";
 import SlotRadioGroup from "./SlotRadioGroup";
@@ -50,28 +50,38 @@ const NewBookingForm = ({ doctors, bookingId }) => {
     };
 
     console.log("Payload gửi cập nhật:", payload);
-    message.success("cập nhật thành công.");
+    message.success("Cập nhật thành công.");
   };
 
   return (
     <Form layout="vertical">
-      <DoctorSelect
-        doctors={doctors}
-        value={selectedDoctorId}
-        onChange={setSelectedDoctorId}
-      />
-      <WorkDateRadioGroup
-        dates={availableDates}
-        selectedDate={selectedDate}
-        onChange={setSelectedDate}
-      />
-      <SlotRadioGroup
-        slots={availableSlots}
-        selectedSlot={selectedSlot}
-        onChange={setSelectedSlot}
-      />
+      <Card title="Thông tin mới" style={{ marginBottom: 24 }}>
+        <Row gutter={24}>
+          <Col span={12}>
+            <DoctorSelect
+              doctors={doctors}
+              value={selectedDoctorId}
+              onChange={setSelectedDoctorId}
+            />
+          </Col>
+          <Col span={12}>
+            <WorkDateRadioGroup
+              dates={availableDates}
+              selectedDate={selectedDate}
+              onChange={setSelectedDate}
+            />
+            <SlotRadioGroup
+              slots={availableSlots}
+              selectedSlot={selectedSlot}
+              onChange={setSelectedSlot}
+            />
+          </Col>
+        </Row>
+      </Card>
 
-      <Form.Item>
+      <Form.Item
+        style={{ display: "flex", justifyContent: "end", marginRight: 20 }}
+      >
         <Button
           type="primary"
           onClick={() => navigate(-1)}

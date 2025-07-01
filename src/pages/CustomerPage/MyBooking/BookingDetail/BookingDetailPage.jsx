@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Layout, Row, Col, Space, Spin, message } from "antd";
-
+import { Layout, Row, Col, Space, Spin, message, theme } from "antd";
+import Header from "~components/header/Header";
+import Footer from "~components/footer/Footer";
 import BackButton from "./components/BackButton";
 import BookingHeader from "./components/BookingHeader";
 import BookingOverviewCard from "./components/BookingOverviewCard";
@@ -58,7 +59,7 @@ const sampleBookingData = {
 export default function BookingDetailPage() {
   const { id } = useParams();
   const bookingId = parseInt(id);
-
+  const { token } = theme.useToken();
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
 
@@ -81,8 +82,11 @@ export default function BookingDetailPage() {
   if (loading || !bookingData) return <Spin fullscreen />;
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
-      <Content style={{ padding: 24 }}>
+    <Layout
+      style={{ minHeight: "100vh", backgroundColor: token.colorBgContainer }}
+    >
+      <Header />
+      <Content style={{ padding: 24, backgroundColor: token.colorBgLayout }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <BackButton />
           <BookingHeader data={bookingData} />
@@ -111,6 +115,7 @@ export default function BookingDetailPage() {
           </Row>
         </Space>
       </Content>
+      <Footer />
     </Layout>
   );
 }

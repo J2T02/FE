@@ -2,7 +2,7 @@ import { Form, Radio } from "antd";
 
 const SlotRadioGroup = ({ slots, selectedSlot, onChange }) => {
   return (
-    <Form.Item label="Chọn ca làm">
+    <Form.Item label="Chọn khung giờ">
       <Radio.Group
         value={selectedSlot}
         onChange={(e) => onChange(e.target.value)}
@@ -10,7 +10,11 @@ const SlotRadioGroup = ({ slots, selectedSlot, onChange }) => {
         buttonStyle="solid"
       >
         {slots.map((s) => (
-          <Radio.Button key={s.slot.slotId} value={s.slot.slotId}>
+          <Radio.Button
+            key={s.slot.slotId}
+            value={s.slot.slotId}
+            style={{ marginRight: 8 }}
+          >
             {s.slot.slotStart} - {s.slot.slotEnd}
           </Radio.Button>
         ))}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Typography,
   Divider,
@@ -15,45 +15,35 @@ import {
   theme,
 } from "antd";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
+import { FiPhoneCall } from "react-icons/fi";
 import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
 import dayjs from "dayjs";
 import axios from "axios";
+import { updateCustomer } from "../../../apis/CustomerService";
+import { GetCustomerInfo, BookingHistory } from "../../../apis/bookingService";
+import Cookies from "js-cookie";
+import { StoreContext } from "../../../contexts/StoreProvider";
 
 const { Title, Text } = Typography;
 
-const CustomerDetail = ({ accountId }) => {
+const CustomerDetail = () => {
+  const accountId = Cookies.get("accId");
+  const { userInfo } = useContext(StoreContext);
   const { token } = theme.useToken();
-  const [account, setAccount] = useState({
-    acc_ID: 1,
-    role_ID: 2,
-    full_Name: "Nguyễn Văn Nam",
-    password: "hashed_password",
-    phone: "0909123456",
-    mail: "nam.nguyen@example.com",
-    isActive: true,
-    createAt: "2020-01-15T08:30:00",
-    img: "https://randomuser.me/api/portraits/men/32.jpg",
-  });
+  const account = userInfo;
 
-  const [customer, setCustomer] = useState({
-    cus_ID: 1,
-    acc_ID: 1,
-    hus_Name: "Nguyễn Văn Nam",
-    wife_Name: "Trần Thị Hồng",
-    hus_YOB: "1990-04-20",
-    wife_YOB: "1992-08-05",
-  });
+  const [customer, setCustomer] = useState({});
 
   const [isEditing, setIsEditing] = useState(false);
   const [editCustomer, setEditCustomer] = useState({});
   const [bookings, setBookings] = useState([
     {
-      booking_ID: 1001,
+      bookingId: 1001,
       acc_ID: 1,
       doc_ID: 5,
       ds_ID: 301,
-      statusText: "Đã xác nhận",
+      status: "Đã xác nhận",
       create_At: "2025-06-10T09:00:00",
       note: "Tái khám",
       doctorSchedule: {
@@ -65,11 +55,11 @@ const CustomerDetail = ({ accountId }) => {
       },
     },
     {
-      booking_ID: 1002,
+      bookingId: 1002,
       acc_ID: 1,
       doc_ID: 2,
       ds_ID: 302,
-      statusText: "Đang chờ",
+      status: "Đang chờ",
       create_At: "2025-06-22T14:00:00",
       note: "Khám hiếm muộn",
       doctorSchedule: {
@@ -83,14 +73,14 @@ const CustomerDetail = ({ accountId }) => {
   ]);
   const [treatmentPlans, setTreatmentPlans] = useState([
     {
-      tp_ID: 5001,
+      tpId: 5001,
       startDate: "2025-04-01",
       endDate: null,
       result: null,
-      statusText: "Đang thực hiện",
-      service: {
-        ser_ID: 3,
-        ser_Name: "Thụ tinh trong ống nghiệm (IVF)",
+      status: "Đang thực hiện",
+      serviceInfo: {
+        serId: 3,
+        serName: "Thụ tinh trong ống nghiệm (IVF)",
         price: 25000000,
         description: "Quy trình IVF cơ bản",
         file_Path: "",
@@ -100,14 +90,14 @@ const CustomerDetail = ({ accountId }) => {
       },
     },
     {
-      tp_ID: 5002,
+      tpId: 5002,
       startDate: "2025-01-15",
       endDate: "2025-04-01",
       result: "Thành công",
-      statusText: "Đã hoàn thành",
-      service: {
-        ser_ID: 2,
-        ser_Name: "Khám hiếm muộn",
+      status: "Đã hoàn thành",
+      serviceInfo: {
+        serId: 2,
+        serName: "Khám hiếm muộn",
         price: 500000,
         description: "Khám chẩn đoán nguyên nhân hiếm muộn",
         file_Path: "",
@@ -125,54 +115,84 @@ const CustomerDetail = ({ accountId }) => {
   }, [accountId]);
 
   const fetchProfile = async () => {
-    try {
-      const resAcc = await axios.get(`/api/accounts/${accountId}`);
-      setAccount(resAcc.data);
+    await GetCustomerInfo(accountId)
+      .then((res) => {
+        if (res.data.success) {
+          setCustomer(res.data.data);
 
-      const resCus = await axios.get(`/api/customers/by-account/${accountId}`);
-      setCustomer(resCus.data);
-      setEditCustomer(resCus.data);
-    } catch (err) {
-      message.error("Không thể tải thông tin khách hàng.");
-    }
+          setEditCustomer(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("không tìm thấy thông tin khách hàng!");
+      });
   };
 
   const fetchBookings = async () => {
-    const res = await axios.get(`/api/bookings/recent/${accountId}`);
-    setBookings(res.data);
+    await BookingHistory(accountId)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    // setBookings(res.data);
   };
 
   const fetchTreatmentPlans = async () => {
-    const res = await axios.get(`/api/treatmentplans/recent/${accountId}`);
-    setTreatmentPlans(res.data);
+    // const res = await axios.get(`/api/treatmentplans/recent/${accountId}`);
+    // setTreatmentPlans(res.data);
   };
 
   const handleSave = async () => {
-    try {
-      await axios.put(`/api/customers/${customer.cus_ID}`, {
-        ...editCustomer,
-        hus_YOB: editCustomer.hus_YOB
-          ? dayjs(editCustomer.hus_YOB).format("YYYY-MM-DD")
-          : null,
-        wife_YOB: editCustomer.wife_YOB
-          ? dayjs(editCustomer.wife_YOB).format("YYYY-MM-DD")
-          : null,
-      });
-      message.success("Cập nhật thành công!");
-      setIsEditing(false);
-      fetchProfile();
-    } catch (err) {
-      message.error("Cập nhật thất bại!");
+    console.log(editCustomer);
+    const { husName, wifeName, husYob, wifeYob } = editCustomer;
+    const payload = {
+      husName,
+      wifeName,
+      husYob: dayjs(husYob).format("YYYY-MM-DD"),
+      wifeYob: dayjs(wifeYob).format("YYYY-MM-DD"),
+    };
+    if (accountId) {
+      await updateCustomer(accountId, payload)
+        .then((res) => {
+          if (res.data.success) {
+            message.success(res.data.message);
+            fetchProfile();
+            setIsEditing(false);
+          } else {
+            message.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          message.error("Cập nhật thông tin thất bại!");
+          console.log(err);
+        });
     }
+    // await axios.put(`/api/customers/${customer.cus_ID}`, {
+    //   ...editCustomer,
+    //   husYob: editCustomer.husYob
+    //     ? dayjs(editCustomer.husYob).format("YYYY-MM-DD")
+    //     : null,
+    //   wifeYob: editCustomer.wifeYob
+    //     ? dayjs(editCustomer.wifeYob).format("YYYY-MM-DD")
+    //     : null,
+    // });
+    // message.success("Cập nhật thành công!");
+    // setIsEditing(false);
+    // fetchProfile();
   };
 
-  if (!account || !customer) return <div>Đang tải...</div>;
+  if (!account && !customer) return <div>Đang tải...</div>;
 
   return (
     <Layout>
       <Header />
       <div style={{ padding: "40px 0", backgroundColor: token.colorBgBase }}>
-        <Title level={3}>Thông tin cá nhân</Title>
+        <Title style={{ color: token.colorTextHeading }} level={3}>
+          Thông tin cá nhân
+        </Title>
 
         <div
           style={{
@@ -182,7 +202,7 @@ const CustomerDetail = ({ accountId }) => {
           }}
         >
           <img
-            src={account.img}
+            src={account?.img || "/anhcuong.jpg"}
             alt="avatar"
             style={{
               width: 160,
@@ -197,21 +217,25 @@ const CustomerDetail = ({ accountId }) => {
               level={2}
               style={{
                 marginBottom: 8,
-                color: "#1677ff",
+                color: token.colorText,
                 fontWeight: 700,
                 fontSize: "32px",
               }}
             >
-              {account.full_Name}
+              {account?.fullName}
             </Title>
             <Space direction="vertical">
               <Text>
-                <MailOutlined style={{ marginRight: 8, color: "#1677ff" }} />
-                {account.mail}
+                <MailOutlined
+                  style={{ marginRight: 8, color: token.colorBgSolid }}
+                />
+                {account?.mail}
               </Text>
-              <Text>
-                <PhoneOutlined style={{ marginRight: 8, color: "#1677ff" }} />
-                {account.phone}
+              <Text style={{ display: "flex", alignItems: "center" }}>
+                <FiPhoneCall
+                  style={{ marginRight: 8, color: token.colorBgSolid }}
+                />
+                {account?.phone}
               </Text>
             </Space>
           </div>
@@ -225,13 +249,13 @@ const CustomerDetail = ({ accountId }) => {
             {isEditing ? (
               <Input
                 placeholder="Nhập tên chồng"
-                value={editCustomer.hus_Name || ""}
+                value={editCustomer.husName || ""}
                 onChange={(e) =>
-                  setEditCustomer({ ...editCustomer, hus_Name: e.target.value })
+                  setEditCustomer({ ...editCustomer, husName: e.target.value })
                 }
               />
-            ) : customer.hus_Name ? (
-              customer.hus_Name
+            ) : customer.husName ? (
+              customer.husName
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -240,16 +264,14 @@ const CustomerDetail = ({ accountId }) => {
             {isEditing ? (
               <DatePicker
                 placeholder="Chọn năm sinh"
-                value={
-                  editCustomer.hus_YOB ? dayjs(editCustomer.hus_YOB) : null
-                }
+                value={editCustomer.husYob ? dayjs(editCustomer.husYob) : null}
                 format="DD/MM/YYYY"
                 onChange={(date) =>
-                  setEditCustomer({ ...editCustomer, hus_YOB: date })
+                  setEditCustomer({ ...editCustomer, husYob: date })
                 }
               />
-            ) : customer.hus_YOB ? (
-              dayjs(customer.hus_YOB).format("DD/MM/YYYY")
+            ) : customer.husYob ? (
+              dayjs(customer.husYob).format("DD/MM/YYYY")
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -260,16 +282,16 @@ const CustomerDetail = ({ accountId }) => {
             {isEditing ? (
               <Input
                 placeholder="Nhập tên vợ"
-                value={editCustomer.wife_Name || ""}
+                value={editCustomer.wifeName || ""}
                 onChange={(e) =>
                   setEditCustomer({
                     ...editCustomer,
-                    wife_Name: e.target.value,
+                    wifeName: e.target.value,
                   })
                 }
               />
-            ) : customer.wife_Name ? (
-              customer.wife_Name
+            ) : customer.wifeName ? (
+              customer.wifeName
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -279,15 +301,15 @@ const CustomerDetail = ({ accountId }) => {
               <DatePicker
                 placeholder="Chọn năm sinh"
                 value={
-                  editCustomer.wife_YOB ? dayjs(editCustomer.wife_YOB) : null
+                  editCustomer.wifeYob ? dayjs(editCustomer.wifeYob) : null
                 }
                 format="DD/MM/YYYY"
                 onChange={(date) =>
-                  setEditCustomer({ ...editCustomer, wife_YOB: date })
+                  setEditCustomer({ ...editCustomer, wifeYob: date })
                 }
               />
-            ) : customer.wife_YOB ? (
-              dayjs(customer.wife_YOB).format("DD/MM/YYYY")
+            ) : customer.wifeYob ? (
+              dayjs(customer.wifeYob).format("DD/MM/YYYY")
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -318,7 +340,7 @@ const CustomerDetail = ({ accountId }) => {
             <Title level={5}>Lịch sử đặt khám</Title>
             <Table
               columns={[
-                { title: "Mã booking", dataIndex: "booking_ID" },
+                { title: "Mã booking", dataIndex: "bookingId" },
                 {
                   title: "Ngày",
                   dataIndex: ["doctorSchedule", "workDate"],
@@ -331,12 +353,12 @@ const CustomerDetail = ({ accountId }) => {
                 },
                 {
                   title: "Trạng thái",
-                  dataIndex: "statusText",
+                  dataIndex: "status",
                   render: (text) => <Tag color="blue">{text}</Tag>,
                 },
                 {
                   title: "",
-                  dataIndex: "booking_ID",
+                  dataIndex: "bookingId",
                   render: (id) => (
                     <Button
                       type="link"
@@ -348,7 +370,7 @@ const CustomerDetail = ({ accountId }) => {
                 },
               ]}
               dataSource={bookings}
-              rowKey="booking_ID"
+              rowKey="bookingId"
               pagination={false}
             />
             <div style={{ marginTop: 8, textAlign: "center" }}>
@@ -362,8 +384,8 @@ const CustomerDetail = ({ accountId }) => {
             <Title level={5}>Hồ sơ điều trị</Title>
             <Table
               columns={[
-                { title: "Mã hồ sơ", dataIndex: "tp_ID" },
-                { title: "Dịch vụ", dataIndex: ["service", "ser_Name"] },
+                { title: "Mã hồ sơ", dataIndex: "tpId" },
+                { title: "Dịch vụ", dataIndex: ["serviceInfo", "serName"] },
                 {
                   title: "Giai đoạn hiện tại",
                   dataIndex: "latestStep",
@@ -371,12 +393,12 @@ const CustomerDetail = ({ accountId }) => {
                 },
                 {
                   title: "Trạng thái",
-                  dataIndex: "statusText",
+                  dataIndex: "status",
                   render: (s) => <Tag color="green">{s}</Tag>,
                 },
                 {
                   title: "",
-                  dataIndex: "tp_ID",
+                  dataIndex: "tpId",
                   render: (id) => (
                     <Button
                       type="link"
@@ -388,7 +410,7 @@ const CustomerDetail = ({ accountId }) => {
                 },
               ]}
               dataSource={treatmentPlans}
-              rowKey="tp_ID"
+              rowKey="tpId"
               pagination={false}
             />
             <div style={{ marginTop: 8, textAlign: "center" }}>
