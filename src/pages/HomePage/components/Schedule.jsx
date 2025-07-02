@@ -60,15 +60,15 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
       if (!data?.doctorId) {
         // Không chọn bác sĩ - sử dụng slot cố định
         let slotStart = "", slotEnd = "", slotId = null;
-        if (selectedSlot === "morning") {
-          slotStart = "08:00:00";
-          slotEnd = "12:00:00";
-          slotId = 1;
-        } else if (selectedSlot === "afternoon") {
-          slotStart = "13:00:00";
-          slotEnd = "17:00:00";
-          slotId = 2;
-        }
+        if (selectedSlot === "sang") {
+        slotStart = "08:00:00";
+        slotEnd = "12:00:00";
+        slotId = 1;
+      } else if (selectedSlot === "chieu") {
+        slotStart = "13:00:00";
+        slotEnd = "17:00:00";
+        slotId = 2;
+      }
 
         onUpdate({
           date: dateStr,
@@ -217,16 +217,16 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
                           ))
                         : [
                             <Radio.Button 
-                              key="morning" 
-                              value="morning"
+                              key="sang" 
+                              value="sang"
                               style={{ width: "100%", textAlign: "center" }}
                             >
                               <ClockCircleOutlined style={{ marginRight: 4 }} />
                               08:00 - 12:00
                             </Radio.Button>,
                             <Radio.Button 
-                              key="afternoon" 
-                              value="afternoon"
+                              key="chieu" 
+                              value="chieu"
                               style={{ width: "100%", textAlign: "center" }}
                             >
                               <ClockCircleOutlined style={{ marginRight: 4 }} />
@@ -264,7 +264,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
               <Text strong>Đã chọn:</Text> {selectedDate.format("DD/MM/YYYY")} - 
               {data?.doctorId 
                 ? ` ${getSlotsForSelectedDate().find(s => s.slot.slotId === selectedSlot)?.slot.slotStart} - ${getSlotsForSelectedDate().find(s => s.slot.slotId === selectedSlot)?.slot.slotEnd}`
-                : ` ${selectedSlot === 'morning' ? '08:00 - 12:00' : '13:00 - 17:00'}`
+                : ` ${selectedSlot === 'sang' ? '08:00 - 12:00' : '13:00 - 17:00'}`
               }
             </Paragraph>
           </Card>

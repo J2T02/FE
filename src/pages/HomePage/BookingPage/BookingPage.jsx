@@ -4,8 +4,7 @@ import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 import CustomerInfo from "../components/CustomerInfo";
-import DoctorSelection from "../components/DoctorSelection";
-import Schedule from "../components/Schedule";
+import DoctorScheduleSelection from "../components/DoctorScheduleSelection";
 import ConfirmBooking from "../components/ConfirmBooking";
 import { Booking, GetCustomerInfo, GetAllDoctor } from "../../../apis/bookingService";
 import Cookies from "js-cookie";
@@ -74,10 +73,7 @@ const BookingPage = () => {
           }
         }
         break;
-      case 1: // Doctor Selection
-        // Không bắt buộc chọn bác sĩ
-        break;
-      case 2: // Schedule
+      case 1: // Doctor and Schedule Selection
         if (!bookingData.date || !bookingData.slot) {
           message.warning("Vui lòng chọn đầy đủ ngày và ca khám.");
           return false;
@@ -145,8 +141,7 @@ const BookingPage = () => {
   // Tính toán steps động
   const steps = [
     ...(showCustomerInfo ? ["Thông tin bệnh nhân"] : []),
-    "Chọn bác sĩ",
-    "Chọn lịch trình", 
+    "Chọn bác sĩ và lịch trình",
     "Xác nhận"
   ];
 
@@ -161,18 +156,8 @@ const BookingPage = () => {
         loading={loading}
       />
     ),
-    <DoctorSelection
-      key="DoctorSelection"
-      data={bookingData}
-      doctors={doctors}
-      onUpdate={updateData}
-      onNext={next}
-      onPrev={prev}
-      disablePrev={current === 0}
-      loading={loading}
-    />,
-    <Schedule
-      key="Schedule"
+    <DoctorScheduleSelection
+      key="DoctorScheduleSelection"
       data={bookingData}
       doctors={doctors}
       onUpdate={updateData}
