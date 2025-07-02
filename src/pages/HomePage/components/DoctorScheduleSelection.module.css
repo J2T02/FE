@@ -1,21 +1,95 @@
+/* CSS Variables để dễ bảo trì */
+:root {
+  --primary-color: #1890ff;
+  --primary-light: #e6f7ff;
+  --primary-shadow: rgba(24, 144, 255, 0.15);
+  --primary-shadow-hover: rgba(24, 144, 255, 0.3);
+  --primary-outline: rgba(24, 144, 255, 0.2);
+  --border-radius: 6px;
+  --transition-fast: all 0.1s ease;
+  --transition-smooth: all 0.2s ease;
+}
+
+/* Info Button Styles */
 .infoButton:hover {
-  background-color: #1890ff !important;
+  background-color: var(--primary-color) !important;
   color: white !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3) !important;
+  box-shadow: 0 4px 8px var(--primary-shadow-hover) !important;
+  transition: var(--transition-smooth) !important;
 }
 
 .infoButton:hover .anticon {
   color: white !important;
 }
 
-/* Tăng độ dày outline cho Radio.Button khi được chọn */
-:global(.ant-radio-button-wrapper-checked) {
-  border-width: 3px !important;
-  border-color: #1890ff !important;
+/* Radio Button Base Styles */
+:global(.ant-radio-button-wrapper) {
+  transition: var(--transition-fast);
+  border-radius: var(--border-radius);
 }
 
+/* Radio Button Focus State */
+:global(.ant-radio-button-wrapper:focus) {
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Radio Button Active State - Hiệu ứng khi click */
+:global(.ant-radio-button-wrapper:active) {
+  border: 2px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  transform: scale(0.98) !important;
+  transition: var(--transition-fast) !important;
+}
+
+/* Radio Button Checked State - Trạng thái được chọn */
+:global(.ant-radio-button-wrapper-checked) {
+  border: 2px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px var(--primary-shadow) !important;
+}
+
+/* Radio Button Checked Focus State */
+:global(.ant-radio-button-wrapper-checked:focus) {
+  border: 2px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  outline: 2px solid var(--primary-outline) !important;
+  outline-offset: 2px !important;
+}
+
+/* Radio Button Checked Hover State */
 :global(.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover) {
-  border-width: 3px !important;
-  border-color: #1890ff !important;
+  border: 3px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px var(--primary-shadow-hover) !important;
+}
+
+/* Radio Button Disabled State */
+:global(.ant-radio-button-wrapper-disabled) {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  :global(.ant-radio-button-wrapper),
+  .infoButton {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :global(.ant-radio-button-wrapper-checked) {
+    border-width: 3px !important;
+    font-weight: 700 !important;
+  }
 }

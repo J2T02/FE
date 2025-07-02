@@ -3,6 +3,7 @@ import { Calendar, Radio, Typography, Card, Button, message, Spin, Alert, Space,
 import dayjs from "dayjs";
 import { GetSchedule } from "../../../apis/bookingService";
 import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import styles from "./Schedule.module.css";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -12,6 +13,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
   const [availableSchedules, setAvailableSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
+  const [calendarValue, setCalendarValue] = useState(dayjs());
 
   useEffect(() => {
     if (data?.date) {
@@ -128,11 +130,17 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
     }
     
     setSelectedDate(date);
-    setSelectedSlot(null);
+    setCalendarValue(date); // Cập nhật giá trị calendar để giữ tháng
+    // Không reset selectedSlot để giữ nguyên khung giờ đã chọn
+    // setSelectedSlot(null);
   };
 
   const handleSlotSelect = (slot) => {
     setSelectedSlot(slot);
+    // Giữ nguyên tháng hiện tại khi chọn slot
+    if (selectedDate) {
+      setCalendarValue(selectedDate);
+    }
   };
 
   const handleNext = () => {
@@ -172,7 +180,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
           <Col span={16}>
             <Calendar
               fullscreen={false}
-              value={selectedDate || dayjs()}
+              value={calendarValue}
               onSelect={handleDateSelect}
               disabledDate={disabledDate}
             />
@@ -210,6 +218,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
                               key={item.dsId} 
                               value={item.slot.slotId}
                               style={{ width: "100%", textAlign: "center" }}
+                              className={selectedSlot === item.slot.slotId ? styles.selectedSlot : ''}
                             >
                               <ClockCircleOutlined style={{ marginRight: 4 }} />
                               {item.slot.slotStart} - {item.slot.slotEnd}
@@ -220,6 +229,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
                               key="sang" 
                               value="sang"
                               style={{ width: "100%", textAlign: "center" }}
+                              className={selectedSlot === 'sang' ? styles.selectedSlot : ''}
                             >
                               <ClockCircleOutlined style={{ marginRight: 4 }} />
                               08:00 - 12:00
@@ -228,6 +238,7 @@ const Schedule = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, l
                               key="chieu" 
                               value="chieu"
                               style={{ width: "100%", textAlign: "center" }}
+                              className={selectedSlot === 'chieu' ? styles.selectedSlot : ''}
                             >
                               <ClockCircleOutlined style={{ marginRight: 4 }} />
                               13:00 - 17:00

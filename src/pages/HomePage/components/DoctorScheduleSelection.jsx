@@ -207,15 +207,36 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
   // Event handlers with improved error handling
   const handleSkip = useCallback(() => {
     try {
-      onUpdate({ doctorId: null, doctorName: null });
+      // Kiểm tra xem đã chọn ngày và khung giờ chưa
+      if (!selectedDate || !selectedSlot) {
+        return message.warning('Vui lòng chọn ngày và ca khám trước khi bỏ qua chọn bác sĩ.');
+      }
+
+      if (selectedDate && selectedDate < dayjs().startOf('day')) {
+        return message.error(MESSAGES.PAST_DATE_ERROR);
+      }
+
+      // Xóa thông tin bác sĩ nhưng giữ nguyên thông tin ngày và khung giờ
+      onUpdate({ 
+        doctorId: null, 
+        doctorName: null,
+        // Giữ nguyên thông tin ngày và khung giờ đã chọn
+        date: selectedDate.format("YYYY-MM-DD"),
+        slot: selectedSlot,
+        slotStart: SLOT_CONFIG[selectedSlot]?.start,
+        slotEnd: SLOT_CONFIG[selectedSlot]?.end
+      });
+      
       setSelectedDoctorDetail(null);
       setSelectedDoctor(null);
+      
+      message.success('Đã bỏ qua chọn bác sĩ. Bạn có thể tiếp tục với lịch hẹn.');
       onNext();
     } catch (error) {
       console.error('Error in handleSkip:', error);
       message.error('Có lỗi xảy ra khi bỏ qua chọn bác sĩ.');
     }
-  }, [onUpdate, onNext]);
+  }, [onUpdate, onNext, selectedDate, selectedSlot]);
 
   const handleDoctorSelect = useCallback((doctorId) => {
     try {
@@ -288,6 +309,9 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
         return message.error(MESSAGES.PAST_DATE_ERROR);
       }
 
+      // Cho phép tiếp tục mà không cần chọn bác sĩ
+      // Nếu có chọn bác sĩ thì sẽ update thông tin bác sĩ
+      // Nếu không chọn bác sĩ thì vẫn có thể tiếp tục với ngày và khung giờ đã chọn
       onNext();
     } catch (error) {
       console.error('Error in handleNext:', error);
@@ -433,9 +457,7 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Title level={3}>Chọn bác sĩ và lịch khám</Title>
-          <Button type="primary" onClick={handleSkip}>
-            Bỏ qua chọn bác sĩ
-          </Button>
+          
         </div>
 
         <Row gutter={24}>
@@ -443,7 +465,13 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
           <Col span={12}>
             <Card title="Chọn bác sĩ" style={{ height: 700, overflowY: 'auto' }}>
               <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-                <Text type="secondary">Không bắt buộc: Bạn có thể chọn một bác sĩ</Text>
+                <Alert
+                  message="Thông tin"
+                  description="Bạn có thể chọn bác sĩ cụ thể hoặc bỏ qua để đặt lịch với bất kỳ bác sĩ nào có sẵn trong khung giờ đã chọn."
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                />
                 
                 {doctors.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
@@ -633,7 +661,7 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
         </Row>
 
         {/* Navigation buttons */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
           <Button 
             onClick={onPrev} 
             disabled={disablePrev}
@@ -641,13 +669,28 @@ const DoctorScheduleSelection = ({ data, doctors = [], onUpdate, onNext, onPrev,
           >
             Quay lại
           </Button>
-          <Button 
-            type="primary" 
-            onClick={handleNext}
-            size="large"
-          >
-            Tiếp tục
-          </Button>
+          
+          <div style={{ display: 'flex', gap: 12 }}>
+            {selectedDate && selectedSlot && (
+              <Button 
+                onClick={handleSkip}
+                size="large"
+                style={{ 
+                  borderColor: '#faad14',
+                  color: '#faad14'
+                }}
+              >
+                Bỏ qua chọn bác sĩ
+              </Button>
+            )}
+            <Button 
+              type="primary" 
+              onClick={handleNext}
+              size="large"
+            >
+              Tiếp tục
+            </Button>
+          </div>
         </div>
       </Space>
     </div>

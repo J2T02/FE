@@ -1,0 +1,200 @@
+/* CSS Variables cho Schedule component */
+:root {
+  --primary-color: #1890ff;
+  --primary-light: #e6f7ff;
+  --primary-shadow: rgba(24, 144, 255, 0.15);
+  --primary-shadow-hover: rgba(24, 144, 255, 0.3);
+  --primary-outline: rgba(24, 144, 255, 0.2);
+  --success-color: #52c41a;
+  --success-light: #f6ffed;
+  --border-radius: 6px;
+  --transition-fast: all 0.1s ease;
+  --transition-smooth: all 0.2s ease;
+}
+
+/* Schedule Time Slot Radio Button Styles */
+:global(.ant-radio-button-wrapper) {
+  transition: var(--transition-fast);
+  border-radius: var(--border-radius) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Radio Button Focus State */
+:global(.ant-radio-button-wrapper:focus) {
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  z-index: 2;
+}
+
+/* Radio Button Active State */
+:global(.ant-radio-button-wrapper:active) {
+  border: 2px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  transform: scale(0.98) !important;
+  transition: var(--transition-fast) !important;
+  box-shadow: 0 2px 8px var(--primary-shadow) !important;
+}
+
+/* Checked State - Luôn có outline */
+:global(.ant-radio-button-wrapper-checked),
+:global(.ant-radio-button-wrapper-checked:hover),
+:global(.ant-radio-button-wrapper-checked:focus) {
+  outline: 4px solid var(--primary-color) !important;
+  outline-offset: 2px !important;
+  border: 3px solid var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  font-weight: bold !important;
+  box-shadow: 0 4px 12px var(--primary-shadow-hover) !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Shimmer Animation */
+:global(.ant-radio-button-wrapper-checked::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+  animation: shimmer 0.3s ease-out;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Hover - Not Checked */
+:global(.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked):hover) {
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  background-color: rgba(24, 144, 255, 0.05) !important;
+  transform: translateY(-1px) !important;
+  transition: var(--transition-smooth) !important;
+}
+
+/* Disabled */
+:global(.ant-radio-button-wrapper-disabled) {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Icon in Button */
+:global(.ant-radio-button-wrapper .anticon) {
+  transition: var(--transition-fast);
+}
+:global(.ant-radio-button-wrapper-checked .anticon) {
+  color: var(--primary-color) !important;
+  transform: scale(1.1);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  :global(.ant-radio-button-wrapper),
+  :global(.ant-radio-button-wrapper-checked::before) {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :global(.ant-radio-button-wrapper-checked) {
+    border-width: 3px !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  :global(.ant-radio-button-wrapper) {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Selected Custom Style */
+.selectedSlot {
+  animation: pulse 0.5s ease-in-out !important;
+  outline: 4px solid var(--primary-color, #1890ff) !important;
+  outline-offset: 2px !important;
+  border: 3px solid var(--primary-color, #1890ff) !important;
+  background-color: var(--primary-light, #e6f7ff) !important;
+  color: var(--primary-color, #1890ff) !important;
+  font-weight: bold !important;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4) !important;
+  position: relative !important;
+  z-index: 10 !important;
+  transform: scale(1.02) !important;
+}
+
+/* Selector cụ thể hơn cho Ant Design Radio Button */
+:global(.ant-radio-group) .selectedSlot {
+  outline: 4px solid #1890ff !important;
+  outline-offset: 2px !important;
+  border: 3px solid #1890ff !important;
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+  font-weight: bold !important;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4) !important;
+  transform: scale(1.02) !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Selector cho Radio Button wrapper */
+:global(.ant-radio-button-wrapper.selectedSlot),
+:global(.ant-radio-button-wrapper.selectedSlot:hover),
+:global(.ant-radio-button-wrapper.selectedSlot:focus),
+:global(.ant-radio-button-wrapper.selectedSlot:active) {
+  outline: 4px solid #1890ff !important;
+  outline-offset: 2px !important;
+  border: 3px solid #1890ff !important;
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+  font-weight: bold !important;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4) !important;
+  transform: scale(1.02) !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Đảm bảo outline luôn hiển thị cho selectedSlot */
+.selectedSlot:hover,
+.selectedSlot:focus,
+.selectedSlot:active {
+  outline: 4px solid #1890ff !important;
+  outline-offset: 2px !important;
+  border: 3px solid #1890ff !important;
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+  font-weight: bold !important;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Đã được thay thế bởi rules ở trên */
+
+/* Pulse Effect */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--primary-shadow);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
