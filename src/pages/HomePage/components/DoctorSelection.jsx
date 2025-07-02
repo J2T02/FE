@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, Radio, Typography, Space, Button, message, Row, Col, Avatar, Divider, Spin } from "antd";
 import { UserOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, StarOutlined } from "@ant-design/icons";
+import FeedbackSection from "~/components/feedback/FeedbackSection";
+import { getFeedbacksByDoctorId } from "~/apis/mockData";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -117,7 +119,7 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
 
           {/* Vùng bên phải - Chi tiết bác sĩ */}
           <Col span={12}>
-            <Card title="Thông tin chi tiết" style={{ height: 600 }}>
+            <Card title="Thông tin chi tiết" style={{ height: 600, overflowY: 'auto' }}>
               {selectedDoctorDetail ? (
                 <div>
                   <div style={{ textAlign: 'center', marginBottom: 24 }}>
@@ -177,6 +179,11 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
                         </Paragraph>
                       </div>
                     )}
+
+                    <div>
+                      <Text strong>Phản hồi từ bệnh nhân:</Text>
+                      <FeedbackSection feedbacks={getFeedbacksByDoctorId(selectedDoctorDetail.docId)} />
+                    </div>
                   </Space>
                 </div>
               ) : (
