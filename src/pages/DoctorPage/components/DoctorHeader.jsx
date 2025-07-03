@@ -1,21 +1,40 @@
-import { Layout, Typography, Badge, Avatar, theme, Dropdown } from "antd";
-import { BellOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  Layout,
+  Typography,
+  Badge,
+  Avatar,
+  Dropdown,
+  theme,
+  Space,
+  Divider,
+} from "antd";
+import {
+  BellOutlined,
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { useContext, useEffect, useState } from "react";
 import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
+
 const { Header } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-const DoctorHeader = (account) => {
+const DoctorHeader = () => {
   const { token } = theme.useToken();
-  const { doctorInfo, handleLogout } = useContext(DoctorStoreContext);
-  const [notifications, setNotifications] = useState([
-    { id: 1, content: "Có đơn hàng mới!" },
-    { id: 2, content: "Người dùng A vừa đăng ký." },
-  ]);
+  const context = useContext(DoctorStoreContext);
 
-  // 👇 Thêm state đếm số thông báo chưa đọc
+  if (!context) return null;
+
+  const { doctorInfo, handleLogout } = context;
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, content: "Có lịch khám mới lúc 10:00 sáng mai" },
+    { id: 2, content: "Một bệnh nhân vừa check-in" },
+  ]);
   const [unreadCount, setUnreadCount] = useState(2);
-  console.log(doctorInfo);
+
   const notificationItems = notifications.length
     ? notifications.map((item) => ({
         key: item.id,
@@ -37,66 +56,83 @@ const DoctorHeader = (account) => {
     {
       key: "logout",
       label: "Đăng xuất",
+      onClick: () => {
+        if (handleLogout) handleLogout();
+      },
     },
   ];
 
-  // Giả lập có thông báo mới sau 5 giây
   useEffect(() => {
     const timer = setTimeout(() => {
       setNotifications((prev) => [
         ...prev,
         { id: prev.length + 1, content: "Thông báo mới đến!" },
       ]);
-      setUnreadCount((count) => count + 1); // 👈 Tăng số chưa đọc
-    }, 5000);
+      setUnreadCount((count) => count + 1);
+    }, 7000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Xử lý click menu avatar
-  const handleMenuClick = (info) => {
-    const item = avatarItems.find((i) => i.key === info.key);
-    if (item && item.onClick) item.onClick();
+  const handleMenuClick = ({ key }) => {
+    const item = avatarItems.find((i) => i.key === key);
+    if (item?.onClick) item.onClick();
   };
 
   return (
     <Header
       style={{
-        paddingLeft: 24,
-        paddingRight: 24,
+        padding: "16px 24px",
+        minHeight: 80,
+        lineHeight: "normal",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         background: token.colorBgBase,
+        borderBottom: "1px solid #f0f0f0",
+        zIndex: 99,
       }}
     >
-      <Title level={2} style={{ margin: 0 }}>
-        Trang Bác Sĩ
-      </Title>
+      {/* LEFT SIDE */}
+      <div>
+        <Title level={3} style={{ margin: 0, color: "#d6336c" }}>
+          Trang Bác Sĩ
+        </Title>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Quản lý lịch trình, bệnh nhân và điều trị
+        </Text>
+      </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      {/* RIGHT SIDE */}
+      <Space align="center" size="large">
+        <Space size="middle">
+          <PhoneOutlined style={{ color: token.colorPrimary }} />
+          <Text strong>1900 123 456</Text>
+        </Space>
+
+        <Space size="middle">
+          <MailOutlined style={{ color: token.colorPrimary }} />
+          <Text strong>support@clinic.vn</Text>
+        </Space>
+
         <Dropdown
           menu={{ items: notificationItems }}
           trigger={["click"]}
           placement="bottomRight"
           onOpenChange={(open) => {
             if (open) {
-              setUnreadCount(0); // 👈 Đánh dấu tất cả đã đọc
+              setUnreadCount(0);
             }
           }}
         >
           <Badge count={unreadCount} size="small">
-            <BellOutlined style={{ fontSize: 20, cursor: "pointer" }} />
+            <BellOutlined
+              style={{ fontSize: 20, cursor: "pointer", color: "#555" }}
+            />
           </Badge>
         </Dropdown>
 
-        <div
-          style={{
-            width: 1,
-            height: 24,
-            backgroundColor: token.colorBorderSecondary,
-          }}
-        />
+        <Divider type="vertical" />
 
         <Dropdown
           menu={{ items: avatarItems, onClick: handleMenuClick }}
@@ -113,20 +149,13 @@ const DoctorHeader = (account) => {
           >
             <Avatar
               size="small"
-              // src={doctorInfo.accountInfo.img || null}
               src={doctorInfo?.accountInfo?.img || null}
               icon={!doctorInfo?.accountInfo?.img && <UserOutlined />}
               style={{ backgroundColor: token.colorPrimary }}
             />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                lineHeight: 1.2,
-              }}
-            >
+            <div style={{ lineHeight: 1.2 }}>
               <span style={{ fontWeight: "bold", fontSize: 12 }}>Bác sĩ</span>
+              <br />
               <span
                 style={{
                   fontWeight: 500,
@@ -134,12 +163,12 @@ const DoctorHeader = (account) => {
                   fontSize: 12,
                 }}
               >
-                {doctorInfo ? doctorInfo?.accountInfo?.fullName : "unknown"}
+                {doctorInfo?.accountInfo?.fullName || "unknown"}
               </span>
             </div>
           </div>
         </Dropdown>
-      </div>
+      </Space>
     </Header>
   );
 };

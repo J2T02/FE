@@ -31,6 +31,7 @@ const BookingManagement = () => {
   const [dateRange, setDateRange] = useState([today, today]);
   const [selectedShift, setSelectedShift] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("Đã xác nhận");
   const [filteredBookings, setFilteredBookings] = useState([]);
 
   const bookings = [
@@ -120,8 +121,12 @@ const BookingManagement = () => {
       });
     }
 
+    if (selectedStatus) {
+      filtered = filtered.filter((b) => b.status === selectedStatus);
+    }
+
     if (searchKeyword.trim() !== "") {
-      filtered = filtered.filter((b) =>
+      filtered = bookings.filter((b) =>
         b.bookingId.toString().includes(searchKeyword.trim())
       );
     }
@@ -131,7 +136,7 @@ const BookingManagement = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [dateRange, selectedShift, searchKeyword]);
+  }, [dateRange, selectedShift, selectedStatus, searchKeyword]);
 
   return (
     <Card
@@ -168,6 +173,18 @@ const BookingManagement = () => {
               >
                 <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
                 <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+              </Select>
+              <Select
+                allowClear
+                placeholder="Lọc trạng thái"
+                style={{ width: 180 }}
+                value={selectedStatus}
+                onChange={(value) => setSelectedStatus(value)}
+              >
+                <Option value="Đã xác nhận">Đã xác nhận</Option>
+                <Option value="Checkin">Checkin</Option>
+                <Option value="Đang khám">Đang khám</Option>
+                <Option value="Đã khám">Đã khám</Option>
               </Select>
             </Space>
           </Col>

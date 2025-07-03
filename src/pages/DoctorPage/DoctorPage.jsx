@@ -4,29 +4,54 @@ import {
   CalendarOutlined,
   TeamOutlined,
   FileTextOutlined,
-  AppstoreOutlined,
+  ScheduleOutlined,
 } from "@ant-design/icons";
-import { FaUserDoctor } from "react-icons/fa6";
 import DoctorHeader from "./components/DoctorHeader";
 import DoctorStoreProvider from "./contexts/DoctorStoreProvider";
-import { useToken } from "antd/lib/theme/useToken";
+import ScheduleManagement from "./ScheduleManagement/ScheduleManagement";
+import BookingManagement from "./BookingManagement/BookingManagement";
+import PatientManagement from "./PatientManagement/PatientManagement";
+import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
 
-const { Sider, Content, Header } = Layout;
+const { Sider, Content } = Layout;
 const { Title } = Typography;
-function DoctorPage() {
+
+const DoctorPanel = () => {
   const [selectedKey, setSelectedKey] = useState("1");
-  const { token } = useToken();
+
+  const menuItems = [
+    {
+      key: "1",
+      icon: <ScheduleOutlined style={{ fontSize: 20 }} />,
+      label: "Lịch làm việc",
+    },
+    {
+      key: "2",
+      icon: <CalendarOutlined style={{ fontSize: 20 }} />,
+      label: "Quản lý booking",
+    },
+    {
+      key: "3",
+      icon: <TeamOutlined style={{ fontSize: 20 }} />,
+      label: "Quản lý bệnh nhân",
+    },
+    {
+      key: "4",
+      icon: <FileTextOutlined style={{ fontSize: 20 }} />,
+      label: "Hồ sơ điều trị",
+    },
+  ];
 
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
-        return <Title>Dashboard</Title>;
+        return <ScheduleManagement />;
       case "2":
-        return <Title level={3}>Quản lý lịch làm việc</Title>;
+        return <BookingManagement />;
       case "3":
-        return <Title level={3}>Quản lý hồ sơ bệnh nhân</Title>;
+        return <PatientManagement />;
       case "4":
-        return <Title level={3}>Quản lý bệnh án</Title>;
+        return <TreatmentplanManagement />;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -35,66 +60,48 @@ function DoctorPage() {
   return (
     <DoctorStoreProvider>
       <Layout style={{ minHeight: "100vh" }}>
-        <Sider theme="light">
+        <Sider theme="light" width={220} style={{ paddingTop: 16 }}>
           <div
             style={{
               height: 64,
               margin: 16,
               textAlign: "center",
               fontWeight: "bold",
+              fontSize: 18,
             }}
           >
-            Doctor Panel
+            <img
+              style={{ width: "153px", height: "53px" }}
+              src="/Logo.png"
+              alt="Logo"
+            />
           </div>
           <Menu
             mode="inline"
-            defaultSelectedKeys={["1"]}
+            selectedKeys={[selectedKey]}
             onClick={({ key }) => setSelectedKey(key)}
-          >
-            <Menu.Item key="1" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
-              DashBoard
-            </Menu.Item>
-            <Menu.Item
-              key="2"
-              icon={<CalendarOutlined style={{ fontSize: 20 }} />}
-            >
-              Lịch làm việc
-            </Menu.Item>
-            <Menu.Item key="3" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
-              Hồ sơ bệnh nhân
-            </Menu.Item>
-            <Menu.Item
-              key="4"
-              icon={<FileTextOutlined style={{ fontSize: 20 }} />}
-            >
-              Bệnh án
-            </Menu.Item>
-            <Menu.Item
-              key="5"
-              icon={<AppstoreOutlined style={{ fontSize: 20 }} />}
-            >
-              Quản lý dịch vụ
-            </Menu.Item>
-          </Menu>
+            items={menuItems}
+            style={{ fontSize: 16 }}
+          />
         </Sider>
-        <Layout>
+        <Layout style={{ background: "#f9f9f9" }}>
           <DoctorHeader />
-          <Content style={{ margin: "24px 16px", padding: 24 }}>
-            <div
-              style={{
-                backgroundColor: token.colorBgPage,
-                borderRadius: 12,
-                minHeight: 600,
-                padding: 24,
-              }}
-            >
-              {renderContent()}
-            </div>
+          <Content
+            style={{
+              margin: "24px 16px",
+              padding: 24,
+              minHeight: 360,
+              background: "#fff",
+              borderRadius: 8,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            }}
+          >
+            {renderContent()}
           </Content>
         </Layout>
       </Layout>
     </DoctorStoreProvider>
   );
-}
+};
 
-export default DoctorPage;
+export default DoctorPanel;
