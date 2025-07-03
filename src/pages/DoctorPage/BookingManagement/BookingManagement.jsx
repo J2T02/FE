@@ -55,7 +55,7 @@ const BookingManagement = () => {
 
   const bookings = Array.from({ length: 40 }, (_, index) => {
     const id = index + 1;
-    const statusCycle = [2, 3, 4, 5]; // Xoay vòng trạng thái
+    const statusCycle = [2, 3, 4, 5];
     const status = statusCycle[index % 4];
     const DS_ID = 101 + (index % 4);
     return { Booking_ID: id, DS_ID, Status: status };
@@ -63,17 +63,14 @@ const BookingManagement = () => {
 
   const getFilteredData = () => {
     let filtered = bookings.filter((b) => {
-      // Trường hợp tìm kiếm theo mã
       if (searchKeyword.trim() !== "") {
         return b.Booking_ID.toString().includes(searchKeyword.trim());
       }
 
-      // Nếu chọn lọc trạng thái cụ thể
       if (selectedStatus) {
         return b.Status === parseInt(selectedStatus);
       }
 
-      // Mặc định chỉ hiển thị status 2, 3, 4
       return [2, 3, 4].includes(b.Status);
     });
 
@@ -172,58 +169,59 @@ const BookingManagement = () => {
   }, [dateRange, selectedShift, searchKeyword, selectedStatus]);
 
   return (
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space wrap>
-              <span style={{ fontSize: 18, fontWeight: 600 }}>
-                📋 Quản lý Booking
-              </span>
-              <Input
-                allowClear
-                placeholder="Tìm mã Booking..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </Space>
-          </Col>
-          <Col>
-            <Space wrap>
-              <RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(values) => setDateRange(values)}
-              />
-              <Select
-                allowClear
-                placeholder="Chọn ca làm việc"
-                style={{ width: 160 }}
-                value={selectedShift}
-                onChange={(value) => setSelectedShift(value)}
-              >
-                <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
-              </Select>
-              <Select
-                allowClear
-                placeholder="Lọc theo trạng thái"
-                style={{ width: 160 }}
-                value={selectedStatus}
-                onChange={(value) => setSelectedStatus(value)}
-              >
-                <Option value="2">Đã xác nhận</Option>
-                <Option value="3">Checkin</Option>
-                <Option value="4">Đang khám</Option>
-                <Option value="5">Đã khám</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
+    <Card>
+      <Row style={{ marginBottom: 12 }}>
+        <Col span={24}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 0 }}>
+            📋 Quản lý Booking
+          </h2>
+        </Col>
+      </Row>
+
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Input
+            allowClear
+            placeholder="Tìm mã Booking..."
+            prefix={<SearchOutlined />}
+            style={{ width: 220 }}
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Col>
+        <Col>
+          <Space wrap>
+            <RangePicker
+              format="YYYY-MM-DD"
+              value={dateRange}
+              onChange={(values) => setDateRange(values)}
+            />
+            <Select
+              allowClear
+              placeholder="Chọn ca làm việc"
+              style={{ width: 160 }}
+              value={selectedShift}
+              onChange={(value) => setSelectedShift(value)}
+            >
+              <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
+              <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+            </Select>
+            <Select
+              allowClear
+              placeholder="Lọc theo trạng thái"
+              style={{ width: 160 }}
+              value={selectedStatus}
+              onChange={(value) => setSelectedStatus(value)}
+            >
+              <Option value="2">Đã xác nhận</Option>
+              <Option value="3">Checkin</Option>
+              <Option value="4">Đang khám</Option>
+              <Option value="5">Đã khám</Option>
+            </Select>
+          </Space>
+        </Col>
+      </Row>
+
       <Table
         dataSource={filteredBookings}
         columns={columns}

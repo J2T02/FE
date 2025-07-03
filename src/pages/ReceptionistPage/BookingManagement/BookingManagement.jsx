@@ -139,58 +139,59 @@ const BookingManagement = () => {
   }, [dateRange, selectedShift, selectedStatus, searchKeyword]);
 
   return (
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space wrap>
-              <Title level={3} style={{ margin: 0 }}>
-                Danh sách lịch hẹn
-              </Title>
-              <Input
-                allowClear
-                placeholder="Tìm mã Booking..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </Space>
-          </Col>
-          <Col>
-            <Space wrap>
-              <RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(values) => setDateRange(values)}
-              />
-              <Select
-                allowClear
-                placeholder="Chọn ca làm việc"
-                style={{ width: 180 }}
-                value={selectedShift}
-                onChange={(value) => setSelectedShift(value)}
-              >
-                <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
-              </Select>
-              <Select
-                allowClear
-                placeholder="Lọc trạng thái"
-                style={{ width: 180 }}
-                value={selectedStatus}
-                onChange={(value) => setSelectedStatus(value)}
-              >
-                <Option value="Đã xác nhận">Đã xác nhận</Option>
-                <Option value="Checkin">Checkin</Option>
-                <Option value="Đang khám">Đang khám</Option>
-                <Option value="Đã khám">Đã khám</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
+    <Card>
+      <Row style={{ marginBottom: 12 }}>
+        <Col span={24}>
+          <Title level={3} style={{ marginBottom: 0 }}>
+            📋 Danh sách lịch hẹn
+          </Title>
+        </Col>
+      </Row>
+
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Input
+            allowClear
+            placeholder="Tìm mã Booking..."
+            prefix={<SearchOutlined />}
+            style={{ width: 220 }}
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Col>
+        <Col>
+          <Space wrap>
+            <RangePicker
+              format="YYYY-MM-DD"
+              value={dateRange}
+              onChange={(values) => setDateRange(values)}
+            />
+            <Select
+              allowClear
+              placeholder="Chọn ca làm việc"
+              style={{ width: 180 }}
+              value={selectedShift}
+              onChange={(value) => setSelectedShift(value)}
+            >
+              <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
+              <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+            </Select>
+            <Select
+              allowClear
+              placeholder="Lọc trạng thái"
+              style={{ width: 180 }}
+              value={selectedStatus}
+              onChange={(value) => setSelectedStatus(value)}
+            >
+              <Option value="Đã xác nhận">Đã xác nhận</Option>
+              <Option value="Checkin">Checkin</Option>
+              <Option value="Đang khám">Đang khám</Option>
+              <Option value="Đã khám">Đã khám</Option>
+            </Select>
+          </Space>
+        </Col>
+      </Row>
+
       <Table
         columns={columns}
         dataSource={filteredBookings}

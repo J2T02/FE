@@ -123,18 +123,6 @@ export default function BookingDetailPage() {
             </Col>
           </Row>
 
-          <Row justify="end">
-            <Col>
-              <Button
-                type="primary"
-                onClick={() =>
-                  navigate(`/receptionist/medical-record/create/${bookingId}`)
-                }
-              >
-                Tạo hồ sơ bệnh án
-              </Button>
-            </Col>
-          </Row>
         </Space>
       </Content>
     </Layout>

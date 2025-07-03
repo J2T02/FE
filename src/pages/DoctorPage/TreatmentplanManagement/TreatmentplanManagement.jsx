@@ -9,17 +9,20 @@ import {
   Row,
   Col,
   Select,
+  Button,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 const { Option } = Select;
 
 const TreatmentplanManagement = () => {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState(null); // null = mặc định chỉ hiển thị "Đang tiến hành"
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
     fetchMockTreatmentPlans();
@@ -88,56 +91,63 @@ const TreatmentplanManagement = () => {
   const filteredData = plans.filter((item) => {
     const isSearching = searchKeyword.trim() !== "";
 
-    const matchSearch = item.tp_ID
-      .toString()
-      .includes(searchKeyword.trim());
+    const matchSearch = item.tp_ID.toString().includes(searchKeyword.trim());
 
     const matchStatus =
       selectedStatus !== null
         ? item.status === selectedStatus
-        : item.status === 0; // mặc định chỉ hiện Đang tiến hành
+        : item.status === 0;
 
-    // Nếu đang tìm kiếm → chỉ lọc theo mã
     if (isSearching) return matchSearch;
 
-    // Nếu không tìm → lọc theo status
     return matchStatus;
   });
 
   return (
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Title level={3} style={{ margin: 0 }}>
-              Danh sách Hồ sơ bệnh án
-            </Title>
-          </Col>
-          <Col>
-            <Space>
-              <Input
-                placeholder="Tìm theo mã bệnh án"
-                prefix={<SearchOutlined />}
-                allowClear
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-              <Select
-                allowClear
-                placeholder="Lọc theo trạng thái"
-                style={{ width: 180 }}
-                value={selectedStatus}
-                onChange={(value) => setSelectedStatus(value)}
-              >
-                <Option value={0}>Đang tiến hành</Option>
-                <Option value={1}>Đã hoàn thành</Option>
-                <Option value={2}>Đã huỷ</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
+    <Card>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
+        <Col span={24}>
+          <Title level={3} style={{ margin: 0 }}>
+            Danh sách Hồ sơ bệnh án
+          </Title>
+        </Col>
+      </Row>
+
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Input
+            placeholder="Tìm theo mã bệnh án"
+            prefix={<SearchOutlined />}
+            allowClear
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            style={{ width: 240 }}
+          />
+        </Col>
+        <Col>
+          <Space>
+            <Select
+              allowClear
+              placeholder="Lọc theo trạng thái"
+              style={{ width: 180 }}
+              value={selectedStatus}
+              onChange={(value) => setSelectedStatus(value)}
+            >
+              <Option value={0}>Đang tiến hành</Option>
+              <Option value={1}>Đã hoàn thành</Option>
+              <Option value={2}>Đã huỷ</Option>
+            </Select>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate("/treatmentplans/create")}
+            >
+              Tạo hồ sơ mới
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+
       <Table
         columns={columns}
         dataSource={filteredData}
