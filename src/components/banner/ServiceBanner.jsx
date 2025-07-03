@@ -3,9 +3,17 @@ import { Card, Typography, Button, Tag, Space } from "antd";
 import { EnvironmentOutlined, NumberOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 import { formatCurrency } from "../../utils/formater";
-import { useBooking } from "../../contexts/BookingContext";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 function SeriveBanner({ title, img, price }) {
-  const { showBooking } = useBooking();
+  const navigate = useNavigate();
+  const handleBooking = () => {
+    if (!Cookies.get("accId")) {
+      message.warning("Vui lòng đăng nhập để đặt lịch!");
+    } else {
+      navigate("/booking");
+    }
+  };
   return (
     <Card
       hoverable
@@ -42,7 +50,13 @@ function SeriveBanner({ title, img, price }) {
           <Tag color="red">-10.0%</Tag>
         </Space>
 
-        <Button type="primary" size="large" block onClick={showBooking}>
+        <Button
+          type="primary"
+          size="large"
+          block
+          // onClick={handleBooking}
+          onClick={handleBooking}
+        >
           Đặt lịch ngay
         </Button>
       </div>

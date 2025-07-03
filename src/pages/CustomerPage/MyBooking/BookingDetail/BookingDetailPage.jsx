@@ -105,7 +105,12 @@ export default function BookingDetailPage() {
             </Col>
             <Col xs={24} md={12}>
               <AppointmentInfoCard
-                data={{ ...bookingData?.schedule, bookingId }}
+                data={{
+                  ...bookingData?.schedule,
+                  bookingId,
+                  docId: bookingData?.doc?.docId,
+                  slot: bookingData?.slot,
+                }}
                 docId={bookingData?.doc?.docId}
               />
             </Col>

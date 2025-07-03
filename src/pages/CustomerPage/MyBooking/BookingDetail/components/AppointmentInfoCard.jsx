@@ -8,7 +8,7 @@ export default function AppointmentInfoCard({ data, docId }) {
 
   const handleChangeSchedule = () => {
     navigate(`/customer/updatescheduleinbooking/${data?.bookingId}`, {
-      state: { bookingData: data, docId: docId },
+      state: { bookingData: data, docId: data.docId },
     });
   };
 
@@ -40,7 +40,7 @@ export default function AppointmentInfoCard({ data, docId }) {
             Khung giờ
           </Typography.Text>
           <Typography.Text>
-            {data?.startTime} - {data?.endTime}
+            {data?.slot?.slotStart} - {data?.slot?.slotEnd}
           </Typography.Text>
         </Space>
 

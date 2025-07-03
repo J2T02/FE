@@ -36,7 +36,7 @@ const UpdateScheduleInBooking = ({ bookingId = 123, doctorId = 1, onBack }) => {
   useEffect(() => {
     const fetchDoctorSchedule = async () => {
       try {
-        const res = await GetSchedule(2);
+        const res = await GetSchedule(bookingdata.docId);
         const schedules = Array.isArray(res?.data?.data) ? res.data.data : [];
 
         const map = {};
