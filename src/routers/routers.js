@@ -108,7 +108,7 @@ const routers = [
     component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
   },
   {
-    path: "/receptionist/bookingdetail/id",
+    path: "/receptionist/bookingdetail/:id",
     component: lazy(() =>
       import("~pages/ReceptionistPage/BookingDetail/BookingDetailPage")
     ),

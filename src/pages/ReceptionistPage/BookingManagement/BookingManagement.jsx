@@ -88,7 +88,7 @@ const BookingManagement = () => {
         <Button
           type="link"
           onClick={() =>
-            navigate(`/receptionist/booking/${record.bookingId}`)
+            navigate(`/receptionist/bookingdetail/${record.bookingId}`)
           }
         >
           Xem chi tiết
