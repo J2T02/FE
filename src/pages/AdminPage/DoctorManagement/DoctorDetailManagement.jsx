@@ -150,7 +150,7 @@ const DoctorDetailManagement = () => {
   }, [selectedStar, feedbacks]);
 
   const handleStatusChange = async (value) => {
-    setDoctor((prev) => ({ ...prev, statusText: value }));
+    setDoctor((prev) => ({ ...prev, status: value }));
     message.success("Đã cập nhật trạng thái.");
   };
 
@@ -177,36 +177,29 @@ const DoctorDetailManagement = () => {
   const gender = doctor?.gender || "Nữ";
   const yob = doctor?.yob || "1988-03-15T00:00:00.000Z";
   const experience = doctor?.experience || 10;
-  const edu_LevelName =
-    doctor?.eduId === 1
-      ? "Cử nhân"
-      : doctor?.eduId === 2
-      ? "Thạc sĩ"
-      : doctor?.eduId === 3
-      ? "Tiến sĩ"
-      : "Chưa rõ";
+  const edu_LevelName = doctor?.eduInfo?.eduName;
   const full_Name = doctor?.accountInfo?.fullName || "Trần Thị Lan";
   const mail = doctor?.accountInfo?.mail || "lan.bs88@gmail.com";
   const phone = doctor?.accountInfo?.phone || "0908123456";
   const img = doctor?.img || "/femaledoctor.jpg";
   const avgStar = doctor?.avgStar || 4.8;
   const createAt = doctor?.createAt || "2015-07-01T00:00:00.000Z";
-  const statusText = doctor?.statusText || "Đang công tác";
-  const certificates = doctor?.certificates || [
+  const status = doctor?.status?.statusId || 1;
+  const certificates = doctor?.certificateInfo || [
     {
-      Cer_Name: "Chứng chỉ IVF nâng cao",
-      File_Path: "https://example.com/certificates/ivf-nang-cao.pdf",
+      cerName: "Chứng chỉ IVF nâng cao",
+      filePath: "https://example.com/certificates/ivf-nang-cao.pdf",
     },
     {
-      Cer_Name: "Chứng chỉ Nội tiết sinh sản",
-      File_Path: "https://example.com/certificates/noi-tiet.pdf",
+      cerName: "Chứng chỉ Nội tiết sinh sản",
+      filePath: "https://example.com/certificates/noi-tiet.pdf",
     },
     {
-      Cer_Name: "Chứng chỉ Hỗ trợ sinh sản quốc tế",
-      File_Path: "https://example.com/certificates/ho-tro-sinh-san.pdf",
+      cerName: "Chứng chỉ Hỗ trợ sinh sản quốc tế",
+      filePath: "https://example.com/certificates/ho-tro-sinh-san.pdf",
     },
   ];
-
+  console.log(doctor);
   return (
     <Layout>
       <Header />
@@ -244,7 +237,8 @@ const DoctorDetailManagement = () => {
             <b>Năm sinh:</b> {dayjs(yob).format("DD/MM/YYYY")}
           </p>
           <p>
-            <b>Trình độ:</b> <Tag color="blue">{edu_LevelName}</Tag>
+            <b>Trình độ:</b>{" "}
+            <Tag color="blue">{edu_LevelName ? edu_LevelName : "chưa rõ"}</Tag>
           </p>
           <p>
             <b>Kinh nghiệm:</b> {experience} năm
@@ -256,13 +250,13 @@ const DoctorDetailManagement = () => {
           <div style={{ margin: "8px 0" }}>
             <b>Trạng thái:</b>{" "}
             <Select
-              value={statusText}
+              value={status}
               onChange={handleStatusChange}
               style={{ width: 160 }}
             >
-              <Option value="Đang công tác">Đang công tác</Option>
-              <Option value="Đang nghỉ phép">Đang nghỉ phép</Option>
-              <Option value="Đã nghỉ việc">Đã nghỉ việc</Option>
+              <Option value={1}>Đang công tác</Option>
+              <Option value={2}>Đang nghỉ phép</Option>
+              <Option value={3}>Đã nghỉ việc</Option>
             </Select>
           </div>
 
@@ -275,9 +269,9 @@ const DoctorDetailManagement = () => {
                 key={index}
                 color="purple"
                 style={{ cursor: "pointer" }}
-                onClick={() => window.open(cer.File_Path, "_blank")}
+                onClick={() => window.open(cer.filePath, "_blank")}
               >
-                {cer.Cer_Name}
+                {cer.cerName}
               </Tag>
             ))}
           </Space>

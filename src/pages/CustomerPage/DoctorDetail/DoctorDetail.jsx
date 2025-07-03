@@ -100,7 +100,7 @@ const DoctorDetail = ({ doctorId }) => {
   return (
     <Layout>
       <Header />
-      <div style={{ padding: "40px 0", backgroundColor: token.colorBgBase }}>
+      <div style={{ padding: "40px 0", backgroundColor: token.colorBgPage }}>
         <Title level={3}>Thông tin bác sĩ</Title>
         <div style={{ display: "flex", gap: 24 }}>
           <img

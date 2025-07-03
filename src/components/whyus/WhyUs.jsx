@@ -42,7 +42,7 @@ function WhyUs() {
     <div
       style={{
         padding: "60px 20px",
-        backgroundColor: token.colorBgBase,
+        backgroundColor: token.colorBgPage,
         fontFamily: token.fontFamily,
         color: token.colorTextBase,
       }}

@@ -124,7 +124,7 @@ const routers = [
   {
     path: "/bookingUpdate/:id",
     component: lazy(() =>
-      import("~pages/HomePage/BookingPage/BookingUpdatePage")
+      import("~pages/HomePage/BookingPage/UpdateBookingPage")
     ),
   },
   {

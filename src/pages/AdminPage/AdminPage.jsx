@@ -13,24 +13,26 @@ import ServiceManagement from "./ServiceManagement/ServiceManagement";
 import PatientManagement from "./PatientManagement/PatientManagement";
 import BookingManagement from "./BookingManagement/BookingManagement";
 import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
+import { useToken } from "antd/lib/theme/useToken";
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
 
 const AdminPanel = () => {
   const [selectedKey, setSelectedKey] = useState("1");
+  const { token } = useToken();
 
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
         return <DoctorModule />;
       case "2":
-        return <BookingManagement/>;
+        return <BookingManagement />;
       case "3":
-        return <PatientManagement/>;
+        return <PatientManagement />;
       case "4":
-        return <TreatmentplanManagement/>;
+        return <TreatmentplanManagement />;
       case "5":
-        return <ServiceManagement/>;
+        return <ServiceManagement />;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -87,7 +89,16 @@ const AdminPanel = () => {
       <Layout>
         <AdminHeader />
         <Content style={{ margin: "24px 16px", padding: 24 }}>
-          {renderContent()}
+          <div
+            style={{
+              backgroundColor: token.colorBgPage,
+              borderRadius: 12,
+              minHeight: 600,
+              padding: 24,
+            }}
+          >
+            {renderContent()}
+          </div>
         </Content>
       </Layout>
     </Layout>

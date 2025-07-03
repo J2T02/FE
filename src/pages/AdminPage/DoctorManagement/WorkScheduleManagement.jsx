@@ -208,7 +208,7 @@ const WorkScheduleManagement = ({ doctorId }) => {
         <Row gutter={[8, 8]}>
           {Array.from({ length: 7 }).map((_, dayIndex) => {
             const day = dayIndex + 1;
-            const dayLabel = `T${day + 1 > 7 ? "CN" : day + 1}`;
+            const dayLabel = day + 1 > 7 ? "CN" : `T${day + 1}`;
             return (
               <Col span={12} key={dayIndex}>
                 <strong>{dayLabel}</strong>

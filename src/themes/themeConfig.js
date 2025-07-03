@@ -13,6 +13,7 @@ const themeConfig = {
     fontSize: 14,
     colorTextBase: "#333",
     colorBgBase: "#fffafc", // Nền tổng thể nhẹ nhàng
+    colorBgPage: "#f5f7fa", // Nền cho các page, dịu hơn, tách biệt với header/footer
   },
 
   components: {

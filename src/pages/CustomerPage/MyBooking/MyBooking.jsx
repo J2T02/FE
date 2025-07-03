@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { BookingHistory } from "../../../apis/bookingService";
+import { useToken } from "antd/lib/theme/useToken";
 
 const SLOT_LABELS = { 1: "08:00 - 12:00", 2: "13:00 - 17:00" };
 const STATUS_COLORS = {
@@ -20,6 +21,7 @@ export default function MyBooking() {
   const [bookings, setBookings] = useState([]);
   const { Title } = Typography;
   const navigate = useNavigate(); // ← THÊM
+  const { token } = useToken();
   const formatDate = (str) => {
     if (!str) return "";
     const [day, month, year] = str.split("/");
@@ -59,7 +61,7 @@ export default function MyBooking() {
   return (
     <Layout>
       <Header />
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 24, backgroundColor: token.colorBgPage }}>
         <Title level={2}>Lịch hẹn của tôi</Title>
 
         <Space direction="vertical" size={16} style={{ width: "100%" }}>

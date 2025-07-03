@@ -15,7 +15,7 @@ function BlogList() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          backgroundColor: token.colorBgBase,
+          backgroundColor: token.colorBgPage,
         }}
       >
         <h1

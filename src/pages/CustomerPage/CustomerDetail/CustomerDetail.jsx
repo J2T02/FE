@@ -189,7 +189,7 @@ const CustomerDetail = () => {
   return (
     <Layout>
       <Header />
-      <div style={{ padding: "40px 0", backgroundColor: token.colorBgBase }}>
+      <div style={{ padding: "40px 0", backgroundColor: token.colorBgPage }}>
         <Title style={{ color: token.colorTextHeading }} level={3}>
           Thông tin cá nhân
         </Title>

@@ -14,10 +14,11 @@ function Service() {
       <Header />
       <div
         style={{
-          marginTop: 64,
+          paddingTop: 64,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          backgroundColor: token.colorBgPage,
         }}
       >
         <h1

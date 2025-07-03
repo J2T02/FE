@@ -26,7 +26,7 @@ function HomePage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: token.colorBgBase,
+          backgroundColor: token.colorBgPage,
         }}
       >
         <h1
@@ -67,7 +67,7 @@ function HomePage() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: token.colorBgBase,
+          backgroundColor: token.colorBgPage,
         }}
       >
         <div
@@ -106,7 +106,7 @@ function HomePage() {
           style={{
             width: "70%",
             margin: "60px auto",
-            backgroundColor: token.colorBgBase,
+            backgroundColor: token.colorBgPage,
             cursor: "pointer",
           }}
         >
@@ -127,7 +127,7 @@ function HomePage() {
           alignItems: "center",
           padding: "80px ",
           flexDirection: "column",
-          backgroundColor: token.colorBgBase,
+          backgroundColor: token.colorBgPage,
         }}
       >
         <h1

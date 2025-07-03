@@ -113,7 +113,7 @@ function CustomFooter() {
             </Space>
             <div style={{ marginTop: 12 }}>
               <img
-                src="https://storage.googleapis.com/a1aa/image/d9dad149-3684-46c6-7763-918bf0c5b011.jpg"
+                src="/QRFAP.jpg"
                 alt="QR code"
                 width={80}
                 height={80}

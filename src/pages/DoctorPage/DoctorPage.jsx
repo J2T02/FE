@@ -9,11 +9,13 @@ import {
 import { FaUserDoctor } from "react-icons/fa6";
 import DoctorHeader from "./components/DoctorHeader";
 import DoctorStoreProvider from "./contexts/DoctorStoreProvider";
+import { useToken } from "antd/lib/theme/useToken";
 
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
 function DoctorPage() {
   const [selectedKey, setSelectedKey] = useState("1");
+  const { token } = useToken();
 
   const renderContent = () => {
     switch (selectedKey) {
@@ -78,7 +80,16 @@ function DoctorPage() {
         <Layout>
           <DoctorHeader />
           <Content style={{ margin: "24px 16px", padding: 24 }}>
-            {renderContent()}
+            <div
+              style={{
+                backgroundColor: token.colorBgPage,
+                borderRadius: 12,
+                minHeight: 600,
+                padding: 24,
+              }}
+            >
+              {renderContent()}
+            </div>
           </Content>
         </Layout>
       </Layout>
