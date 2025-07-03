@@ -1,12 +1,38 @@
-import React, { useState, useEffect } from "react";
-import { Card, Radio, Typography, Space, Button, message, Row, Col, Avatar, Divider, Spin } from "antd";
-import { UserOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, StarOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  Radio,
+  Typography,
+  Space,
+  Button,
+  message,
+  Row,
+  Col,
+  Avatar,
+  Divider,
+  Spin,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  StarOutlined,
+} from "@ant-design/icons";
 import FeedbackSection from "~/components/feedback/FeedbackSection";
 import { getFeedbacksByDoctorId } from "~/apis/mockData";
 
 const { Title, Text, Paragraph } = Typography;
 
-const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disablePrev, loading }) => {
+const DoctorSelection = ({
+  data,
+  doctors = [],
+  onUpdate,
+  onNext,
+  onPrev,
+  disablePrev,
+  loading,
+}) => {
   const [selectedDoctor, setSelectedDoctor] = useState(data?.doctorId || null);
   const [selectedDoctorDetail, setSelectedDoctorDetail] = useState(null);
 
@@ -41,13 +67,26 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
     onNext();
   };
 
-  const handleDoctorSelect = (doctorId) => {
-    setSelectedDoctor(doctorId);
-  };
+  const handleDoctorSelect = useCallback(
+    (doctorId) => {
+      try {
+        if (selectedDoctor === doctorId) {
+          setSelectedDoctor(null);
+          setSelectedDoctorDetail(null);
+        } else {
+          setSelectedDoctor(doctorId);
+        }
+      } catch (error) {
+        console.error("Error in handleDoctorSelect:", error);
+        message.error("Có lỗi xảy ra khi chọn bác sĩ.");
+      }
+    },
+    [selectedDoctor]
+  );
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px' }}>
+      <div style={{ textAlign: "center", padding: "40px" }}>
         <Spin size="large" tip="Đang tải danh sách bác sĩ..." />
       </div>
     );
@@ -68,9 +107,18 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
         <Row gutter={24}>
           {/* Vùng bên trái - Danh sách bác sĩ */}
           <Col span={12}>
-            <Card title="Danh sách bác sĩ" style={{ height: 600, overflowY: 'auto' }}>
+            <Card
+              title="Danh sách bác sĩ"
+              style={{ height: 600, overflowY: "auto" }}
+            >
               {doctors.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "#999",
+                  }}
+                >
                   <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
                   <Text>Không có bác sĩ nào khả dụng</Text>
                 </div>
@@ -85,25 +133,43 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
                       <Card
                         key={doc.docId}
                         size="small"
-                        style={{ 
-                          cursor: 'pointer',
-                          border: selectedDoctor === doc.docId ? '2px solid #1890ff' : '1px solid #d9d9d9',
-                          marginBottom: 8
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            selectedDoctor === doc.docId
+                              ? "2px solid #1890ff"
+                              : "1px solid #d9d9d9",
+                          marginBottom: 8,
                         }}
                         onClick={() => handleDoctorSelect(doc.docId)}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                            <Avatar 
-                              size={40} 
-                              icon={<UserOutlined />} 
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              flex: 1,
+                            }}
+                          >
+                            <Avatar
+                              size={40}
+                              icon={<UserOutlined />}
                               style={{ marginRight: 12 }}
                             />
                             <div>
-                              <Text strong>{doc.accountInfo?.fullName || "Chưa có tên"}</Text>
+                              <Text strong>
+                                {doc.accountInfo?.fullName || "Chưa có tên"}
+                              </Text>
                               <br />
                               <Text type="secondary">
-                                {doc.gender === 1 ? "Nam" : "Nữ"} • {doc.experience} năm kinh nghiệm
+                                {doc.gender === 1 ? "Nam" : "Nữ"} •{" "}
+                                {doc.experience} năm kinh nghiệm
                               </Text>
                             </div>
                           </div>
@@ -119,29 +185,41 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
 
           {/* Vùng bên phải - Chi tiết bác sĩ */}
           <Col span={12}>
-            <Card title="Thông tin chi tiết" style={{ height: 600, overflowY: 'auto' }}>
+            <Card
+              title="Thông tin chi tiết"
+              style={{ height: 600, overflowY: "auto" }}
+            >
               {selectedDoctorDetail ? (
                 <div>
-                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <Avatar 
-                      size={80} 
-                      icon={<UserOutlined />} 
+                  <div style={{ textAlign: "center", marginBottom: 24 }}>
+                    <Avatar
+                      size={80}
+                      icon={<UserOutlined />}
                       style={{ marginBottom: 16 }}
                     />
-                    <Title level={3}>{selectedDoctorDetail.accountInfo?.fullName || "Chưa có tên"}</Title>
+                    <Title level={3}>
+                      {selectedDoctorDetail.accountInfo?.fullName ||
+                        "Chưa có tên"}
+                    </Title>
                     <Text type="secondary">
-                      {selectedDoctorDetail.gender === 1 ? "Nam" : "Nữ"} • {selectedDoctorDetail.experience} năm kinh nghiệm
-
+                      {selectedDoctorDetail.gender === 1 ? "Nam" : "Nữ"} •{" "}
+                      {selectedDoctorDetail.experience} năm kinh nghiệm
                     </Text>
                   </div>
 
                   <Divider />
 
-                  <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                  <Space
+                    direction="vertical"
+                    size="middle"
+                    style={{ width: "100%" }}
+                  >
                     <div>
                       <Text strong>Thông tin cá nhân:</Text>
                       <Paragraph style={{ marginTop: 8 }}>
-                        <CalendarOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+                        <CalendarOutlined
+                          style={{ marginRight: 8, color: "#1890ff" }}
+                        />
                         <Text>Năm sinh: {selectedDoctorDetail.yob}</Text>
                       </Paragraph>
                     </div>
@@ -149,23 +227,44 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
                     <div>
                       <Text strong>Thông tin liên hệ:</Text>
                       <Paragraph style={{ marginTop: 8 }}>
-                        <MailOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-                        <Text>Email: {selectedDoctorDetail.accountInfo?.mail || "Chưa có"}</Text>
+                        <MailOutlined
+                          style={{ marginRight: 8, color: "#1890ff" }}
+                        />
+                        <Text>
+                          Email:{" "}
+                          {selectedDoctorDetail.accountInfo?.mail || "Chưa có"}
+                        </Text>
                         <br />
-                        <PhoneOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-                        <Text>Số điện thoại: {selectedDoctorDetail.accountInfo?.phone || "Chưa có"}</Text>
+                        <PhoneOutlined
+                          style={{ marginRight: 8, color: "#1890ff" }}
+                        />
+                        <Text>
+                          Số điện thoại:{" "}
+                          {selectedDoctorDetail.accountInfo?.phone || "Chưa có"}
+                        </Text>
                       </Paragraph>
                     </div>
 
                     <div>
                       <Text strong>Chuyên môn:</Text>
                       <Paragraph style={{ marginTop: 8 }}>
-                        <StarOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-                        <Text>Kinh nghiệm: {selectedDoctorDetail.experience} năm</Text>
+                        <StarOutlined
+                          style={{ marginRight: 8, color: "#1890ff" }}
+                        />
+                        <Text>
+                          Kinh nghiệm: {selectedDoctorDetail.experience} năm
+                        </Text>
                         <br />
-                        <Text>Trình độ: {selectedDoctorDetail.eduId === 1 ? "Cử nhân" : 
-                                         selectedDoctorDetail.eduId === 2 ? "Thạc sĩ" : 
-                                         selectedDoctorDetail.eduId === 3 ? "Tiến sĩ" : "Chưa có"}</Text>
+                        <Text>
+                          Trình độ:{" "}
+                          {selectedDoctorDetail.eduId === 1
+                            ? "Cử nhân"
+                            : selectedDoctorDetail.eduId === 2
+                            ? "Thạc sĩ"
+                            : selectedDoctorDetail.eduId === 3
+                            ? "Tiến sĩ"
+                            : "Chưa có"}
+                        </Text>
                       </Paragraph>
                     </div>
 
@@ -173,7 +272,11 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
                       <div>
                         <Text strong>Chứng chỉ:</Text>
                         <Paragraph style={{ marginTop: 8 }}>
-                          <a href={selectedDoctorDetail.filePathEdu} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={selectedDoctorDetail.filePathEdu}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             Xem chứng chỉ
                           </a>
                         </Paragraph>
@@ -182,21 +285,29 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
 
                     <div>
                       <Text strong>Phản hồi từ bệnh nhân:</Text>
-                      <FeedbackSection feedbacks={getFeedbacksByDoctorId(selectedDoctorDetail.docId)} />
+                      <FeedbackSection
+                        feedbacks={getFeedbacksByDoctorId(
+                          selectedDoctorDetail.docId
+                        )}
+                      />
                     </div>
                   </Space>
                 </div>
               ) : (
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: '#999'
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    color: "#999",
+                  }}
+                >
                   <UserOutlined style={{ fontSize: 64, marginBottom: 16 }} />
-                  <Text>Vui lòng chọn một bác sĩ để xem thông tin chi tiết</Text>
+                  <Text>
+                    Vui lòng chọn một bác sĩ để xem thông tin chi tiết
+                  </Text>
                 </div>
               )}
             </Card>
@@ -219,4 +330,3 @@ const DoctorSelection = ({ data, doctors = [], onUpdate, onNext, onPrev, disable
 };
 
 export default DoctorSelection;
-

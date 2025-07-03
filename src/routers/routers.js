@@ -93,8 +93,8 @@ const routers = [
     component: lazy(() => import("~pages/DoctorPage/LoginDoctor")),
   },
   {
-    path: "/doctorDashBoard", // trang login doctor
-    component: lazy(() => import("~pages/DoctorPage/DoctorDashBoard")),
+    path: "/doctorpage", // trang login doctor
+    component: lazy(() => import("~pages/DoctorPage/DoctorPage")),
   },
   //admin
   {
@@ -128,7 +128,7 @@ const routers = [
     ),
   },
   {
-    path: "/doctordetail/id",
+    path: "/doctordetail/:doctorId",
     component: lazy(() =>
       import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")
     ),

@@ -17,7 +17,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import isoWeeksInYear from "dayjs/plugin/isoWeeksInYear";
 import isLeapYear from "dayjs/plugin/isLeapYear";
-import axios from "axios";
+import { GetAllDoctorSchedule } from "../../../apis/bookingService";
 
 // Extend dayjs plugins
 dayjs.extend(isoWeek);
@@ -28,27 +28,15 @@ dayjs.extend(isLeapYear);
 const { Title } = Typography;
 
 const WorkScheduleManagement = ({ doctorId }) => {
-  const [scheduleData, setScheduleData] = useState([
-  { "workDate": "2025-06-24", "shift": 1 },
-  { "workDate": "2025-06-24", "shift": 2 },
-  { "workDate": "2025-06-25", "shift": 1 },
-  { "workDate": "2025-06-26", "shift": 2 },
-  { "workDate": "2025-06-27", "shift": 1 }
-]
-);
-  const [fixedSchedule, setFixedSchedule] = useState({
-  "1": [1, 2],  // Thứ Hai: sáng và chiều
-  "3": [1],     // Thứ Tư: sáng
-  "5": [2]      // Thứ Sáu: chiều
-}
-);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [fixedSchedule, setFixedSchedule] = useState({});
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf("isoWeek"));
   const [yearOptions, setYearOptions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
   useEffect(() => {
     loadDoctorSchedule();
-    loadFixedSchedule();
+    // loadFixedSchedule(); // giữ nguyên nếu có API
     initYearOptions();
   }, [doctorId, selectedYear, currentWeek]);
 
@@ -59,25 +47,22 @@ const WorkScheduleManagement = ({ doctorId }) => {
   };
 
   const loadDoctorSchedule = async () => {
-    const startOfWeek = currentWeek.startOf("isoWeek").format("YYYY-MM-DD");
-    const endOfWeek = currentWeek.endOf("isoWeek").format("YYYY-MM-DD");
-
     try {
-      const res = await axios.get(
-        `/api/doctors/${doctorId}/schedule?from=${startOfWeek}&to=${endOfWeek}`
-      );
-      setScheduleData(res.data);
+      // Gọi API lấy lịch làm việc của bác sĩ
+      const res = await GetAllDoctorSchedule(doctorId);
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        // Mapping về format cũ: { workDate, shift }
+        const mapped = res.data.data.map((item) => ({
+          workDate: item.workDate,
+          shift: item.slot?.slotId || 1, // 1: sáng, 2: chiều
+        }));
+        setScheduleData(mapped);
+      } else {
+        setScheduleData([]);
+      }
     } catch (err) {
+      setScheduleData([]);
       console.error("Lỗi khi tải lịch làm việc:", err);
-    }
-  };
-
-  const loadFixedSchedule = async () => {
-    try {
-      const res = await axios.get(`/api/doctors/${doctorId}/fixed-schedule`);
-      setFixedSchedule(res.data); // { 1: [1, 2], ... }
-    } catch (err) {
-      console.error("Lỗi khi tải lịch cố định:", err);
     }
   };
 
@@ -144,7 +129,9 @@ const WorkScheduleManagement = ({ doctorId }) => {
       if (!exists) {
         Modal.confirm({
           title: "Thêm lịch làm việc",
-          content: `Thêm lịch làm việc ca ${label} vào ${dayjs(date).format("DD/MM/YYYY")}?`,
+          content: `Thêm lịch làm việc ca ${label} vào ${dayjs(date).format(
+            "DD/MM/YYYY"
+          )}?`,
           onOk: () => handleAddSchedule(date, shift),
           okText: "Thêm",
           cancelText: "Hủy",
@@ -152,7 +139,9 @@ const WorkScheduleManagement = ({ doctorId }) => {
       } else {
         Modal.confirm({
           title: "Xóa lịch làm việc",
-          content: `Xóa lịch làm việc ca ${label} vào ${dayjs(date).format("DD/MM/YYYY")}?`,
+          content: `Xóa lịch làm việc ca ${label} vào ${dayjs(date).format(
+            "DD/MM/YYYY"
+          )}?`,
           onOk: () => handleRemoveSchedule(date, shift),
           okText: "Xóa",
           cancelText: "Hủy",

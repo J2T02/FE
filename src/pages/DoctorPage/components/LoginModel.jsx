@@ -34,7 +34,7 @@ const LoginModel = () => {
           Cookies.set("accDocId", accId);
           Cookies.set("token", token);
           message.success(res.data.message);
-          navigate("/doctorDashBoard");
+          navigate("/Doctorpage");
         } else {
           message.error(res.data.message);
         }

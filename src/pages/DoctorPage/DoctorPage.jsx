@@ -12,7 +12,7 @@ import DoctorStoreProvider from "./contexts/DoctorStoreProvider";
 
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
-function DoctorDashBoard() {
+function DoctorPage() {
   const [selectedKey, setSelectedKey] = useState("1");
 
   const renderContent = () => {
@@ -86,4 +86,4 @@ function DoctorDashBoard() {
   );
 }
 
-export default DoctorDashBoard;
+export default DoctorPage;

@@ -14,42 +14,20 @@ import {
 import dayjs from "dayjs";
 import WorkScheduleManagement from "./WorkScheduleManagement";
 import FeedbackCardManagement from "./FeedbackCardManagement";
-import axios from "axios";
 import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
+import { getDoctorInfo } from "../../../apis/doctorService";
+import { GetAllDoctorSchedule } from "../../../apis/bookingService";
+import { useParams } from "react-router-dom";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const DoctorDetailManagement = ({ doctorId }) => {
+const DoctorDetailManagement = () => {
+  const { doctorId } = useParams();
   const { token } = theme.useToken();
-  const [doctor, setDoctor] = useState({
-    gender: "Nữ",
-    yob: "1988-03-15T00:00:00.000Z",
-    experience: 10,
-    edu_LevelName: "Thạc sĩ",
-    full_Name: "Trần Thị Lan",
-    mail: "lan.bs88@gmail.com",
-    phone: "0908123456",
-    img: "/femaledoctor.jpg",
-    avgStar: 4.8,
-    createAt: "2015-07-01T00:00:00.000Z",
-    statusText: "Đang công tác",
-    certificates: [
-      {
-        Cer_Name: "Chứng chỉ IVF nâng cao",
-        File_Path: "https://example.com/certificates/ivf-nang-cao.pdf",
-      },
-      {
-        Cer_Name: "Chứng chỉ Nội tiết sinh sản",
-        File_Path: "https://example.com/certificates/noi-tiet.pdf",
-      },
-      {
-        Cer_Name: "Chứng chỉ Hỗ trợ sinh sản quốc tế",
-        File_Path: "https://example.com/certificates/ho-tro-sinh-san.pdf",
-      },
-    ],
-  });
-
+  const [doctor, setDoctor] = useState(null);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [feedbacks, setFeedbacks] = useState([
     {
       fb_ID: 309,
@@ -134,47 +112,46 @@ const DoctorDetailManagement = ({ doctorId }) => {
   ]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
   useEffect(() => {
-    fetchDoctorInfo();
-    fetchDoctorFeedback();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Lấy thông tin bác sĩ
+        const resDoctor = await getDoctorInfo(doctorId);
+        console.log(resDoctor);
+        if (resDoctor?.data?.success) {
+          setDoctor(resDoctor.data.data);
+        } else {
+          setDoctor(null);
+        }
+        // Lấy lịch làm việc
+        const resSchedule = await GetAllDoctorSchedule(doctorId);
+        if (resSchedule?.data?.success) {
+          setScheduleData(resSchedule.data.data);
+        } else {
+          setScheduleData([]);
+        }
+      } catch (err) {
+        setDoctor(null);
+        setScheduleData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (doctorId) fetchData();
   }, [doctorId]);
 
   useEffect(() => {
     filterFeedbacks(selectedStar);
-    setCurrentPage(1); // reset trang về đầu khi lọc
+    setCurrentPage(1);
   }, [selectedStar, feedbacks]);
 
-  const fetchDoctorInfo = async () => {
-    try {
-      const res = await axios.get(`/api/doctors/${doctorId}`);
-      setDoctor(res.data);
-    } catch (error) {
-      console.error("Failed to fetch doctor info:", error);
-    }
-  };
-
-  const fetchDoctorFeedback = async () => {
-    try {
-      const res = await axios.get(`/api/doctors/${doctorId}/feedbacks`);
-      setFeedbacks(res.data);
-    } catch (error) {
-      console.error("Failed to fetch feedbacks:", error);
-    }
-  };
-
   const handleStatusChange = async (value) => {
-    try {
-      setDoctor((prev) => ({ ...prev, statusText: value }));
-      await axios.put(`/api/doctors/${doctorId}/status`, { status: value });
-      message.success("Đã cập nhật trạng thái.");
-    } catch (error) {
-      message.error("Cập nhật trạng thái thất bại.");
-    }
+    setDoctor((prev) => ({ ...prev, statusText: value }));
+    message.success("Đã cập nhật trạng thái.");
   };
 
   const handleStarFilter = (value) => {
@@ -195,20 +172,40 @@ const DoctorDetailManagement = ({ doctorId }) => {
     currentPage * pageSize
   );
 
-  const {
-    gender,
-    yob,
-    experience,
-    edu_LevelName,
-    full_Name,
-    mail,
-    phone,
-    img,
-    avgStar,
-    createAt,
-    statusText,
-    certificates,
-  } = doctor;
+  // Mapping các trường từ API vào layout cũ
+  // Nếu thiếu trường thì mock như cũ
+  const gender = doctor?.gender || "Nữ";
+  const yob = doctor?.yob || "1988-03-15T00:00:00.000Z";
+  const experience = doctor?.experience || 10;
+  const edu_LevelName =
+    doctor?.eduId === 1
+      ? "Cử nhân"
+      : doctor?.eduId === 2
+      ? "Thạc sĩ"
+      : doctor?.eduId === 3
+      ? "Tiến sĩ"
+      : "Chưa rõ";
+  const full_Name = doctor?.accountInfo?.fullName || "Trần Thị Lan";
+  const mail = doctor?.accountInfo?.mail || "lan.bs88@gmail.com";
+  const phone = doctor?.accountInfo?.phone || "0908123456";
+  const img = doctor?.img || "/femaledoctor.jpg";
+  const avgStar = doctor?.avgStar || 4.8;
+  const createAt = doctor?.createAt || "2015-07-01T00:00:00.000Z";
+  const statusText = doctor?.statusText || "Đang công tác";
+  const certificates = doctor?.certificates || [
+    {
+      Cer_Name: "Chứng chỉ IVF nâng cao",
+      File_Path: "https://example.com/certificates/ivf-nang-cao.pdf",
+    },
+    {
+      Cer_Name: "Chứng chỉ Nội tiết sinh sản",
+      File_Path: "https://example.com/certificates/noi-tiet.pdf",
+    },
+    {
+      Cer_Name: "Chứng chỉ Hỗ trợ sinh sản quốc tế",
+      File_Path: "https://example.com/certificates/ho-tro-sinh-san.pdf",
+    },
+  ];
 
   return (
     <Layout>

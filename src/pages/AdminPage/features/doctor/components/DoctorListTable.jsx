@@ -1,17 +1,42 @@
-import { Table, Avatar, Input, Button, Tag, Space } from "antd";
+import { Table, Avatar, Input, Button, Tag, Space, Spin, Alert } from "antd";
 import { UserOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { GetAllDoctor } from "~/apis/bookingService";
 
-const DoctorListTable = ({ data = [], onSelect, onAddDoctor }) => {
+const DoctorListTable = () => {
   const [search, setSearch] = useState("");
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // Gọi API khi mouse enter vào component
+  const handleMouseEnter = async () => {
+    if (doctors.length > 0 || loading) return; // Đã có data hoặc đang loading thì không gọi lại
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await GetAllDoctor();
+      if (res?.data?.success) {
+        setDoctors(res.data.data);
+      } else {
+        setError(res?.data?.message || "Không thể tải danh sách bác sĩ");
+      }
+    } catch (err) {
+      setError("Không thể tải danh sách bác sĩ");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredDoctors = useMemo(() => {
-    return data.filter((doctor) =>
-      `${doctor.doctorName} ${doctor.email}`
+    return doctors.filter((doctor) =>
+      `${doctor.accountInfo?.fullName || ""} ${doctor.accountInfo?.mail || ""}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
-  }, [search, data]);
+  }, [search, doctors]);
 
   const renderStatus = (status) => {
     const map = {
@@ -30,8 +55,15 @@ const DoctorListTable = ({ data = [], onSelect, onAddDoctor }) => {
         <Space>
           <Avatar icon={<UserOutlined />} />
           <div>
-            <div style={{ fontWeight: 500 }}>{record.doctorName}</div>
-            <div style={{ fontSize: 12, color: "#888" }}>{record.email}</div>
+            <div style={{ fontWeight: 500 }}>
+              {record.accountInfo?.fullName}
+            </div>
+            <div style={{ fontSize: 12, color: "#888" }}>
+              {record.accountInfo?.mail}
+            </div>
+            {/* <div style={{ fontSize: 12, color: "#888" }}>
+              {record.accountInfo?.phone}
+            </div> */}
           </div>
         </Space>
       ),
@@ -46,7 +78,11 @@ const DoctorListTable = ({ data = [], onSelect, onAddDoctor }) => {
       title: "",
       key: "action",
       render: (_, record) => (
-        <Button type="link" onClick={() => onSelect?.(record)}>
+        <Button
+          type="link"
+          onClick={() => navigate(`/doctordetail/${record.docId}`)}
+          // onClick={() => navigate(`/doctordetail/id`)}
+        >
           Xem chi tiết
         </Button>
       ),
@@ -61,6 +97,7 @@ const DoctorListTable = ({ data = [], onSelect, onAddDoctor }) => {
         borderRadius: 8,
         marginBottom: 24,
       }}
+      onMouseEnter={handleMouseEnter}
     >
       <div
         style={{
@@ -75,17 +112,24 @@ const DoctorListTable = ({ data = [], onSelect, onAddDoctor }) => {
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
-        <Button type="primary" icon={<PlusOutlined />} onClick={onAddDoctor}>
+        {/* <Button type="primary" icon={<PlusOutlined />} onClick={onAddDoctor}>
           Thêm bác sĩ
-        </Button>
+        </Button> */}
       </div>
-
-      <Table
-        dataSource={filteredDoctors}
-        columns={columns}
-        rowKey="doctorId"
-        pagination={{ pageSize: 5 }}
-      />
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 32 }}>
+          <Spin size="large" tip="Đang tải danh sách bác sĩ..." />
+        </div>
+      ) : error ? (
+        <Alert type="error" message={error} />
+      ) : (
+        <Table
+          dataSource={filteredDoctors}
+          columns={columns}
+          rowKey="docId"
+          pagination={{ pageSize: 5 }}
+        />
+      )}
     </div>
   );
 };
