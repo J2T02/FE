@@ -1,212 +1,49 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { getDoctorList } from "../apis/doctorService";
+import { GetAllService } from "../apis/service";
 
 const BookingContext = createContext();
 export const useBooking = () => useContext(BookingContext);
 
 export const BookingProvider = ({ children }) => {
-  const [open, setOpen] = useState(false);
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [doctor, setDoctor] = useState(null);
-  const [doctors, setDoctors] = useState([]);
-  const [services, setServices] = useState([]);
-  const [blogs, setBlogs] = useState([]);
+  const [doctorList, setDoctorList] = useState([]);
+  const [serviceList, setServiceList] = useState([]);
+  const [blogList, setBlogList] = useState([]); // Still mock, no API
 
-  // Load dữ liệu khi modal mở
   useEffect(() => {
-    loadDoctors();
-    loadDoctors();
-    loadServices();
-    loadBlogs();
+    fetchDoctorList();
+    fetchServiceList();
+    fetchBlogList();
   }, []);
-  // 🧪 Mock: load bác sĩ
-  const loadDoctors = async () => {
-    const mockDoctors = [
-      {
-        doctorId: 1,
-        doctorName: "Nguyễn Văn A",
-        email: "bs.a@gmail.com",
-        phone: "0909123456",
-        star: 5,
-        gender: 1,
-        yob: "1990-06-01",
-        img: "/anhcuong.jpg",
-        experience: 4,
-        startDate: "2021-06-01",
-        status: 1,
-        eduId: 1, // Cử nhân
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 2,
-        doctorName: "Trần Thị B",
-        email: "bs.b@gmail.com",
-        phone: "0909123457",
-        star: 4,
-        gender: 2,
-        yob: "1985-03-15",
-        img: "/anhhuynh.png",
-        experience: 10,
-        startDate: "2013-04-10",
-        status: 1,
-        eduId: 2, // Thạc sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 3,
-        doctorName: "Lê Văn C",
-        email: "bs.c@gmail.com",
-        phone: "0909123458",
-        star: 3,
-        gender: 1,
-        yob: "1988-12-20",
-        img: "/anhket.jpg",
-        experience: 7,
-        startDate: "2016-01-15",
-        status: 2,
-        eduId: 1, // Cử nhân
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 4,
-        doctorName: "Phạm Thị D",
-        email: "bs.d@gmail.com",
-        phone: "0909123459",
-        star: 5,
-        gender: 2,
-        yob: "1992-07-10",
-        img: "/anhnhan.jpg",
-        experience: 3,
-        startDate: "2022-01-01",
-        status: 1,
-        eduId: 3, // Tiến sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 5,
-        doctorName: "Đỗ Văn E",
-        email: "bs.e@gmail.com",
-        phone: "0909123460",
-        star: 4,
-        gender: 1,
-        yob: "1980-09-25",
-        img: "/anhthinh.jpg",
-        experience: 15,
-        startDate: "2009-05-20",
-        status: 3,
-        eduId: 2, // Thạc sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 6,
-        doctorName: "Ngô Thị F",
-        email: "bs.f@gmail.com",
-        phone: "0909123461",
-        star: 4,
-        gender: 2,
-        yob: "1995-01-30",
-        img: "/doctorhuy.jpg",
-        experience: 2,
-        startDate: "2023-03-10",
-        status: 1,
-        eduId: 1, // Cử nhân
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 7,
-        doctorName: "Võ Văn G",
-        email: "bs.g@gmail.com",
-        phone: "0909123462",
-        star: 3,
-        gender: 1,
-        yob: "1987-11-11",
-        img: "/femaledoctor.jpg",
-        experience: 8,
-        startDate: "2015-06-20",
-        status: 1,
-        eduId: 2, // Thạc sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 8,
-        doctorName: "Huỳnh Thị H",
-        email: "bs.h@gmail.com",
-        phone: "0909123463",
-        star: 5,
-        gender: 2,
-        yob: "1991-04-05",
-        img: "/khanhtuyensinh.jpg",
-        experience: 5,
-        startDate: "2019-09-01",
-        status: 2,
-        eduId: 3, // Tiến sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 9,
-        doctorName: "Bùi Văn I",
-        email: "bs.i@gmail.com",
-        phone: "0909123464",
-        star: 4,
-        gender: 1,
-        yob: "1983-08-08",
-        img: "/maihadoctor.jpg",
-        experience: 12,
-        startDate: "2011-02-18",
-        status: 1,
-        eduId: 1, // Cử nhân
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-      {
-        doctorId: 10,
-        doctorName: "Tô Thị K",
-        email: "bs.k@gmail.com",
-        phone: "0909123465",
-        star: 5,
-        gender: 2,
-        yob: "1989-10-10",
-        img: "/quocanh.jpg",
-        experience: 6,
-        startDate: "2017-08-01",
-        status: 3,
-        eduId: 3, // Tiến sĩ
-        filePathEdu: "https://fap.fpt.edu.vn/",
-      },
-    ];
-    setDoctors(mockDoctors);
-  };
-  //Mock: load Services
-  const loadServices = async () => {
-    const mockService = [
-      {
-        serId: 1,
-        serName: "Điều trị thụ tinh trong ống nghiệm (IVF)",
-        price: 30000000,
-        description:
-          "Chúng tôi cung cấp dịch vụ thụ tinh trong ống nghiệm (IVF) giúp các cặp vợ chồng hiếm muộn có cơ hội trở thành cha mẹ. Quy trình hiện đại, an toàn và tỷ lệ thành công cao.",
-        filePath: "/IVF.jpg",
-      },
-      {
-        serId: 2,
-        serName:
-          "Chữa hiếm muộn bằng phương pháp bơm tinh trùng vào tử cung (IUI)",
-        price: 15000000,
-        description:
-          "Phương pháp bơm tinh trùng vào tử cung (IUI) là một trong những giải pháp hiệu quả cho các cặp vợ chồng gặp vấn đề về khả năng thụ thai tự nhiên. Được thực hiện bởi các chuyên gia giàu kinh nghiệm.",
-        filePath: "/IVF.jpg",
-      },
-      {
-        serId: 3,
-        serName: "Chữa hiếm muộn bằng phẫu thuật cắt ống dẫn trứng tắc nghẽn",
-        price: 25000000,
-        description:
-          "Chúng tôi cung cấp phẫu thuật điều trị các vấn đề liên quan đến ống dẫn trứng tắc nghẽn, giúp tăng khả năng mang thai tự nhiên cho phụ nữ bị vô sinh do vấn đề này.",
-        filePath: "/IVF.jpg",
-      },
-    ];
-    setServices(mockService);
+
+  const fetchDoctorList = async () => {
+    try {
+      const res = await getDoctorList();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setDoctorList(res.data.data);
+      } else {
+        setDoctorList([]);
+      }
+    } catch (err) {
+      setDoctorList([]);
+    }
   };
 
-  const loadBlogs = async () => {
+  const fetchServiceList = async () => {
+    try {
+      const res = await GetAllService();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setServiceList(res.data.data);
+      } else {
+        setServiceList([]);
+      }
+    } catch (err) {
+      setServiceList([]);
+    }
+  };
+
+  // Blog vẫn mock vì chưa có API
+  const fetchBlogList = async () => {
     const mockBlog = [
       {
         blogId: 1,
@@ -309,31 +146,18 @@ export const BookingProvider = ({ children }) => {
         isActive: true,
       },
     ];
-    setBlogs(mockBlog);
+    setBlogList(mockBlog);
   };
-  const handleCustomerSubmit = (customerData) => {
-    // setUserInfo(customerData);
-    // localStorage.setItem("userInfo", JSON.stringify(customerData));
-    setShowCustomerModal(false);
-  };
+
   return (
     <BookingContext.Provider
       value={{
-        doctors,
-        services,
-        blogs,
+        doctorList,
+        serviceList,
+        blogList,
       }}
     >
       {children}
-
-      {/* {showCustomerModal && (
-        <CustomerInfoModal
-          open={showCustomerModal}
-          accId={1} // ✅ Truyền accId
-          onClose={() => setShowCustomerModal(false)}
-          onCreated={handleCustomerSubmit}
-        />
-      )} */}
     </BookingContext.Provider>
   );
 };

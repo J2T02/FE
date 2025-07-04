@@ -11,35 +11,33 @@ const { Option } = Select;
 
 function DoctorList() {
   const { token } = theme.useToken();
-  const { doctors } = useBooking();
+  const { doctorList } = useBooking();
 
   const [searchText, setSearchText] = useState("");
-  const [selectedStar, setSelectedStar] = useState(null);
+  // const [selectedStar, setSelectedStar] = useState(null); // Star filter will be added later
   const [selectedEdu, setSelectedEdu] = useState(null);
 
   // ✅ Hàm reset filter
   const handleResetFilters = () => {
     setSearchText("");
-    setSelectedStar(null);
+    // setSelectedStar(null);
     setSelectedEdu(null);
   };
 
-  // ✅ Lọc theo tên, sao, trình độ
+  // ✅ Lọc theo tên, trình độ (star filter will be added later)
   const filteredDoctors = useMemo(() => {
-    return doctors?.filter((doctor) => {
-      const matchName = doctor.doctorName
-        .toLowerCase()
+    return doctorList?.filter((doctor) => {
+      const matchName = doctor.accountInfo?.fullName
+        ?.toLowerCase()
         .includes(searchText.toLowerCase());
 
-      const matchStar =
-        selectedStar == null ? true : doctor.star === selectedStar;
-
+      // const matchStar = selectedStar == null ? true : doctor.star === selectedStar;
       const matchEdu =
-        selectedEdu == null ? true : doctor.eduId === selectedEdu;
+        selectedEdu == null ? true : doctor.eduInfo?.eduId === selectedEdu;
 
-      return matchName && matchStar && matchEdu;
+      return matchName && matchEdu; // && matchStar (add later)
     });
-  }, [doctors, searchText, selectedStar, selectedEdu]);
+  }, [doctorList, searchText, selectedEdu]);
 
   return (
     <Layout>
@@ -86,6 +84,7 @@ function DoctorList() {
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 240 }}
           />
+          {/*
           <Select
             placeholder="Lọc theo sao"
             allowClear
@@ -99,6 +98,7 @@ function DoctorList() {
               </Option>
             ))}
           </Select>
+          */}
           <Select
             placeholder="Lọc theo trình độ"
             allowClear
@@ -110,9 +110,7 @@ function DoctorList() {
             <Option value={2}>Thạc sĩ</Option>
             <Option value={3}>Tiến sĩ</Option>
           </Select>
-          <Button ty onClick={handleResetFilters}>
-            Reset bộ lọc
-          </Button>
+          <Button onClick={handleResetFilters}>Reset bộ lọc</Button>
         </Space>
 
         {/* Grid layout */}

@@ -1,4 +1,13 @@
-import { Typography, Card, Button, Tag, Space, message, Layout } from "antd";
+import {
+  Typography,
+  Card,
+  Button,
+  Tag,
+  Space,
+  message,
+  Layout,
+  theme,
+} from "antd";
 import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
 import { useEffect, useState } from "react";
@@ -6,7 +15,6 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { BookingHistory } from "../../../apis/bookingService";
-import { useToken } from "antd/lib/theme/useToken";
 
 const SLOT_LABELS = { 1: "08:00 - 12:00", 2: "13:00 - 17:00" };
 const STATUS_COLORS = {
@@ -21,7 +29,7 @@ export default function MyBooking() {
   const [bookings, setBookings] = useState([]);
   const { Title } = Typography;
   const navigate = useNavigate(); // ← THÊM
-  const { token } = useToken();
+  const { token } = theme.useToken();
   const formatDate = (str) => {
     if (!str) return "";
     const [day, month, year] = str.split("/");

@@ -1,7 +1,7 @@
 import { Button, Rate, theme } from "antd";
 const CardDoctor = ({ doctor }) => {
   const { token } = theme.useToken();
-  const { doctorId, doctorName, img, star, eduId } = doctor;
+  const { doctorId, accountInfo, img, star, eduInfo, certificateInfo } = doctor;
 
   const handleBooking = () => {};
 
@@ -44,7 +44,7 @@ const CardDoctor = ({ doctor }) => {
         />
         <img
           src={img}
-          alt={doctorName}
+          alt={accountInfo.fullName}
           style={{
             position: "relative",
             width: 224,
@@ -58,12 +58,12 @@ const CardDoctor = ({ doctor }) => {
 
       {/* Thông tin bác sĩ */}
       <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-        Bs.{doctorName}
+        Bs.{accountInfo.fullName}
       </h3>
 
       {/* Đánh giá sao */}
       <div style={{ marginBottom: 12 }}>
-        <Rate disabled defaultValue={star} />
+        <Rate disabled defaultValue={star ? star : 0} />
       </div>
 
       {/* Trình độ */}
@@ -74,7 +74,7 @@ const CardDoctor = ({ doctor }) => {
           marginBottom: 16,
         }}
       >
-        <strong>Trình độ:{eduId}</strong>
+        <strong>Trình độ:{eduInfo?.eduName}</strong>
       </div>
 
       {/* Nút đặt lịch */}

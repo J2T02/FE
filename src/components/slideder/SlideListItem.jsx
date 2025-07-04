@@ -8,7 +8,7 @@ function SlideListItem({ children }) {
     infinite: true,
     speed: 500,
     slidesToShow: 4, // Hiển thị 3 card
-    slidesToScroll: 1, // Trượt từng 1 card
+    slidesToScroll: 4, // Trượt từng 1 card
     autoplay: false,
     autoplaySpeed: 3000,
   };

@@ -1,5 +1,13 @@
 import axiosClients from "./axiosClients";
 
+const GetAllBooking = async () => {
+  return await axiosClients.get("/Booking/GetAllBooking");
+};
+const checkBooking = async (bookingId, statusId) => {
+  return await axiosClients.put(`/Booking/${bookingId}/status`, {
+    status: statusId,
+  });
+};
 const GetAllDoctor = async () => {
   return await axiosClients.get("/Doctor/all");
 };
@@ -53,4 +61,6 @@ export {
   updatebookingDoctor,
   updatebookingSchedule,
   GetAllDoctorSchedule,
+  GetAllBooking,
+  checkBooking,
 };

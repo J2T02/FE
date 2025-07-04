@@ -8,7 +8,7 @@ import CardService from "~components/card/cardservice/CardService";
 import { useBooking } from "~contexts/BookingContext";
 function Service() {
   const { token } = theme.useToken();
-  const { services } = useBooking();
+  const { serviceList } = useBooking();
   return (
     <Layout>
       <Header />
@@ -45,7 +45,7 @@ function Service() {
           Các giải pháp điều trị cá nhân hóa cho từng trường hợp vô sinh – hiếm
           muộn
         </p>
-        {services?.map((ser, index) => {
+        {serviceList?.map((ser, index) => {
           return <CardService service={ser} />;
         })}
       </div>

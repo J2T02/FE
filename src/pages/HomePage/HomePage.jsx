@@ -11,8 +11,7 @@ import { useBooking } from "~contexts/BookingContext";
 //
 function HomePage() {
   const { token } = theme.useToken();
-  const { doctors, services, blogs } = useBooking();
-
+  const { doctorList, serviceList, blogList } = useBooking();
   return (
     <Layout>
       <Header />
@@ -53,7 +52,7 @@ function HomePage() {
           Các giải pháp điều trị cá nhân hóa cho từng trường hợp vô sinh – hiếm
           muộn
         </p>
-        {services?.map((ser, index) => {
+        {serviceList?.map((ser, index) => {
           if (index <= 1) {
             return <CardService service={ser} />;
           }
@@ -111,7 +110,7 @@ function HomePage() {
           }}
         >
           <SlideListItem>
-            {doctors?.map((doctor, index) => (
+            {doctorList?.map((doctor, index) => (
               <div key={index} style={{ padding: "10px" }}>
                 <CardDoctor doctor={doctor} />
               </div>
@@ -151,7 +150,7 @@ function HomePage() {
             justifyContent: "start",
           }}
         >
-          {blogs?.map((blog, index) => {
+          {blogList?.map((blog, index) => {
             if (index <= 3) {
               return (
                 <div key={index} style={{ width: "270px" }}>

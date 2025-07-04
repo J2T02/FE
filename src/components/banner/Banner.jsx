@@ -80,6 +80,7 @@ const Banner = () => {
           title="Tìm bác sĩ"
           description="Tìm kiếm thông tin chuyên gia y tế Vinmec nhanh chóng"
           showDivider={false}
+          onClick={() => navigate("/doctors")}
         />
       </div>
     </div>
