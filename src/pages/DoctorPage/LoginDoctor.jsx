@@ -5,7 +5,7 @@ import Footer from "~components/footer/Footer";
 function LoginDoctor() {
   return (
     <Layout>
-      <Header />
+      {/* <Header /> */}
       <LoginModel />
       <Footer />
     </Layout>

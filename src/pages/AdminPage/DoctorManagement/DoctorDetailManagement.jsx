@@ -174,14 +174,14 @@ const DoctorDetailManagement = () => {
 
   // Mapping các trường từ API vào layout cũ
   // Nếu thiếu trường thì mock như cũ
-  const gender = doctor?.gender || "Nữ";
+  const gender = doctor?.gender || "";
   const yob = doctor?.yob || "1988-03-15T00:00:00.000Z";
   const experience = doctor?.experience || 10;
   const edu_LevelName = doctor?.eduInfo?.eduName;
-  const full_Name = doctor?.accountInfo?.fullName || "Trần Thị Lan";
+  const full_Name = doctor?.accountInfo?.fullName || "";
   const mail = doctor?.accountInfo?.mail || "lan.bs88@gmail.com";
   const phone = doctor?.accountInfo?.phone || "0908123456";
-  const img = doctor?.img || "/femaledoctor.jpg";
+  const img = doctor?.img || "";
   const avgStar = doctor?.avgStar || 4.8;
   const createAt = doctor?.createAt || "2015-07-01T00:00:00.000Z";
   const status = doctor?.status?.statusId || 1;
