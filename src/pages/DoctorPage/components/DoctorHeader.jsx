@@ -7,13 +7,15 @@ import {
   theme,
   Space,
   Divider,
+  Tooltip,
 } from "antd";
 import {
   BellOutlined,
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
-  InfoCircleOutlined,
+  LogoutOutlined,
+  ProfileOutlined,
 } from "@ant-design/icons";
 import { useContext, useEffect, useState } from "react";
 import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
@@ -29,21 +31,26 @@ const DoctorHeader = () => {
 
   const { doctorInfo, handleLogout } = context;
 
+  // 👉 Link ảnh nền và logo
+  const backgroundImageUrl =
+    "https://images.unsplash.com/photo-1588776814546-ec7a1f2c3441?auto=format&fit=crop&w=1600&q=80";
+  const logoImageUrl = "/Logo.png";
+
   const [notifications, setNotifications] = useState([
-    { id: 1, content: "Có lịch khám mới lúc 10:00 sáng mai" },
-    { id: 2, content: "Một bệnh nhân vừa check-in" },
+    { id: 1, content: "🕙 Lịch khám mới lúc 10:00 sáng mai" },
+    { id: 2, content: "🧑‍⚕️ Bệnh nhân Nguyễn Văn A vừa check-in" },
   ]);
   const [unreadCount, setUnreadCount] = useState(2);
 
   const notificationItems = notifications.length
     ? notifications.map((item) => ({
         key: item.id,
-        label: item.content,
+        label: <Text style={{ fontSize: 13 }}>{item.content}</Text>,
       }))
     : [
         {
           key: "no-noti",
-          label: "Không có thông báo",
+          label: <Text type="secondary">Không có thông báo</Text>,
           disabled: true,
         },
       ];
@@ -51,10 +58,12 @@ const DoctorHeader = () => {
   const avatarItems = [
     {
       key: "profile",
+      icon: <ProfileOutlined />,
       label: "Hồ sơ cá nhân",
     },
     {
       key: "logout",
+      icon: <LogoutOutlined />,
       label: "Đăng xuất",
       onClick: () => {
         if (handleLogout) handleLogout();
@@ -66,11 +75,10 @@ const DoctorHeader = () => {
     const timer = setTimeout(() => {
       setNotifications((prev) => [
         ...prev,
-        { id: prev.length + 1, content: "Thông báo mới đến!" },
+        { id: prev.length + 1, content: "🔔 Thông báo mới đến!" },
       ]);
       setUnreadCount((count) => count + 1);
-    }, 7000);
-
+    }, 15000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -82,93 +90,148 @@ const DoctorHeader = () => {
   return (
     <Header
       style={{
+        position: "relative",
         padding: "16px 24px",
-        minHeight: 80,
-        lineHeight: "normal",
+        minHeight: 120,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: token.colorBgBase,
+        backgroundColor: "#fff",
         borderBottom: "1px solid #f0f0f0",
+        overflow: "hidden",
         zIndex: 99,
       }}
     >
-      {/* LEFT SIDE */}
-      <div>
-        <Title level={3} style={{ margin: 0, color: "#d6336c" }}>
-          Trang Bác Sĩ
-        </Title>
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          Quản lý lịch trình, bệnh nhân và điều trị
-        </Text>
+      {/* 👉 Ảnh nền RÕ, không làm mờ */}
+      <img
+        src="/Header.png"
+        alt="Background"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: 0,
+        }}
+      />
+
+      {/* 👉 Logo nằm giữa header */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 1,
+        }}
+      >
+        <img
+          src={logoImageUrl}
+          alt="Logo"
+          style={{
+            width: 160,
+            height: "auto",
+            objectFit: "contain",
+          }}
+        />
       </div>
 
-      {/* RIGHT SIDE */}
-      <Space align="center" size="large">
-        <Space size="middle">
-          <PhoneOutlined style={{ color: token.colorPrimary }} />
-          <Text strong>1900 123 456</Text>
-        </Space>
+      {/* 👉 Nội dung chính */}
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          zIndex: 2,
+        }}
+      >
+        {/* LEFT */}
+        <div>
+          <Title level={3} style={{ margin: 0, color: "#d6336c" }}>
+          Trang Bác Sĩ
+          </Title>
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Quản lý lịch trình, bệnh nhân và điều trị hiệu quả
+          </Text>
+        </div>
 
-        <Space size="middle">
-          <MailOutlined style={{ color: token.colorPrimary }} />
-          <Text strong>support@clinic.vn</Text>
-        </Space>
+        {/* RIGHT */}
+        <Space align="center" size="large">
+          <Space size="middle">
+            <Tooltip title="Hotline hỗ trợ">
+              <PhoneOutlined style={{ color: token.colorPrimary }} />
+            </Tooltip>
+            <Text strong style={{ fontSize: 13 }}>1900 123 456</Text>
+          </Space>
 
-        <Dropdown
-          menu={{ items: notificationItems }}
-          trigger={["click"]}
-          placement="bottomRight"
-          onOpenChange={(open) => {
-            if (open) {
-              setUnreadCount(0);
-            }
-          }}
-        >
-          <Badge count={unreadCount} size="small">
-            <BellOutlined
-              style={{ fontSize: 20, cursor: "pointer", color: "#555" }}
-            />
-          </Badge>
-        </Dropdown>
+          <Space size="middle">
+            <Tooltip title="Email hỗ trợ">
+              <MailOutlined style={{ color: token.colorPrimary }} />
+            </Tooltip>
+            <Text strong style={{ fontSize: 13 }}>support@clinic.vn</Text>
+          </Space>
 
-        <Divider type="vertical" />
-
-        <Dropdown
-          menu={{ items: avatarItems, onClick: handleMenuClick }}
-          trigger={["click"]}
-          placement="bottomRight"
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              gap: 8,
-            }}
+          <Dropdown
+            menu={{ items: notificationItems }}
+            trigger={["click"]}
+            placement="bottomRight"
+            onOpenChange={(open) => open && setUnreadCount(0)}
           >
-            <Avatar
-              size="small"
-              src={doctorInfo?.accountInfo?.img || null}
-              icon={!doctorInfo?.accountInfo?.img && <UserOutlined />}
-              style={{ backgroundColor: token.colorPrimary }}
-            />
-            <div style={{ lineHeight: 1.2 }}>
-              <span style={{ fontWeight: "bold", fontSize: 12 }}>Bác sĩ</span>
-              <br />
-              <span
+            <Badge count={unreadCount} size="small" offset={[-2, 2]}>
+              <BellOutlined
                 style={{
-                  fontWeight: 500,
-                  color: "rgb(107 114 128)",
-                  fontSize: 12,
+                  fontSize: 20,
+                  cursor: "pointer",
+                  color: unreadCount ? "#fa541c" : "#555",
                 }}
-              >
-                {doctorInfo?.accountInfo?.fullName || "unknown"}
-              </span>
+              />
+            </Badge>
+          </Dropdown>
+
+          <Divider type="vertical" />
+
+          <Dropdown
+            menu={{ items: avatarItems, onClick: handleMenuClick }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                gap: 10,
+                padding: "4px 8px",
+                borderRadius: 6,
+                background: "#f9fafb",
+              }}
+            >
+              <Avatar
+                size="small"
+                src={doctorInfo?.accountInfo?.img || null}
+                icon={!doctorInfo?.accountInfo?.img && <UserOutlined />}
+                style={{ backgroundColor: token.colorPrimary }}
+              />
+              <div style={{ lineHeight: 1.2 }}>
+                <span style={{ fontWeight: "bold", fontSize: 13 }}>Bác sĩ</span>
+                <br />
+                <span
+                  style={{
+                    fontWeight: 500,
+                    color: "rgb(107 114 128)",
+                    fontSize: 12,
+                  }}
+                >
+                  {doctorInfo?.accountInfo?.fullName || "Chưa rõ tên"}
+                </span>
+              </div>
             </div>
-          </div>
-        </Dropdown>
-      </Space>
+          </Dropdown>
+        </Space>
+      </div>
     </Header>
   );
 };

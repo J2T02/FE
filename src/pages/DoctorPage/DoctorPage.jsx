@@ -1,20 +1,63 @@
-import React, { useState } from "react";
-import { Layout, Menu, Typography } from "antd";
+import React, { useState, useContext } from "react";
+import { Layout, Menu, Typography, Avatar } from "antd";
 import {
   CalendarOutlined,
   TeamOutlined,
   FileTextOutlined,
   ScheduleOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+
 import DoctorHeader from "./components/DoctorHeader";
-import DoctorStoreProvider from "./contexts/DoctorStoreProvider";
+import DoctorStoreProvider, {
+  DoctorStoreContext,
+} from "./contexts/DoctorStoreProvider";
+
 import ScheduleManagement from "./ScheduleManagement/ScheduleManagement";
 import BookingManagement from "./BookingManagement/BookingManagement";
 import PatientManagement from "./PatientManagement/PatientManagement";
 import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
 
 const { Sider, Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
+
+const SidebarLogo = () => {
+  const context = useContext(DoctorStoreContext);
+  const navigate = useNavigate();
+
+  if (!context) return null;
+
+  const { doctorInfo } = context;
+  const avatarUrl = doctorInfo?.accountInfo?.img || null;
+  const fullName = doctorInfo?.accountInfo?.fullName || "Bác sĩ";
+
+  const handleAvatarClick = () => {
+    navigate("/doctordetail"); // 👉 Điều hướng khi click avatar
+  };
+
+  return (
+    <div
+      style={{
+        height: 100,
+        margin: 16,
+        textAlign: "center",
+        cursor: "pointer",
+      }}
+      onClick={handleAvatarClick}
+    >
+      <Avatar
+        src={avatarUrl}
+        icon={!avatarUrl && <UserOutlined />}
+        size={80}
+        style={{ marginBottom: 8 }}
+      />
+      <Text strong style={{ display: "block", fontSize: 14 }}>
+        {fullName}
+      </Text>
+    </div>
+  );
+};
 
 const DoctorPanel = () => {
   const [selectedKey, setSelectedKey] = useState("1");
@@ -61,21 +104,7 @@ const DoctorPanel = () => {
     <DoctorStoreProvider>
       <Layout style={{ minHeight: "100vh" }}>
         <Sider theme="light" width={220} style={{ paddingTop: 16 }}>
-          <div
-            style={{
-              height: 64,
-              margin: 16,
-              textAlign: "center",
-              fontWeight: "bold",
-              fontSize: 18,
-            }}
-          >
-            <img
-              style={{ width: "153px", height: "53px" }}
-              src="/Logo.png"
-              alt="Logo"
-            />
-          </div>
+          <SidebarLogo />
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
