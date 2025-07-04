@@ -185,21 +185,8 @@ const DoctorDetailManagement = () => {
   const avgStar = doctor?.avgStar || 4.8;
   const createAt = doctor?.createAt || "2015-07-01T00:00:00.000Z";
   const status = doctor?.status?.statusId || 1;
-  const certificates = doctor?.certificateInfo || [
-    {
-      cerName: "Chứng chỉ IVF nâng cao",
-      filePath: "https://example.com/certificates/ivf-nang-cao.pdf",
-    },
-    {
-      cerName: "Chứng chỉ Nội tiết sinh sản",
-      filePath: "https://example.com/certificates/noi-tiet.pdf",
-    },
-    {
-      cerName: "Chứng chỉ Hỗ trợ sinh sản quốc tế",
-      filePath: "https://example.com/certificates/ho-tro-sinh-san.pdf",
-    },
-  ];
-  console.log(doctor);
+  const certificates = doctor?.certificateInfo || [];
+
   return (
     <Layout>
       <Header />

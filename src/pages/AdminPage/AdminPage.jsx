@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout, Menu, Typography } from "antd";
+import { Layout, Menu, Typography, theme } from "antd";
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -19,7 +19,7 @@ const { Title } = Typography;
 
 const AdminPanel = () => {
   const [selectedKey, setSelectedKey] = useState("1");
-  const { token } = useToken();
+  const { token } = theme.useToken();
 
   const renderContent = () => {
     switch (selectedKey) {
