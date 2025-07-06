@@ -1,39 +1,17 @@
 import React, { useState, useMemo } from "react";
-import { Card, Select, Row, Col, Typography, Tag, Divider, Image } from "antd";
+import { Card, Select, Row, Col, Typography, Tag, Divider, Image, Button, Space, Avatar, Badge } from "antd";
+import { LeftOutlined, RightOutlined, CalendarOutlined, ClockCircleOutlined, UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
+import { 
+  mockAppointments, 
+  doctorWeeklySchedule, 
+  dailyTimeline
+} from "../../../data/mockScheduleData";
+
 dayjs.extend(isoWeek);
 
 const { Title, Text, Paragraph } = Typography;
-
-const doctorWeeklySchedule = {
-  // Tuần 30/06 - 06/07
-  "2025-06-30": ["afternoon"],
-  "2025-07-01": ["morning", "afternoon"],
-  "2025-07-02": [],
-  "2025-07-03": ["morning"],
-  "2025-07-04": ["morning", "afternoon"],
-  "2025-07-05": ["afternoon"],
-  "2025-07-06": [],
-
-  // Tuần 07/07 - 13/07
-  "2025-07-07": ["morning"],
-  "2025-07-08": ["afternoon"],
-  "2025-07-09": ["morning", "afternoon"],
-  "2025-07-10": [],
-  "2025-07-11": ["morning", "afternoon"],
-  "2025-07-12": [],
-  "2025-07-13": ["afternoon"],
-
-  // Tuần 14/07 - 20/07
-  "2025-07-14": ["morning"],
-  "2025-07-15": [],
-  "2025-07-16": ["afternoon"],
-  "2025-07-17": ["morning"],
-  "2025-07-18": ["afternoon"],
-  "2025-07-19": ["morning", "afternoon"],
-  "2025-07-20": [],
-};
 
 const generateWeekStartDates = (year) => {
   const firstMonday = dayjs(`${year}-01-01`).startOf("isoWeek");
@@ -69,6 +47,7 @@ const formatVNDate = (date) =>
 const ScheduleManagement = () => {
   const currentYear = dayjs().year().toString();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
 
   const weekOptions = useMemo(() => generateWeekStartDates(selectedYear), [selectedYear]);
 
@@ -79,119 +58,315 @@ const ScheduleManagement = () => {
   const [selectedWeekStart, setSelectedWeekStart] = useState(defaultWeek);
 
   const weekDates = getWeekDates(selectedWeekStart);
+  const todayAppointments = mockAppointments[selectedDate] || [];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return '#52c41a';
+      case 'pending': return '#faad14';
+      case 'cancelled': return '#ff4d4f';
+      default: return '#d9d9d9';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'confirmed': return 'Đã Xác Nhận';
+      case 'pending': return 'Chờ Xử Lý';
+      case 'cancelled': return 'Đã Hủy';
+      default: return 'Không Xác Định';
+    }
+  };
 
   return (
-    <Card
-      style={{
-        background: "#fff",
-        borderRadius: 12,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-      }}
-    >
-      <Row justify="space-between" align="middle" style={{ marginBottom: 32 }}>
-        <Col>
-          <Title level={3} style={{ marginBottom: 0 }}>
-            🗓️ Lịch làm việc trong tuần của bạn
-          </Title>
-        </Col>
-        <Col>
-          <div
+    <div style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
+      <Row gutter={24}>
+        {/* Left Panel - Weekly Schedule */}
+        <Col xs={24} lg={14}>
+          <Card
             style={{
-              padding: "12px 20px",
-              border: "1px dashed #d9d9d9",
-              borderRadius: 10,
-              background: "#fafafa",
-              lineHeight: 1.6,
+              background: "#fff",
+              borderRadius: 12,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+              marginBottom: 24
             }}
           >
-            <Text strong>Chú thích ca làm việc:</Text>
-            <br />
-            <Tag color="blue">Ca Sáng</Tag>: 08:00 – 12:00
-            <br />
-            <Tag color="orange">Ca Chiều</Tag>: 13:00 – 17:00
-          </div>
-        </Col>
-      </Row>
+            <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+              <Col>
+                <Title level={4} style={{ marginBottom: 0, color: '#1890ff' }}>
+                  Lịch Trình Hàng Tuần
+                </Title>
+              </Col>
+              <Col>
+                <Space>
+                  <Button type="primary" icon={<LeftOutlined />} size="small" />
+                  <Text strong>Hôm Nay</Text>
+                  <Button type="primary" icon={<RightOutlined />} size="small" />
+                </Space>
+              </Col>
+            </Row>
 
-      <Row gutter={16} style={{ marginBottom: 32 }}>
-        <Col>
-          <Select
-            value={selectedYear}
-            onChange={(value) => setSelectedYear(value)}
-            style={{ width: 120 }}
-          >
-            {["2024", "2025", "2026"].map((y) => (
-              <Select.Option key={y} value={y}>
-                {y}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-        <Col>
-          <Select
-            value={selectedWeekStart}
-            onChange={(value) => setSelectedWeekStart(value)}
-            style={{ width: 240 }}
-            showSearch
-            optionFilterProp="label"
-          >
-            {weekOptions.map((w) => (
-              <Select.Option key={w.value} value={w.value} label={w.label}>
-                {w.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-      </Row>
+            {/* Calendar Grid */}
+            <div style={{ marginBottom: 24 }}>
+              <Row gutter={[8, 8]}>
+                {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day) => (
+                  <Col span={3} key={day} style={{ textAlign: 'center' }}>
+                    <Text strong style={{ fontSize: '12px', color: '#666' }}>{day}</Text>
+                  </Col>
+                ))}
+              </Row>
+              <Row gutter={[8, 8]} style={{ marginTop: 8 }}>
+                {weekDates.map((date, index) => {
+                  const isoDate = formatDate(date);
+                  const shiftList = doctorWeeklySchedule[isoDate] || [];
+                  const isSelected = isoDate === selectedDate;
+                  const isToday = isoDate === dayjs().format('YYYY-MM-DD');
+                  
+                  return (
+                    <Col span={3} key={isoDate}>
+                      <div
+                        onClick={() => setSelectedDate(isoDate)}
+                        style={{
+                          height: '80px',
+                          border: isSelected ? '2px solid #1890ff' : '1px solid #f0f0f0',
+                          borderRadius: '8px',
+                          padding: '8px 4px',
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          background: isToday ? '#e6f7ff' : isSelected ? '#f0f9ff' : '#fff',
+                          transition: 'all 0.3s'
+                        }}
+                      >
+                        <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>
+                          {date.getDate()}
+                        </div>
+                        <div>
+                          {shiftList.includes('morning') && (
+                            <div style={{ 
+                              background: '#1890ff', 
+                              color: 'white', 
+                              fontSize: '10px', 
+                              padding: '2px 4px', 
+                              borderRadius: '4px', 
+                              marginBottom: '2px' 
+                            }}>
+                              Ca Sáng
+                            </div>
+                          )}
+                          {shiftList.includes('afternoon') && (
+                            <div style={{ 
+                              background: '#fa8c16', 
+                              color: 'white', 
+                              fontSize: '10px', 
+                              padding: '2px 4px', 
+                              borderRadius: '4px' 
+                            }}>
+                              Ca Chiều
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
 
-      <Row gutter={[16, 24]} justify="center" style={{ marginBottom: 48 }}>
-        {weekDates.map((date, index) => {
-          const isoDate = formatDate(date);
-          const shiftList = doctorWeeklySchedule[isoDate] || [];
-          const weekdayLabel = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"][index];
-          const dateStr = formatVNDate(date);
+            {/* Daily Timeline */}
+            <div>
+              <Title level={5} style={{ marginBottom: 16, display: 'flex', alignItems: 'center' }}>
+                <ClockCircleOutlined style={{ marginRight: 8 }} />
+                Lịch Trình Hàng Ngày cho {dayjs(selectedDate).format('dddd, DD/MM/YYYY')}
+              </Title>
+              
+              {dailyTimeline[selectedDate] ? (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {dailyTimeline[selectedDate].map((activity, index) => {
+                    const getTypeColor = (type) => {
+                      switch (type) {
+                        case 'appointment': return '#1890ff';
+                        case 'procedure': return '#52c41a';
+                        case 'meeting': return '#722ed1';
+                        case 'break': return '#faad14';
+                        case 'administrative': return '#13c2c2';
+                        case 'preparation': return '#fa8c16';
+                        default: return '#d9d9d9';
+                      }
+                    };
 
-          return (
-            <Col key={isoDate} xs={12} sm={8} md={6} lg={4} xl={3} style={{ textAlign: "center" }}>
-              <Text strong style={{ fontSize: 16, display: "block" }}>{weekdayLabel}</Text>
-              <Text style={{ marginBottom: 8, display: "block" }}>{dateStr}</Text>
+                    const getTypeIcon = (type) => {
+                      switch (type) {
+                        case 'appointment': return '👥';
+                        case 'procedure': return '🏥';
+                        case 'meeting': return '📋';
+                        case 'break': return '☕';
+                        case 'administrative': return '📄';
+                        case 'preparation': return '📝';
+                        default: return '📅';
+                      }
+                    };
+
+                    const getStatusColor = (status) => {
+                      switch (status) {
+                        case 'completed': return '#52c41a';
+                        case 'in_progress': return '#1890ff';
+                        case 'scheduled': return '#faad14';
+                        default: return '#d9d9d9';
+                      }
+                    };
+
+                    return (
+                      <div key={index} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        padding: '12px',
+                        border: '1px solid #f0f0f0',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        background: '#fafafa',
+                        borderLeft: `4px solid ${getTypeColor(activity.type)}`,
+                        position: 'relative'
+                      }}>
+                        <div style={{
+                          minWidth: '60px',
+                          textAlign: 'center',
+                          marginRight: '12px'
+                        }}>
+                          <Text strong style={{ fontSize: '14px', display: 'block' }}>
+                            {activity.time}
+                          </Text>
+                          <Text style={{ fontSize: '10px', color: '#666' }}>
+                            {activity.duration}min
+                          </Text>
+                        </div>
+                        
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span style={{ marginRight: 6, fontSize: '14px' }}>
+                                {getTypeIcon(activity.type)}
+                              </span>
+                              <Text strong style={{ fontSize: '13px', color: getTypeColor(activity.type) }}>
+                                {activity.title}
+                              </Text>
+                            </div>
+                            <Badge 
+                              color={getStatusColor(activity.status)} 
+                              text={activity.status === 'completed' ? 'Hoàn Thành' : activity.status === 'in_progress' ? 'Đang Thực Hiện' : activity.status === 'scheduled' ? 'Đã Lên Lịch' : activity.status}
+                              style={{ fontSize: '10px' }}
+                            />
+                          </div>
+                          
+                          <Text style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: 4 }}>
+                            {activity.description}
+                          </Text>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {activity.room && (
+                              <Text style={{ fontSize: '11px', color: '#999' }}>
+                                📍 {activity.room}
+                              </Text>
+                            )}
+                            {activity.patientId && (
+                              <Text style={{ fontSize: '11px', color: '#999' }}>
+                                👤 Patient ID: {activity.patientId}
+                              </Text>
+                            )}
+                            <Tag 
+                              color={activity.priority === 'high' ? 'red' : activity.priority === 'medium' ? 'orange' : 'default'}
+                              style={{ fontSize: '10px', margin: 0 }}
+                            >
+                              {activity.priority === 'high' ? 'Ưu tiên cao' : activity.priority === 'medium' ? 'Ưu tiên trung bình' : 'Ưu tiên thấp'}
+                            </Tag>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                  <ClockCircleOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+                  <div>Không có dữ liệu lịch trình cho ngày này</div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </Col>
+        
+        {/* Right Panel - Upcoming Appointments */}
+        <Col xs={24} lg={10}>
+          <Card
+            title={(
               <div>
-                {shiftList.includes("morning") && (
-                  <Tag bordered color="#e6f4ff" style={{ marginBottom: 4 }}>
-                    <span style={{ color: "#1677ff" }}>Ca Sáng</span>
-                  </Tag>
-                )}
-                <br />
-                {shiftList.includes("afternoon") && (
-                  <Tag bordered color="#fff2e8">
-                    <span style={{ color: "#fa541c" }}>Ca Chiều</span>
-                  </Tag>
-                )}
+                <Title level={4} style={{ marginBottom: 0 }}>Lịch Hẹn Sắp Tới</Title>
+                <Text type="secondary">Ngày {dayjs(selectedDate).format('DD/MM/YYYY')}</Text>
               </div>
-            </Col>
-          );
-        })}
+            )}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+              marginBottom: 24
+            }}
+          >
+            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+              {todayAppointments.filter(apt => apt.status !== 'cancelled').map((appointment) => (
+                <div key={appointment.id} style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  padding: '16px 0',
+                  borderBottom: '1px solid #f0f0f0'
+                }}>
+                  <Avatar src={appointment.avatar} size={45} style={{ marginRight: 12 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                      <Text strong style={{ fontSize: '14px' }}>
+                        {appointment.patient}
+                      </Text>
+                      <Badge 
+                        color={getStatusColor(appointment.status)} 
+                        text={getStatusText(appointment.status)}
+                        style={{ fontSize: '11px' }}
+                      />
+                    </div>
+                    <div style={{ color: '#1890ff', fontSize: '13px', marginBottom: '6px', fontWeight: '500' }}>
+                      {appointment.type}
+                    </div>
+                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <ClockCircleOutlined style={{ marginRight: 6, color: '#666' }} />
+                      <Text style={{ color: '#666' }}>{appointment.time}</Text>
+                      <Text style={{ color: '#999', marginLeft: 8 }}>({appointment.duration})</Text>
+                    </div>
+                    {appointment.notes && (
+                      <div style={{ 
+                        fontSize: '11px', 
+                        color: '#999',
+                        fontStyle: 'italic',
+                        marginTop: 4,
+                        padding: '4px 8px',
+                        background: '#f9f9f9',
+                        borderRadius: '4px'
+                      }}>
+                        {appointment.notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {todayAppointments.filter(apt => apt.status !== 'cancelled').length === 0 && (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                  <CalendarOutlined style={{ fontSize: '32px', marginBottom: '12px' }} />
+                  <div>Không có lịch hẹn nào hôm nay</div>
+                </div>
+              )}
+            </div>
+          </Card>
+          
+
+        </Col>
       </Row>
-
-      <Divider />
-
-      <Typography style={{ textAlign: "center" }}>
-        <Title level={4}>Ghi chú dành cho bác sĩ</Title>
-        <Paragraph>
-          • Vui lòng kiểm tra kỹ lịch làm việc mỗi tuần để đảm bảo không trùng lặp hoặc bỏ sót ca làm.
-          <br />
-          • Các bác sĩ cần có mặt đúng giờ theo ca đăng ký.
-          <br />
-          • Trong trường hợp thay đổi đột xuất, vui lòng báo cáo trước 24 giờ.
-        </Paragraph>
-
-        <Image src="/Logo.png" alt="Bệnh viện Con Yêu" preview={false} height={60} />
-
-        <Paragraph italic style={{ marginTop: 8 }}>
-          Bệnh viện Điều trị hiếm muộn hàng đầu Việt Nam
-        </Paragraph>
-      </Typography>
-    </Card>
+    </div>
   );
 };
 

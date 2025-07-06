@@ -8,11 +8,34 @@ import {
   Row,
   Col,
   Space,
-  DatePicker,
   Select,
+  DatePicker,
+  message,
+  Modal,
+  Typography,
+  Descriptions,
+  Avatar,
 } from "antd";
+import {
+  SearchOutlined,
+  EyeOutlined,
+  EditOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  MedicineBoxOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  GetAllBooking,
+  checkBooking,
+  GetAllDoctor,
+  updatebookingDoctor,
+  updatebookingSchedule,
+  GetSchedule,
+} from "../../../apis/bookingService";
+import { mockBookings, bookingStatuses, serviceTypes } from "../../../data/mockDoctorPageData";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
