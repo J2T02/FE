@@ -4,7 +4,7 @@ const CardService = ({ service }) => {
   const { token } = theme.useToken();
   const navigate = useNavigate();
   return (
-    <div style={{ backgroundColor: "#f8f9fa", padding: "2rem" }}>
+    <div style={{ backgroundColor: "white", padding: "2rem" }}>
       <div
         style={{
           maxWidth: "1200px",

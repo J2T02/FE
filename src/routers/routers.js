@@ -107,6 +107,12 @@ const routers = [
     path: "/admin",
     component: lazy(() => import("~pages/AdminPage/AdminPage")),
   },
+  {
+    path: "/admin/bookingdetail/:id",
+    component: lazy(() =>
+      import("~pages/AdminPage/BookingDetail/BookingDetailPage")
+    ),
+  },
 
   //receptionist
   {
