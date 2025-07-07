@@ -3,7 +3,12 @@ import { Card, Descriptions, Button, Space, Tooltip } from "antd";
 import { MedicineBoxOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-export default function DoctorInfoCard({ data, docId, bookingData }) {
+export default function DoctorInfoCard({
+  data,
+  docId,
+  bookingData,
+  isDisable,
+}) {
   const navigate = useNavigate();
   if (!data) return null;
 
@@ -50,6 +55,7 @@ export default function DoctorInfoCard({ data, docId, bookingData }) {
         size="small"
         style={{ marginTop: 12, fontWeight: 500 }}
         onClick={handleChangeDoctor}
+        disabled={isDisable}
       >
         Thay đổi bác sĩ
       </Button>

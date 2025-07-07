@@ -9,7 +9,7 @@ import CustomerInfoCard from "./components/CustomerInfoCard";
 import DoctorInfoCard from "./components/DoctorInfoCard";
 import AppointmentInfoCard from "./components/AppointmentInfoCard";
 import ActionSection from "./components/ActionSection";
-
+import { BookingDetail, checkBooking } from "../../../apis/bookingService";
 const { Content } = Layout;
 
 export default function BookingDetailPage() {
@@ -21,60 +21,40 @@ export default function BookingDetailPage() {
   const [bookingData, setBookingData] = useState(null);
   const [treatmentPlan, setTreatmentPlan] = useState(null);
 
-  // Common mock data for any booking ID
-  const generateMockBookingDetail = (id) => ({
-    bookingId: id,
-    status: {
-      statusId: id === 112 ? 2 : 3,
-      statusName: id === 112 ? "Đã xác nhận" : "Checkin",
-    },
-    cus: {
-      cusId: 200 + id,
-      husName: "Nguyễn Văn A",
-      wifeName: "Trần Thị B",
-      husYob: "1990-01-01",
-      wifeYob: "1992-03-03",
-      accCus: {
-        fullName: "Nguyễn Văn A",
-        mail: "husband@example.com",
-        phone: "0912345678",
-      },
-    },
-    doc: {
-      docId: 300 + id,
-      accDoc: {
-        fullName: "BS. Lê Văn C",
-        phone: "0901234567",
-        mail: "levanc@example.com",
-        img: "https://via.placeholder.com/100",
-      },
-    },
-    schedule: {
-      workDate: "2025-07-07",
-      slotStart: "08:00",
-      slotEnd: "09:00",
-      room: "Phòng 101",
-    },
-  });
-
   useEffect(() => {
-    setTimeout(() => {
-      const mock = generateMockBookingDetail(bookingId);
-      setBookingData(mock);
-      // Giả lập đã tạo treatment plan cho bookingId 111
-      if (bookingId === 111) {
-        setTreatmentPlan({ tpId: 501, bookingId });
+    const fetchBooking = async () => {
+      setLoading(true);
+      try {
+        const res = await BookingDetail(bookingId);
+        if (res?.data?.success && res.data.data) {
+          setBookingData(res.data.data);
+        } else {
+          setBookingData(null);
+        }
+      } catch (err) {
+        setBookingData(null);
       }
       setLoading(false);
-    }, 300);
+    };
+    fetchBooking();
   }, [bookingId]);
 
-  const handleCheckIn = () => {
-    message.success("Check-in thành công (giả lập)");
-    setBookingData((prev) => ({
-      ...prev,
-      status: { statusId: 3, statusName: "Checkin" },
-    }));
+  const handleCheckIn = async () => {
+    try {
+      const res = await checkBooking(bookingId, 3);
+      if (res?.data?.success) {
+        message.success("Check-in thành công!");
+        // Sau khi checkin, cập nhật lại trạng thái booking
+        setBookingData((prev) => ({
+          ...prev,
+          status: { statusId: 3, statusName: "Checkin" },
+        }));
+      } else {
+        message.error(res?.data?.message || "Check-in thất bại!");
+      }
+    } catch (err) {
+      message.error("Check-in thất bại!");
+    }
   };
 
   const handleCreateTreatmentPlan = () => {
@@ -85,6 +65,14 @@ export default function BookingDetailPage() {
   };
 
   if (loading || !bookingData) return <Spin fullscreen />;
+
+  // Map lại dữ liệu cho các component con nếu cần
+  const appointmentData = {
+    ...bookingData.schedule,
+    slot: bookingData.slot,
+    bookingId: bookingData.bookingId,
+    docId: bookingData.doc?.docId,
+  };
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
@@ -99,10 +87,16 @@ export default function BookingDetailPage() {
               <CustomerInfoCard data={bookingData?.cus} />
             </Col>
             <Col xs={24} md={12}>
-              <DoctorInfoCard data={bookingData?.doc?.accDoc} />
+              <DoctorInfoCard
+                data={bookingData?.doc?.accDoc}
+                statusId={bookingData?.status?.statusId}
+              />
             </Col>
             <Col xs={24} md={12}>
-              <AppointmentInfoCard data={bookingData?.schedule} />
+              <AppointmentInfoCard
+                data={appointmentData}
+                statusId={bookingData?.status?.statusId}
+              />
             </Col>
             <Col xs={24} md={12}>
               <ActionSection

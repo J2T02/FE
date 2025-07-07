@@ -38,13 +38,16 @@ const DoctorListTable = () => {
     );
   }, [search, doctors]);
 
-  const renderStatus = (status) => {
+  const renderStatus = (statusObj) => {
+    if (!statusObj) return null;
     const map = {
-      1: { label: "Đang làm việc", color: "green" },
-      2: { label: "Nghỉ việc", color: "red" },
-      3: { label: "Nghỉ phép", color: "gold" },
+      1: { color: "green" },
+      2: { color: "red" },
+      3: { color: "gold" },
     };
-    return <Tag color={map[status]?.color}>{map[status]?.label}</Tag>;
+    return (
+      <Tag color={map[statusObj.statusId]?.color}>{statusObj.statusName}</Tag>
+    );
   };
 
   const columns = [

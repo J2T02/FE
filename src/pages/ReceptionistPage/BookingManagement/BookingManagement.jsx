@@ -18,7 +18,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-
+import { GetAllBooking } from "../../../apis/bookingService";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -36,32 +36,32 @@ const BookingManagement = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    // 👇 Mock data trực tiếp
-    const data = [
-      {
-        bookingId: 111,
-        workDate: "2025-07-07",
-        slotStart: "08:00",
-        slotEnd: "09:00",
-        status: "Checkin",
-      },
-      {
-        bookingId: 112,
-        workDate: "2025-07-07",
-        slotStart: "14:00",
-        slotEnd: "15:00",
-        status: "Đã xác nhận",
-      },
-      {
-        bookingId: 113,
-        workDate: "2025-07-06",
-        slotStart: "09:00",
-        slotEnd: "10:00",
-        status: "Hủy",
-      },
-    ];
-    setBookings(data);
-    setFilteredBookings(data);
+    // Call API GetAllBooking
+    const fetchBookings = async () => {
+      try {
+        const res = await GetAllBooking();
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          // Map API data to UI data
+          const mapped = res.data.data.map((item) => ({
+            bookingId: item.bookingId,
+            workDate: item.schedule?.workDate,
+            slotStart: item.slot?.slotStart?.slice(0, 5),
+            slotEnd: item.slot?.slotEnd?.slice(0, 5),
+            status: item.status?.statusName,
+            // Add more fields if needed
+          }));
+          setBookings(mapped);
+          setFilteredBookings(mapped);
+        } else {
+          setBookings([]);
+          setFilteredBookings([]);
+        }
+      } catch (err) {
+        setBookings([]);
+        setFilteredBookings([]);
+      }
+    };
+    fetchBookings();
   }, []);
 
   const getStatusColor = (status) => {
@@ -125,7 +125,11 @@ const BookingManagement = () => {
       const [start, end] = dateRange;
       filtered = filtered.filter((b) => {
         const d = dayjs(b.workDate);
-        return d.isValid() && d.isSameOrAfter(start, "day") && d.isSameOrBefore(end, "day");
+        return (
+          d.isValid() &&
+          d.isSameOrAfter(start, "day") &&
+          d.isSameOrBefore(end, "day")
+        );
       });
     }
 
@@ -133,9 +137,15 @@ const BookingManagement = () => {
       filtered = filtered.filter((b) => {
         const time = dayjs(b.slotStart, "HH:mm");
         if (selectedShift === "sang") {
-          return time.isSameOrAfter(dayjs("08:00", "HH:mm")) && time.isBefore(dayjs("12:00", "HH:mm"));
+          return (
+            time.isSameOrAfter(dayjs("08:00", "HH:mm")) &&
+            time.isBefore(dayjs("12:00", "HH:mm"))
+          );
         } else if (selectedShift === "chieu") {
-          return time.isSameOrAfter(dayjs("13:00", "HH:mm")) && time.isBefore(dayjs("17:00", "HH:mm"));
+          return (
+            time.isSameOrAfter(dayjs("13:00", "HH:mm")) &&
+            time.isBefore(dayjs("17:00", "HH:mm"))
+          );
         }
         return true;
       });

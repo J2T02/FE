@@ -13,49 +13,6 @@ import AppointmentInfoCard from "./components/AppointmentInfoCard";
 import { BookingDetail } from "../../../../apis/bookingService";
 const { Content } = Layout;
 
-const sampleBookingData = {
-  bookingId: 123,
-  createAt: "2025-06-28T14:30:00",
-  note: "Khách hàng yêu cầu bác sĩ nữ nếu có.",
-  status: {
-    statusId: 1,
-    statusName: "Đang chờ xác nhận",
-  },
-  cus: {
-    husName: "Nguyễn Văn A",
-    wifeName: "Trần Thị B",
-    husYob: 1990,
-    wifeYob: 1992,
-    accCus: {
-      fullName: "Nguyễn Văn A",
-      mail: "nguyenvana@gmail.com",
-      phone: "0901234567",
-    },
-  },
-  doc: {
-    docId: 2,
-    specialty: "Hiếm muộn",
-    experience: 12,
-    accDoc: {
-      fullName: "BS. Trần Thị Lan",
-      mail: "lan.bs88@gmail.com",
-      phone: "0908123456",
-      gender: "Nữ",
-      yob: 1988,
-      education: "Đại học Y Hà Nội",
-      certificates: ["/certs/lan1.pdf", "/certs/lan2.pdf"],
-    },
-  },
-  schedule: {
-    bookingId: 123,
-    date: "2025-07-01",
-    startTime: "09:00",
-    endTime: "10:00",
-    room: "Phòng khám 302",
-    hospital: "Vinmec Central Park",
-  },
-};
-
 export default function BookingDetailPage() {
   const { id } = useParams();
   const bookingId = parseInt(id);
@@ -81,6 +38,10 @@ export default function BookingDetailPage() {
   }, [bookingId]);
   if (loading || !bookingData) return <Spin fullscreen />;
 
+  // Disable thao tác nếu statusId không phải 1 hoặc 2
+  const isDisable =
+    bookingData?.status?.statusId !== 1 && bookingData?.status?.statusId !== 2;
+
   return (
     <Layout
       style={{ minHeight: "100vh", backgroundColor: token.colorBgContainer }}
@@ -101,6 +62,7 @@ export default function BookingDetailPage() {
                 bookingData={bookingData}
                 data={bookingData?.doc?.accDoc}
                 docId={bookingData?.doc?.docId}
+                isDisable={isDisable}
               />
             </Col>
             <Col xs={24} md={12}>
@@ -112,10 +74,11 @@ export default function BookingDetailPage() {
                   slot: bookingData?.slot,
                 }}
                 docId={bookingData?.doc?.docId}
+                isDisable={isDisable}
               />
             </Col>
             <Col xs={24} md={12}>
-              <ActionSection bookingId={bookingId} />
+              <ActionSection bookingId={bookingId} isDisable={isDisable} />
             </Col>
           </Row>
         </Space>

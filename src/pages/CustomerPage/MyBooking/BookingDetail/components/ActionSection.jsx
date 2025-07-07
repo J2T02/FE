@@ -2,7 +2,7 @@ import { Card, Button, Space, Modal } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ActionSection({ bookingId }) {
+export default function ActionSection({ bookingId, isDisable }) {
   const navigate = useNavigate();
   const handleSelect = (mode) => {
     navigate(`/bookingUpdate/:id?option=${mode}`); // bookingId cần được lấy từ props hoặc context
@@ -17,10 +17,16 @@ export default function ActionSection({ bookingId }) {
             type="primary"
             block
             onClick={() => navigate(`/customer/updatebooking/${bookingId}`)}
+            disabled={isDisable}
           >
             Chỉnh sửa đặt lịch
           </Button>
-          <Button danger block onClick={() => console.log("Hủy đặt lịch")}>
+          <Button
+            danger
+            block
+            onClick={() => console.log("Hủy đặt lịch")}
+            disabled={isDisable}
+          >
             Hủy đặt lịch
           </Button>
           <Button type="primary" block onClick={() => window.print()}>

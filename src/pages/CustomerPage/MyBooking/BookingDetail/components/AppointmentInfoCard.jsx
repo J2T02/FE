@@ -3,7 +3,7 @@ import { Card, Typography, Space, Button } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-export default function AppointmentInfoCard({ data, docId }) {
+export default function AppointmentInfoCard({ data, docId, isDisable }) {
   const navigate = useNavigate();
 
   const handleChangeSchedule = () => {
@@ -49,6 +49,7 @@ export default function AppointmentInfoCard({ data, docId }) {
           size="small"
           style={{ marginTop: 4, fontWeight: 500 }}
           onClick={handleChangeSchedule}
+          disabled={isDisable}
         >
           Thay đổi lịch hẹn
         </Button>

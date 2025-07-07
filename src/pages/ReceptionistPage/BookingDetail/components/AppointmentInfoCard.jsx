@@ -2,10 +2,16 @@
 import { Card, Typography, Space } from "antd";
 import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
-export default function AppointmentInfoCard({ data }) {
+export default function AppointmentInfoCard({ data, statusId }) {
+  // Nếu statusId khác 1 hoặc 2 thì không cho thao tác
+  const isDisabled = statusId !== 1 && statusId !== 2;
   return (
     <Card
-      title={<><CalendarOutlined /> Thông tin lịch hẹn</>}
+      title={
+        <>
+          <CalendarOutlined /> Thông tin lịch hẹn
+        </>
+      }
       bodyStyle={{ backgroundColor: "#fff0f5" }} // ✅ Thêm màu nền nhẹ
     >
       <Space direction="vertical" size="large">
@@ -20,8 +26,14 @@ export default function AppointmentInfoCard({ data }) {
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             Khung giờ
           </Typography.Text>
-          <Typography.Text>{data?.slotId === 1 ? "8:00-12:00" : "13:00-17:00"}</Typography.Text>
+          <Typography.Text>
+            {data?.slotId === 1 ? "8:00-12:00" : "13:00-17:00"}
+          </Typography.Text>
         </Space>
+        {/* Nếu cho phép thao tác thì mới hiển thị nút thay đổi lịch */}
+        {/* { !isDisabled && (
+          <Button type="primary">Thay đổi lịch hẹn</Button>
+        ) } */}
       </Space>
     </Card>
   );
