@@ -125,7 +125,18 @@ const routers = [
       import("~pages/ReceptionistPage/BookingDetail/BookingDetailPage")
     ),
   },
-
+  {
+    path: "/receptionist/treatmentplandetail/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/TreatmentplanDetailPage/TreatmentplanDetailPage")
+    ),
+  },
+  {
+    path: "/receptionist/stepdetail/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/StepDetailPage/StepDetailPage")
+    ),
+  },
   {
     path: "/bookingDetail/:id",
     component: lazy(() =>
