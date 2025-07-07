@@ -1,7 +1,7 @@
 // File: pages/ReceptionistPage/BookingDetailPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Layout, Row, Col, Space, Spin, message, Button } from "antd";
+import { Layout, Row, Col, Space, Spin, message } from "antd";
 import BackButton from "./components/BackButton";
 import BookingHeader from "./components/BookingHeader";
 import BookingOverviewCard from "./components/BookingOverviewCard";
@@ -9,8 +9,7 @@ import CustomerInfoCard from "./components/CustomerInfoCard";
 import DoctorInfoCard from "./components/DoctorInfoCard";
 import AppointmentInfoCard from "./components/AppointmentInfoCard";
 import ActionSection from "./components/ActionSection";
-import { BookingDetail } from "../../../apis/bookingService";
-import { checkBooking } from "../../../apis/bookingService";
+
 const { Content } = Layout;
 
 export default function BookingDetailPage() {
@@ -20,44 +19,71 @@ export default function BookingDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
+  const [treatmentPlan, setTreatmentPlan] = useState(null);
+
+  // Common mock data for any booking ID
+  const generateMockBookingDetail = (id) => ({
+    bookingId: id,
+    status: {
+      statusId: id === 112 ? 2 : 3,
+      statusName: id === 112 ? "Đã xác nhận" : "Checkin",
+    },
+    cus: {
+      cusId: 200 + id,
+      husName: "Nguyễn Văn A",
+      wifeName: "Trần Thị B",
+      husYob: "1990-01-01",
+      wifeYob: "1992-03-03",
+      accCus: {
+        fullName: "Nguyễn Văn A",
+        mail: "husband@example.com",
+        phone: "0912345678",
+      },
+    },
+    doc: {
+      docId: 300 + id,
+      accDoc: {
+        fullName: "BS. Lê Văn C",
+        phone: "0901234567",
+        mail: "levanc@example.com",
+        img: "https://via.placeholder.com/100",
+      },
+    },
+    schedule: {
+      workDate: "2025-07-07",
+      slotStart: "08:00",
+      slotEnd: "09:00",
+      room: "Phòng 101",
+    },
+  });
+
   useEffect(() => {
-    const fetchBooking = async () => {
-      setLoading(true);
-      try {
-        const res = await BookingDetail(bookingId);
-        if (res?.data?.success) {
-          setBookingData(res.data.data);
-        } else {
-          message.error("Không thể tải thông tin đặt lịch");
-        }
-      } catch (err) {
-        message.error("Lỗi khi tải dữ liệu");
+    setTimeout(() => {
+      const mock = generateMockBookingDetail(bookingId);
+      setBookingData(mock);
+      // Giả lập đã tạo treatment plan cho bookingId 111
+      if (bookingId === 111) {
+        setTreatmentPlan({ tpId: 501, bookingId });
       }
       setLoading(false);
-    };
-    fetchBooking();
-    // eslint-disable-next-line
+    }, 300);
   }, [bookingId]);
 
-  const handleCheckIn = async () => {
-    try {
-      const res = await checkBooking(bookingId, 3);
-      if (res?.data?.success) {
-        message.success(res.data.message);
-        // Reload booking data
-        const updated = await BookingDetail(bookingId);
-        if (updated?.data?.success) {
-          setBookingData(updated.data.data);
-        }
-      } else {
-        message.error(res.data.message);
-      }
-    } catch (err) {
-      message.error("Check-in thất bại");
-    }
+  const handleCheckIn = () => {
+    message.success("Check-in thành công (giả lập)");
+    setBookingData((prev) => ({
+      ...prev,
+      status: { statusId: 3, statusName: "Checkin" },
+    }));
   };
 
-  console.log(bookingData);
+  const handleCreateTreatmentPlan = () => {
+    message.success("Tạo hồ sơ bệnh án thành công (giả lập)");
+    const newTpId = 500 + bookingId;
+    setTreatmentPlan({ tpId: newTpId, bookingId });
+    navigate(`/treatmentplan/${newTpId}`);
+  };
+
   if (loading || !bookingData) return <Spin fullscreen />;
 
   return (
@@ -82,6 +108,8 @@ export default function BookingDetailPage() {
               <ActionSection
                 statusId={bookingData?.status?.statusId}
                 onCheckIn={handleCheckIn}
+                treatmentPlan={treatmentPlan}
+                onCreateTP={handleCreateTreatmentPlan}
               />
             </Col>
           </Row>

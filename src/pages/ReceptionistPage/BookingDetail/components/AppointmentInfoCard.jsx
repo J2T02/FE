@@ -1,10 +1,13 @@
-
+// File: pages/ReceptionistPage/components/AppointmentInfoCard.jsx
 import { Card, Typography, Space } from "antd";
 import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
-export default function AppointmentInfoCard({data}) {
+export default function AppointmentInfoCard({ data }) {
   return (
-    <Card title={<><CalendarOutlined /> Thông tin lịch hẹn</>}>
+    <Card
+      title={<><CalendarOutlined /> Thông tin lịch hẹn</>}
+      bodyStyle={{ backgroundColor: "#fff0f5" }} // ✅ Thêm màu nền nhẹ
+    >
       <Space direction="vertical" size="large">
         <Space direction="vertical" size={0}>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
@@ -17,7 +20,7 @@ export default function AppointmentInfoCard({data}) {
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             Khung giờ
           </Typography.Text>
-          <Typography.Text>{data?.slotId == 1 ? "8:00-12:00" : "13:00-17:00"}</Typography.Text>
+          <Typography.Text>{data?.slotId === 1 ? "8:00-12:00" : "13:00-17:00"}</Typography.Text>
         </Space>
       </Space>
     </Card>

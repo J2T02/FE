@@ -1,9 +1,10 @@
+// File: pages/ReceptionistPage/components/DoctorInfoCard.jsx
 import React from "react";
 import { Card, Descriptions } from "antd";
 import { MedicineBoxOutlined } from "@ant-design/icons";
 
 export default function DoctorInfoCard({ data }) {
-  if (!data) return null; // Tránh lỗi khi data là undefined
+  if (!data) return null;
 
   return (
     <Card
@@ -13,6 +14,7 @@ export default function DoctorInfoCard({ data }) {
           Thông tin bác sĩ
         </>
       }
+      bodyStyle={{ backgroundColor: "#fdf2f8" }} // ✅ Thêm màu nền nhẹ
     >
       <Descriptions column={1} size="small" colon labelStyle={{ fontWeight: 500 }}>
         <Descriptions.Item label="Tên">{data.fullName}</Descriptions.Item>
@@ -22,4 +24,3 @@ export default function DoctorInfoCard({ data }) {
     </Card>
   );
 }
-
