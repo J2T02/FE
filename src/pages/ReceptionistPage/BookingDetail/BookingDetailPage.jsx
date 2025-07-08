@@ -10,6 +10,9 @@ import DoctorInfoCard from "./components/DoctorInfoCard";
 import AppointmentInfoCard from "./components/AppointmentInfoCard";
 import ActionSection from "./components/ActionSection";
 import { BookingDetail, checkBooking } from "../../../apis/bookingService";
+import ReceptionistHeader from "../components/ReceptionistHeader";
+import ReceptionistStoreProvider from "../contexts/ReceptionistStoreProvider";
+import Footer from "~components/footer/Footer";
 const { Content } = Layout;
 
 export default function BookingDetailPage() {
@@ -75,40 +78,44 @@ export default function BookingDetailPage() {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
-      <Content style={{ padding: 24 }}>
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <BackButton />
-          <BookingHeader data={bookingData} />
-          <BookingOverviewCard data={bookingData} />
+    <ReceptionistStoreProvider>
+      <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
+        <ReceptionistHeader />
+        <Content style={{ padding: 24 }}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <BackButton />
+            <BookingHeader data={bookingData} />
+            <BookingOverviewCard data={bookingData} />
 
-          <Row gutter={[24, 24]}>
-            <Col xs={24} md={12}>
-              <CustomerInfoCard data={bookingData?.cus} />
-            </Col>
-            <Col xs={24} md={12}>
-              <DoctorInfoCard
-                data={bookingData?.doc?.accDoc}
-                statusId={bookingData?.status?.statusId}
-              />
-            </Col>
-            <Col xs={24} md={12}>
-              <AppointmentInfoCard
-                data={appointmentData}
-                statusId={bookingData?.status?.statusId}
-              />
-            </Col>
-            <Col xs={24} md={12}>
-              <ActionSection
-                statusId={bookingData?.status?.statusId}
-                onCheckIn={handleCheckIn}
-                treatmentPlan={treatmentPlan}
-                onCreateTP={handleCreateTreatmentPlan}
-              />
-            </Col>
-          </Row>
-        </Space>
-      </Content>
-    </Layout>
+            <Row gutter={[24, 24]}>
+              <Col xs={24} md={12}>
+                <CustomerInfoCard data={bookingData?.cus} />
+              </Col>
+              <Col xs={24} md={12}>
+                <DoctorInfoCard
+                  data={bookingData?.doc?.accDoc}
+                  statusId={bookingData?.status?.statusId}
+                />
+              </Col>
+              <Col xs={24} md={12}>
+                <AppointmentInfoCard
+                  data={appointmentData}
+                  statusId={bookingData?.status?.statusId}
+                />
+              </Col>
+              <Col xs={24} md={12}>
+                <ActionSection
+                  statusId={bookingData?.status?.statusId}
+                  onCheckIn={handleCheckIn}
+                  treatmentPlan={treatmentPlan}
+                  onCreateTP={handleCreateTreatmentPlan}
+                />
+              </Col>
+            </Row>
+          </Space>
+        </Content>
+        <Footer />
+      </Layout>
+    </ReceptionistStoreProvider>
   );
 }

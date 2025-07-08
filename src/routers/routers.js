@@ -84,6 +84,10 @@ const routers = [
   },
   //Receptionist
   {
+    path: "/receptionistsignin",
+    component: lazy(() => import("~pages/ReceptionistPage/LoginReceptionist")),
+  },
+  {
     path: "/receptionist",
     component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPanel")),
   },
@@ -128,7 +132,9 @@ const routers = [
   {
     path: "/receptionist/treatmentplandetail/:id",
     component: lazy(() =>
-      import("~pages/ReceptionistPage/TreatmentplanDetailPage/TreatmentplanDetailPage")
+      import(
+        "~pages/ReceptionistPage/TreatmentplanDetailPage/TreatmentplanDetailPage"
+      )
     ),
   },
   {

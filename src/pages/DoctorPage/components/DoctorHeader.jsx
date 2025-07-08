@@ -30,7 +30,7 @@ const DoctorHeader = () => {
   if (!context) return null;
 
   const { doctorInfo, handleLogout } = context;
-
+  console.log(doctorInfo);
   // 👉 Link ảnh nền và logo
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1588776814546-ec7a1f2c3441?auto=format&fit=crop&w=1600&q=80";
@@ -151,7 +151,7 @@ const DoctorHeader = () => {
         {/* LEFT */}
         <div>
           <Title level={3} style={{ margin: 0, color: "#d6336c" }}>
-          Trang Bác Sĩ
+            Trang Bác Sĩ
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Quản lý lịch trình, bệnh nhân và điều trị hiệu quả
@@ -164,14 +164,18 @@ const DoctorHeader = () => {
             <Tooltip title="Hotline hỗ trợ">
               <PhoneOutlined style={{ color: token.colorPrimary }} />
             </Tooltip>
-            <Text strong style={{ fontSize: 13 }}>1900 123 456</Text>
+            <Text strong style={{ fontSize: 13 }}>
+              1900 123 456
+            </Text>
           </Space>
 
           <Space size="middle">
             <Tooltip title="Email hỗ trợ">
               <MailOutlined style={{ color: token.colorPrimary }} />
             </Tooltip>
-            <Text strong style={{ fontSize: 13 }}>support@clinic.vn</Text>
+            <Text strong style={{ fontSize: 13 }}>
+              support@clinic.vn
+            </Text>
           </Space>
 
           <Dropdown
