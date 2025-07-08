@@ -41,7 +41,7 @@ export default function StepDetailPage() {
       Drug_Name: "Vitamin E",
       Dosage: "1 viên/ngày",
       treatmentStep: {
-        Step_Name: "Giai đoạn đầu kiểm tra sức khỏe"
+        Step_Name: "Giai đoạn đầu kiểm tra sức khỏe",
       },
       doctor: {
         docId: 301,
@@ -49,8 +49,8 @@ export default function StepDetailPage() {
           fullName: "BS. Lê Văn C",
           phone: "0901234567",
           mail: "levanc@example.com",
-        }
-      }
+        },
+      },
     };
 
     const mockTests = [
@@ -59,15 +59,15 @@ export default function StepDetailPage() {
         TestDate: "2025-07-08",
         Note: "Xét nghiệm máu tổng quát",
         File_Path: "",
-        ResultDay: "2025-07-09"
+        ResultDay: "2025-07-09",
       },
       {
         Test_ID: 2,
         TestDate: "2025-07-08",
         Note: "Xét nghiệm nội tiết tố",
         File_Path: "",
-        ResultDay: "2025-07-10"
-      }
+        ResultDay: "2025-07-10",
+      },
     ];
 
     const mockBiosamples = [
@@ -76,15 +76,15 @@ export default function StepDetailPage() {
         BS_Name: "Mẫu máu bệnh nhân",
         CollectionDate: "2025-07-08",
         StorageLocation: "Tủ A - Ngăn 2",
-        Note: "Mẫu đạt tiêu chuẩn"
+        Note: "Mẫu đạt tiêu chuẩn",
       },
       {
         BS_ID: 2,
         BS_Name: "Tinh dịch",
         CollectionDate: "2025-07-08",
         StorageLocation: "Tủ B - Ngăn 1",
-        Note: "Mẫu hơi loãng"
-      }
+        Note: "Mẫu hơi loãng",
+      },
     ];
 
     setStepDetail(mockStepDetail);
@@ -165,10 +165,18 @@ export default function StepDetailPage() {
               <Space direction="vertical" style={{ width: "100%" }}>
                 {tests.map((test) => (
                   <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                    <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                    <Text strong>Ngày trả kết quả: </Text>{test.ResultDay}<br />
-                    <Text strong>Ghi chú: </Text>{test.Note}<br />
-                    <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testdetail/${test.Test_ID}`)}>Xem chi tiết</Link>
+                    <Row justify="space-between">
+                      <Col>
+                        <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
+                        <Text strong>Ngày trả kết quả: </Text>{test.ResultDay}<br />
+                        <Text strong>Ghi chú: </Text>{test.Note}
+                      </Col>
+                      <Col>
+                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/testdetail/${test.Test_ID}`)}>
+                          Xem chi tiết
+                        </Link>
+                      </Col>
+                    </Row>
                   </Card>
                 ))}
               </Space>
@@ -181,9 +189,6 @@ export default function StepDetailPage() {
             title={
               <Space>
                 <Text strong>Danh sách mẫu sinh học liên quan</Text>
-                <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosamples/${stepDetail.SD_ID}`)}>
-                  Xem đầy đủ các mẫu sinh học
-                </Link>
               </Space>
             }
             style={{ marginTop: 24 }}
@@ -193,11 +198,19 @@ export default function StepDetailPage() {
               <Space direction="vertical" style={{ width: "100%" }}>
                 {biosamples.map((bs) => (
                   <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                    <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                    <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                    <Text strong>Vị trí lưu trữ: </Text>{bs.StorageLocation}<br />
-                    <Text strong>Ghi chú: </Text>{bs.Note}<br />
-                    <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}>Xem chi tiết</Link>
+                    <Row justify="space-between">
+                      <Col>
+                        <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
+                        <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
+                        <Text strong>Vị trí lưu trữ: </Text>{bs.StorageLocation}<br />
+                        <Text strong>Ghi chú: </Text>{bs.Note}
+                      </Col>
+                      <Col>
+                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}>
+                          Xem chi tiết
+                        </Link>
+                      </Col>
+                    </Row>
                   </Card>
                 ))}
               </Space>
