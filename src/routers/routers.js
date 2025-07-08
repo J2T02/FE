@@ -47,6 +47,50 @@ const routers = [
     ),
   },
   {
+    path: "/treatmentplandetail/:id",
+    component: lazy(() =>
+      import(
+        "~pages/CustomerPage/Treatmentplan/TreatmentplanDetailPage/TreatmentplanDetailPage"
+      )
+    ),
+  },
+  {
+    path: "/stepdetail/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/StepDetailPage/StepDetailPage")
+    ),
+  },
+  {
+    path: "/treatmentstep/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/TreatmentStepPage/TreatmentStepPage")
+    ),
+  },
+  {
+    path: "/biosamplelist/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/BiosampleListPage/BiosampleListPage")
+    ),
+  },
+   {
+    path: "/biosampledetail/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/BiosampleDetailPage/BiosampleDetailPage")
+    ),
+  },
+  {
+    path: "/testlist/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/TestListPage/TestListPage")
+    ),
+  },
+  {
+    path: "/testdetail/:id",
+    component: lazy(() =>
+      import("~pages/CustomerPage/Treatmentplan/TestDetailPage/TestDetailPage")
+    ),
+  },
+  {
     path: "/blog",
     component: lazy(() => import("~pages/Blog/BlogList")),
   },
@@ -141,6 +185,36 @@ const routers = [
     path: "/receptionist/stepdetail/:id",
     component: lazy(() =>
       import("~pages/ReceptionistPage/StepDetailPage/StepDetailPage")
+    ),
+  },
+  {
+    path: "/receptionist/treatmentstep/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/TreatmentStepPage/TreatmentStepPage")
+    ),
+  },
+  {
+    path: "/receptionist/biosamplelist/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/BiosampleListPage/BiosampleListPage")
+    ),
+  },
+   {
+    path: "/receptionist/biosampledetail/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/BiosampleDetailPage/BiosampleDetailPage")
+    ),
+  },
+  {
+    path: "/receptionist/testlist/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/TestListPage/TestListPage")
+    ),
+  },
+  {
+    path: "/receptionist/testdetail/:id",
+    component: lazy(() =>
+      import("~pages/ReceptionistPage/TestDetailPage/TestDetailPage")
     ),
   },
   {
