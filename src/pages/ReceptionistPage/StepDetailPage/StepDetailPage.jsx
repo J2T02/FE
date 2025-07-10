@@ -8,7 +8,6 @@ import {
   Row,
   Col,
   Space,
-  Divider,
   Tag,
 } from "antd";
 import {
@@ -29,6 +28,7 @@ export default function StepDetailPage() {
   const [stepDetail, setStepDetail] = useState(null);
   const [tests, setTests] = useState([]);
   const [biosamples, setBiosamples] = useState([]);
+  const [doctorSlot, setDoctorSlot] = useState(null);
 
   useEffect(() => {
     const mockStepDetail = {
@@ -36,10 +36,9 @@ export default function StepDetailPage() {
       Step_Name: "Khám tổng quát",
       Note: "Bệnh nhân có dấu hiệu ổn định",
       Status: 1,
-      PlanDate: "2025-07-08",
-      DoneDate: "2025-07-09",
       Drug_Name: "Vitamin E",
       Dosage: "1 viên/ngày",
+      DS_ID: 10,
       treatmentStep: {
         Step_Name: "Giai đoạn đầu kiểm tra sức khỏe",
       },
@@ -50,6 +49,16 @@ export default function StepDetailPage() {
           phone: "0901234567",
           mail: "levanc@example.com",
         },
+      },
+    };
+
+    const mockDoctorSchedule = {
+      DS_ID: 10,
+      WorkDate: "2025-07-08",
+      Slot: {
+        Slot_ID: 3,
+        Slot_Start: "08:00",
+        Slot_End: "09:00", // Không cần hiển thị
       },
     };
 
@@ -88,6 +97,7 @@ export default function StepDetailPage() {
     ];
 
     setStepDetail(mockStepDetail);
+    setDoctorSlot(mockDoctorSchedule);
     setTests(mockTests);
     setBiosamples(mockBiosamples);
   }, [stepId]);
@@ -129,8 +139,17 @@ export default function StepDetailPage() {
           <Row gutter={[16, 16]}>
             <Col span={12}><Text strong>Tên bước:</Text><br /><Text>{stepDetail.Step_Name}</Text></Col>
             <Col span={12}><Text strong>Giai đoạn:</Text><br /><Text>{stepDetail.treatmentStep?.Step_Name}</Text></Col>
-            <Col span={12}><Text strong>Ngày hẹn:</Text><br /><Text>{stepDetail.PlanDate}</Text></Col>
-            <Col span={12}><Text strong>Ngày thực hiện:</Text><br /><Text>{stepDetail.DoneDate}</Text></Col>
+
+            <Col span={12}>
+              <Text strong>Ngày hẹn:</Text><br />
+              <Text>{doctorSlot?.WorkDate}</Text>
+            </Col>
+
+            <Col span={12}>
+              <Text strong>Thời gian:</Text><br />
+              <Text>{doctorSlot?.Slot.Slot_Start}</Text>
+            </Col>
+
             <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{stepDetail.Note}</Text></Col>
             <Col span={12}><Text strong>Thuốc:</Text><br /><Text>{stepDetail.Drug_Name}</Text></Col>
             <Col span={12}><Text strong>Liều lượng:</Text><br /><Text>{stepDetail.Dosage}</Text></Col>
@@ -172,7 +191,7 @@ export default function StepDetailPage() {
                         <Text strong>Ghi chú: </Text>{test.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/testdetail/${test.Test_ID}`)}>
+                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testdetail/${test.Test_ID}`)}>
                           Xem chi tiết
                         </Link>
                       </Col>
@@ -206,7 +225,7 @@ export default function StepDetailPage() {
                         <Text strong>Ghi chú: </Text>{bs.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}>
+                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}>
                           Xem chi tiết
                         </Link>
                       </Col>

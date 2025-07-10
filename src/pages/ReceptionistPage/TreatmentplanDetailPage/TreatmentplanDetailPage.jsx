@@ -311,45 +311,6 @@ export default function TreatmentPlanDetailPage() {
             </Form>
           </Modal>
 
-          {Array.isArray(biosamples) && biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosamplelist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff0f5" }}
-            >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                          <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                          <Text strong>Trạng thái: </Text>{BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}<br />
-                          <Text strong>Chất lượng: </Text>{BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}<br />
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3" }}
-                            onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
           {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
           {Array.isArray(tests) && tests.length > 0 && (
             <Card
@@ -390,6 +351,46 @@ export default function TreatmentPlanDetailPage() {
               </div>
             </Card>
           )}
+
+          {Array.isArray(biosamples) && biosamples.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <Text strong>Danh sách mẫu sinh học</Text>
+                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosamplelist/${tpId}`)}>
+                    Xem đầy đủ
+                  </Link>
+                </Space>
+              }
+              bodyStyle={{ backgroundColor: "#fff0f5" }}
+            >
+              <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  {biosamples.map((bs) => (
+                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                      <Row justify="space-between">
+                        <Col>
+                          <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
+                          <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
+                          <Text strong>Trạng thái: </Text>{BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}<br />
+                          <Text strong>Chất lượng: </Text>{BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}<br />
+                        </Col>
+                        <Col>
+                          <Link
+                            style={{ color: "#f78db3" }}
+                            onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}
+                          >
+                            Xem chi tiết
+                          </Link>
+                        </Col>
+                      </Row>
+                    </Card>
+                  ))}
+                </Space>
+              </div>
+            </Card>
+          )}
+
         </Space>
       </Content>
     </Layout>

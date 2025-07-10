@@ -44,34 +44,42 @@ export default function StepDetailPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const mockStepDetail = {
-      SD_ID: stepId,
-      TP_ID: 999,
-      Step_Name: "Khám tổng quát",
-      Note: "Bệnh nhân có dấu hiệu ổn định",
-      Status: 1,
-      PlanDate: "2025-07-08",
-      DoneDate: "2025-07-09",
-      Drug_Name: "Vitamin E",
-      Dosage: "1 viên/ngày",
-      treatmentStep: { Step_Name: "Giai đoạn đầu kiểm tra sức khỏe" },
-      doctor: {
-        docId: 301,
-        acc: {
-          fullName: "BS. Lê Văn C",
-          phone: "0901234567",
-          mail: "levanc@example.com",
-        },
+  const mockStepDetail = {
+    SD_ID: stepId,
+    TP_ID: 999,
+    Step_Name: "Khám tổng quát",
+    Note: "Bệnh nhân có dấu hiệu ổn định",
+    Status: 1,
+    Drug_Name: "Vitamin E",
+    Dosage: "1 viên/ngày",
+    TS_ID: 1,
+    DS_ID: 1001,
+    treatmentStep: { Step_Name: "Giai đoạn đầu kiểm tra sức khỏe" },
+    doctor: {
+      docId: 301,
+      acc: {
+        fullName: "BS. Lê Văn C",
+        phone: "0901234567",
+        mail: "levanc@example.com",
       },
-    };
+    },
+    doctorSchedule: {
+      DS_ID: 1001,
+      WorkDate: "2025-07-15",
+      slot: {
+        Slot_ID: 3,
+        Slot_Start: "09:00",
+      },
+    },
+  };
 
-    const mockTests = [];
-    const mockBiosamples = [];
+  const mockTests = [];
+  const mockBiosamples = [];
 
-    setStepDetail(mockStepDetail);
-    setTests(mockTests);
-    setBiosamples(mockBiosamples);
-  }, [stepId]);
+  setStepDetail(mockStepDetail);
+  setTests(mockTests);
+  setBiosamples(mockBiosamples);
+}, [stepId]);
 
   const handleStatusChange = async (val) => {
     setStatusUpdating(true);
@@ -136,8 +144,14 @@ export default function StepDetailPage() {
           <Row gutter={[16, 16]}>
             <Col span={12}><Text strong>Tên bước:</Text><br /><Text>{stepDetail.Step_Name}</Text></Col>
             <Col span={12}><Text strong>Giai đoạn:</Text><br /><Text>{stepDetail.treatmentStep?.Step_Name}</Text></Col>
-            <Col span={12}><Text strong>Ngày hẹn:</Text><br /><Text>{stepDetail.PlanDate}</Text></Col>
-            <Col span={12}><Text strong>Ngày thực hiện:</Text><br /><Text>{stepDetail.DoneDate}</Text></Col>
+            <Col span={12}>
+              <Text strong>Ngày hẹn:</Text><br />
+              <Text>{stepDetail.doctorSchedule?.WorkDate}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Khung giờ:</Text><br />
+              <Text>{stepDetail.doctorSchedule?.slot?.Slot_Start}</Text>
+            </Col>
             <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{stepDetail.Note}</Text></Col>
             <Col span={12}><Text strong>Thuốc:</Text><br /><Text>{stepDetail.Drug_Name}</Text></Col>
             <Col span={12}><Text strong>Liều lượng:</Text><br /><Text>{stepDetail.Dosage}</Text></Col>
