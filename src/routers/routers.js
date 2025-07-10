@@ -63,19 +63,25 @@ const routers = [
   {
     path: "/treatmentstep/:id",
     component: lazy(() =>
-      import("~pages/CustomerPage/Treatmentplan/TreatmentStepPage/TreatmentStepPage")
+      import(
+        "~pages/CustomerPage/Treatmentplan/TreatmentStepPage/TreatmentStepPage"
+      )
     ),
   },
   {
     path: "/biosamplelist/:id",
     component: lazy(() =>
-      import("~pages/CustomerPage/Treatmentplan/BiosampleListPage/BiosampleListPage")
+      import(
+        "~pages/CustomerPage/Treatmentplan/BiosampleListPage/BiosampleListPage"
+      )
     ),
   },
-   {
+  {
     path: "/biosampledetail/:id",
     component: lazy(() =>
-      import("~pages/CustomerPage/Treatmentplan/BiosampleDetailPage/BiosampleDetailPage")
+      import(
+        "~pages/CustomerPage/Treatmentplan/BiosampleDetailPage/BiosampleDetailPage"
+      )
     ),
   },
   {
@@ -93,6 +99,10 @@ const routers = [
   {
     path: "/blog",
     component: lazy(() => import("~pages/Blog/BlogList")),
+  },
+  {
+    path: "/blog/:id",
+    component: lazy(() => import("~pages/Blog/BlogDetail")),
   },
   {
     path: "/customer/booking",
@@ -161,37 +171,49 @@ const routers = [
   {
     path: "/doctorpage/treatmentstep/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/TreatmentStepPage/TreatmentStepPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/TreatmentStepPage/TreatmentStepPage"
+      )
     ),
   },
   {
     path: "/doctorpage/stepdetail/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/StepDetailPage/StepDetailPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/StepDetailPage/StepDetailPage"
+      )
     ),
   },
   {
     path: "/doctorpage/biosamplelist/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/BiosampleListPage/BiosampleListPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/BiosampleListPage/BiosampleListPage"
+      )
     ),
   },
-   {
+  {
     path: "/doctorpage/biosampledetail/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/BiosampleDetailPage/BiosampleDetailPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/BiosampleDetailPage/BiosampleDetailPage"
+      )
     ),
   },
   {
     path: "/doctorpage/testlist/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/TestListPage/TestListPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/TestListPage/TestListPage"
+      )
     ),
   },
   {
     path: "/doctorpage/testdetail/:id",
     component: lazy(() =>
-      import("~pages/DoctorPage/TreatmentplanManagement/TestDetailPage/TestDetailPage")
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/TestDetailPage/TestDetailPage"
+      )
     ),
   },
   //admin
@@ -216,37 +238,49 @@ const routers = [
   {
     path: "/admin/treatmentstep/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/TreatmentStepPage/TreatmentStepPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/TreatmentStepPage/TreatmentStepPage"
+      )
     ),
   },
   {
     path: "/admin/stepdetail/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/StepDetailPage/StepDetailPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/StepDetailPage/StepDetailPage"
+      )
     ),
   },
   {
     path: "/admin/biosamplelist/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/BiosampleListPage/BiosampleListPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/BiosampleListPage/BiosampleListPage"
+      )
     ),
   },
-   {
+  {
     path: "/admin/biosampledetail/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/BiosampleDetailPage/BiosampleDetailPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/BiosampleDetailPage/BiosampleDetailPage"
+      )
     ),
   },
   {
     path: "/admin/testlist/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/TestListPage/TestListPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/TestListPage/TestListPage"
+      )
     ),
   },
   {
     path: "/admin/testdetail/:id",
     component: lazy(() =>
-      import("~pages/AdminPage/TreatmentplanManagement/TestDetailPage/TestDetailPage")
+      import(
+        "~pages/AdminPage/TreatmentplanManagement/TestDetailPage/TestDetailPage"
+      )
     ),
   },
   //receptionist
@@ -286,7 +320,7 @@ const routers = [
       import("~pages/ReceptionistPage/BiosampleListPage/BiosampleListPage")
     ),
   },
-   {
+  {
     path: "/receptionist/biosampledetail/:id",
     component: lazy(() =>
       import("~pages/ReceptionistPage/BiosampleDetailPage/BiosampleDetailPage")
