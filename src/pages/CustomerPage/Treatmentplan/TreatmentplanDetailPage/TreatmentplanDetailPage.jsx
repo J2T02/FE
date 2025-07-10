@@ -321,7 +321,7 @@ export default function TreatmentPlanDetailPage() {
                         <Text type="secondary" style={{ fontSize: '12px' }}>Ngày: {step.PlanDate} | BS: {step.doc?.fullName}</Text>
                       </Col>
                       <Col>
-                        <Link onClick={() => navigate(`/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Chi tiết</Link>
+                        <Link onClick={() => navigate(`/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Xem chi tiết</Link>
                       </Col>
                     </Row>
                   </Card>
@@ -330,52 +330,12 @@ export default function TreatmentPlanDetailPage() {
             </div>
           </Card>
 
-          {Array.isArray(biosamples) && biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosamplelist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
-              size="small"
-            >
-              <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                      <Row justify="space-between" align="middle">
-                        <Col flex="auto">
-                          <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
-                          </Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3", fontSize: '12px' }}
-                            onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}
-                          >
-                            Chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
           {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
           {Array.isArray(tests) && tests.length > 0 && (
             <Card
               title={
                 <Space>
-                  <Text strong>Xét nghiệm</Text>
+                  <Text strong>Danh sách xét nghiệm</Text>
                   <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testlist/${tpId}`)}>
                     Xem đầy đủ
                   </Link>
@@ -400,7 +360,7 @@ export default function TreatmentPlanDetailPage() {
                             style={{ color: "#f78db3", fontSize: '12px' }}
                             onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
                           >
-                            Chi tiết
+                            Xem chi tiết
                           </Link>
                         </Col>
                       </Row>
@@ -410,6 +370,47 @@ export default function TreatmentPlanDetailPage() {
               </div>
             </Card>
           )}
+
+          {Array.isArray(biosamples) && biosamples.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <Text strong>Danh sách mẫu sinh học</Text>
+                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosamplelist/${tpId}`)}>
+                    Xem đầy đủ
+                  </Link>
+                </Space>
+              }
+              bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+              size="small"
+            >
+              <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                  {biosamples.map((bs) => (
+                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                      <Row justify="space-between" align="middle">
+                        <Col flex="auto">
+                          <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
+                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                            {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                          </Text>
+                        </Col>
+                        <Col>
+                          <Link
+                            style={{ color: "#f78db3", fontSize: '12px' }}
+                            onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}
+                          >
+                            Xem chi tiết
+                          </Link>
+                        </Col>
+                      </Row>
+                    </Card>
+                  ))}
+                </Space>
+              </div>
+            </Card>
+          )}
+
         </Space>
       </Content>
     </Layout>
