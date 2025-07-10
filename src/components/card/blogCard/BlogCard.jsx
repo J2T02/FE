@@ -4,14 +4,14 @@ import { RightOutlined } from "@ant-design/icons";
 const { Title, Paragraph, Text } = Typography;
 const MAX_LENGTH = 100;
 
-const BlogCard = ({ blog }) => {
-  const { title, content, img, authorId, postDate } = blog;
+const BlogCard = ({ blog, onClick }) => {
+  const { title, excerpt, thumbnail, author, publishedDate } = blog;
   const { token } = theme.useToken();
 
   const shortContent =
-    content?.length > MAX_LENGTH
-      ? content.substring(0, MAX_LENGTH) + "..."
-      : content;
+    excerpt?.length > MAX_LENGTH
+      ? excerpt.substring(0, MAX_LENGTH) + "..."
+      : excerpt;
 
   return (
     <Card
@@ -25,7 +25,7 @@ const BlogCard = ({ blog }) => {
       cover={
         <img
           alt="blog"
-          src={img}
+          src={thumbnail}
           style={{
             height: 180,
             objectFit: "cover",
@@ -38,24 +38,17 @@ const BlogCard = ({ blog }) => {
       <Title level={4} style={{ marginBottom: 8 }}>
         {title}
       </Title>
-
-      {/* Author & Date */}
       <div style={{ marginBottom: 12 }}>
         <Text type="secondary" style={{ marginRight: 12 }}>
-          Tác giả: {authorId}
+          Tác giả: {author}
         </Text>
-        <Text type="secondary">
-          Ngày đăng: {new Date(postDate).toLocaleDateString("vi-VN")}
-        </Text>
+        <Text type="secondary">Ngày đăng: {publishedDate}</Text>
       </div>
-
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
         {shortContent}
       </Paragraph>
-
-      {/* Read more link */}
       <div
-        // onClick={}
+        onClick={onClick}
         style={{
           color: token.colorPrimary,
           fontWeight: 500,

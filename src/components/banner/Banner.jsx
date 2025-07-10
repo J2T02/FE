@@ -24,7 +24,7 @@ const Banner = () => {
           <div key={index}>
             <div
               style={{
-                height: 500,
+                height: 600,
                 width: "100%",
                 position: "relative",
                 backgroundImage: `url(${img})`,

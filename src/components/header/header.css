@@ -20,3 +20,35 @@
   /* Màu underline */
   border-radius: 1px;
 }
+
+/* Sticky header transition */
+.sticky-header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shrink-header {
+  height: 70px !important;
+  min-height: 60px !important;
+  padding: 8px 0 !important;
+  margin: 0 40px !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topbar {
+  width: 100%;
+  background: #231f20;
+  color: #fff;
+  font-size: 13px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 100;
+}

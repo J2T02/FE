@@ -52,13 +52,16 @@ function WhyUs() {
           level={2}
           style={{
             color: token.colorTextBase,
-            borderBottom: `4px solid ${token.colorPrimary}`,
+
             display: "inline-block",
             marginBottom: 40,
             fontFamily: token.fontFamily,
           }}
         >
-          Tại sao nên chọn Vinmec?
+          Tại sao nên chọn{" "}
+          <span style={{ borderBottom: `4px solid ${token.colorPrimary}` }}>
+            Con Yêu
+          </span>
         </Title>
 
         <Row gutter={[32, 32]} align="top">

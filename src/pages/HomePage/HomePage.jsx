@@ -8,116 +8,29 @@ import Footer from "~components/footer/Footer";
 import SlideListItem from "~components/slideder/SlideListItem";
 import BlogCard from "../../components/card/blogCard/BlogCard";
 import { useBooking } from "~contexts/BookingContext";
+import ProcessSection from "../../components/ProcessSection/ProcessSection";
+import ConsultBanner from "../../components/banner/ConsultBanner";
+import Service from "../../components/service/Service";
+import DoctorCarousel from "../../components/slideder/DoctorCarousel";
+import PatientFeedbackCarousel from "../../components/slideder/PatientFeedbackCarousel/PatientFeedbackCarousel";
+import { useNavigate } from "react-router-dom";
+//
+
 //
 function HomePage() {
   const { token } = theme.useToken();
   const { doctorList, serviceList, blogList } = useBooking();
+  const navigate = useNavigate();
   return (
     <Layout>
       <Header />
       <Banner />
       <WhyUs />
-      <div
-        className="ServiceList"
-        style={{
-          paddingTop: 64,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: token.colorBgPage,
-        }}
-      >
-        <h1
-          style={{
-            fontWeight: "700",
-            fontFamily: token.fontFamily,
-            fontSize: 36,
-            color: "#111827",
-          }}
-        >
-          Dịch Vụ Điều Trị
-        </h1>
-        <p
-          style={{
-            color: "#4B5563",
-            fontSize: 16,
-            fontWeight: 700,
-            lineHeight: "1.6",
-            maxWidth: 600,
-            textAlign: "center",
-            marginBottom: 24,
-          }}
-        >
-          Các giải pháp điều trị cá nhân hóa cho từng trường hợp vô sinh – hiếm
-          muộn
-        </p>
-        {serviceList?.map((ser, index) => {
-          if (index <= 1) {
-            return <CardService service={ser} />;
-          }
-        })}
-      </div>
-      <div
-        className="DoctorList"
-        style={{
-          paddingTop: 64,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: token.colorBgPage,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <h1
-            style={{
-              fontWeight: "700",
-              fontFamily: token.fontFamily,
-              fontSize: 36,
-              color: "#111827",
-            }}
-          >
-            ĐỘI NGŨ CHUYÊN GIA Y TẾ
-          </h1>
-          <p
-            style={{
-              color: "#4B5563",
-              fontSize: 16,
-              fontWeight: 700,
-              lineHeight: "1.6",
-              maxWidth: 600,
-              textAlign: "center",
-              marginBottom: 24,
-            }}
-          >
-            Cam kết đồng hành cùng bạn trên hành trình tìm con
-          </p>
-        </div>
-        <div
-          style={{
-            width: "70%",
-            margin: "60px auto",
-            backgroundColor: token.colorBgPage,
-            cursor: "pointer",
-          }}
-        >
-          <SlideListItem>
-            {doctorList?.map((doctor, index) => (
-              <div key={index} style={{ padding: "10px" }}>
-                <CardDoctor doctor={doctor} />
-              </div>
-            ))}
-          </SlideListItem>
-        </div>
-      </div>
+      <ProcessSection />
+      <ConsultBanner />
+      <Service services={serviceList} />
+      <DoctorCarousel doctors={doctorList} />
+      <PatientFeedbackCarousel />
       <div
         className="BlogList"
         style={{
@@ -154,7 +67,10 @@ function HomePage() {
             if (index <= 3) {
               return (
                 <div key={index} style={{ width: "270px" }}>
-                  <BlogCard blog={blog} />
+                  <BlogCard
+                    blog={blog}
+                    onClick={() => navigate(`/blog/${blog.id}`)}
+                  />
                 </div>
               );
             }

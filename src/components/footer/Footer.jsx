@@ -7,6 +7,7 @@ import {
   EnvironmentOutlined,
 } from "@ant-design/icons";
 import { FaTiktok } from "react-icons/fa";
+
 const { Footer } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -21,16 +22,17 @@ const footerLinks = [
 const socialLinks = [
   { icon: <FacebookFilled />, href: "#", color: "#1877f2" },
   { icon: <YoutubeFilled />, href: "#", color: "#ff0000" },
-  { icon: <FaTiktok />, href: "#", color: "#000" },
+  { icon: <FaTiktok />, href: "#", color: "#ffffff" },
 ];
 
 function CustomFooter() {
   return (
     <Footer
       style={{
-        background: "#f7f9fb",
+        background: "#1a1a1a url(/fbg.jpg) repeat",
         padding: "40px 0 0 0",
-        borderTop: "1px solid #e5e7eb",
+        borderTop: "1px solid #333",
+        color: "#ccc",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
@@ -43,10 +45,10 @@ function CustomFooter() {
                 alt="logo"
                 style={{ width: 120, marginBottom: 8 }}
               />
-              <Title level={5} style={{ margin: 0, color: "#1d3b73" }}>
+              <Title level={5} style={{ margin: 0, color: "#fff" }}>
                 Phòng khám điều trị hiếm muộn
               </Title>
-              <Text type="secondary" style={{ fontSize: 13 }}>
+              <Text style={{ fontSize: 13, color: "#aaa" }}>
                 "Nơi gửi trọn niềm tin cho hạnh phúc gia đình"
               </Text>
             </div>
@@ -54,19 +56,19 @@ function CustomFooter() {
 
           {/* Liên hệ nhanh */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#1d3b73" }}>
+            <Title level={5} style={{ color: "#fff" }}>
               Liên hệ
             </Title>
             <Space direction="vertical" size={8}>
-              <Text>
+              <Text style={{ color: "#ccc" }}>
                 <PhoneOutlined style={{ color: "#f78db3", marginRight: 8 }} />
                 <b>1900 565656</b>
               </Text>
-              <Text>
+              <Text style={{ color: "#ccc" }}>
                 <MailOutlined style={{ color: "#f78db3", marginRight: 8 }} />
                 ConYeu@hiemmuon.vn
               </Text>
-              <Text>
+              <Text style={{ color: "#ccc" }}>
                 <EnvironmentOutlined
                   style={{ color: "#f78db3", marginRight: 8 }}
                 />
@@ -77,7 +79,7 @@ function CustomFooter() {
 
           {/* Liên kết nhanh */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#1d3b73" }}>
+            <Title level={5} style={{ color: "#fff" }}>
               Liên kết nhanh
             </Title>
             <Space direction="vertical" size={6}>
@@ -85,7 +87,7 @@ function CustomFooter() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  style={{ color: "#1d3b73", fontWeight: 500 }}
+                  style={{ color: "#ccc", fontWeight: 500 }}
                 >
                   {item.label}
                 </Link>
@@ -95,7 +97,7 @@ function CustomFooter() {
 
           {/* Mạng xã hội */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#1d3b73" }}>
+            <Title level={5} style={{ color: "#fff" }}>
               Kết nối với chúng tôi
             </Title>
             <Space size={16} style={{ marginBottom: 8 }}>
@@ -105,7 +107,10 @@ function CustomFooter() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ fontSize: 20, color: item.color }}
+                  style={{
+                    fontSize: 20,
+                    color: item.color,
+                  }}
                 >
                   {item.icon}
                 </a>
@@ -117,15 +122,17 @@ function CustomFooter() {
                 alt="QR code"
                 width={80}
                 height={80}
-                style={{ borderRadius: 8, border: "1px solid #eee" }}
+                style={{ borderRadius: 8, border: "1px solid #555" }}
               />
-              <div style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: "#aaa", marginTop: 4 }}>
                 Quét mã QR để tải app
               </div>
             </div>
           </Col>
         </Row>
-        <Divider style={{ margin: "32px 0 16px 0" }} />
+
+        <Divider style={{ margin: "32px 0 16px 0", borderColor: "#444" }} />
+
         <Row
           justify="space-between"
           align="middle"

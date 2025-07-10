@@ -3,9 +3,11 @@ import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
 import { useBooking } from "~contexts/BookingContext";
 import BlogCard from "~components/card/blogCard/BlogCard";
+import { useNavigate } from "react-router-dom";
 function BlogList() {
   const { token } = theme.useToken();
-  const { doctors } = useBooking;
+  const { blogList } = useBooking();
+  const navigate = useNavigate();
   return (
     <Layout>
       <Header />
@@ -28,24 +30,26 @@ function BlogList() {
         >
           Blog
         </h1>
-        <p style={{ color: "#4B5563" }}>Demo</p>
 
-        {/* Grid layout */}
         <div
           style={{
             maxWidth: 1200,
             width: "100%",
             padding: "0 16px",
             marginTop: 32,
+            display: "flex",
+            gap: 24,
+            flexWrap: "wrap",
           }}
         >
-          {/* <Row gutter={[24, 24]}>
-            {doctors?.map((doc, index) => (
-              <Col key={index} xs={24} sm={12} md={8}>
-                <CardDoctor doctor={doc} />
-              </Col>
-            ))}
-          </Row> */}
+          {blogList?.map((blog) => (
+            <div key={blog.id} style={{ width: "270px" }}>
+              <BlogCard
+                blog={blog}
+                onClick={() => navigate(`/blog/${blog.id}`)}
+              />
+            </div>
+          ))}
         </div>
       </div>
       <Footer />
