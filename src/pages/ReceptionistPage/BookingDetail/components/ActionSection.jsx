@@ -51,10 +51,16 @@ export default function ActionSection({
           block
           style={{ marginBottom: 8 }}
           onClick={() => window.print()}
+          type="primary"
         >
           In thông tin
         </Button>
-        <Button icon={<ArrowLeftOutlined />} block onClick={() => navigate(-1)}>
+        <Button
+          type="primary"
+          icon={<ArrowLeftOutlined />}
+          block
+          onClick={() => navigate(-1)}
+        >
           Quay lại
         </Button>
       </Card>

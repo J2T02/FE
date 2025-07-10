@@ -11,7 +11,6 @@ const RegisterModal = ({ open, onClose }) => {
       phone: values.phone,
       mail: values.email,
     };
-    console.log("body:", body);
     await register(body)
       .then((res) => {
         console.log(res.data);

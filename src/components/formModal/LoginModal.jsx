@@ -14,6 +14,7 @@ const LoginModal = ({ open, onClose, setAccId }) => {
           Cookies.set("accId", accId);
           Cookies.set("token", token);
           setAccId(accId);
+          message.success("đăng nhập thành công.");
           onClose(); // Đóng modal sau khi đăng nhập
         } else {
           message.error(res.data.message);

@@ -6,7 +6,11 @@ import { useNavigate } from "react-router-dom";
 import CustomerInfo from "../components/CustomerInfo";
 import DoctorScheduleSelection from "../components/DoctorScheduleSelection";
 import ConfirmBooking from "../components/ConfirmBooking";
-import { Booking, GetCustomerInfo, GetAllDoctor } from "../../../apis/bookingService";
+import {
+  Booking,
+  GetCustomerInfo,
+  GetAllDoctor,
+} from "../../../apis/bookingService";
 import Cookies from "js-cookie";
 import dayjs from "dayjs";
 
@@ -24,12 +28,12 @@ const BookingPage = () => {
     const initializeData = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // Load customer info và doctors song song
         const [customerRes, doctorsRes] = await Promise.all([
           GetCustomerInfo(Cookies.get("accId")),
-          GetAllDoctor()
+          GetAllDoctor(),
         ]);
 
         const customerData = customerRes?.data?.data;
@@ -45,7 +49,6 @@ const BookingPage = () => {
 
         // Set doctors data
         setDoctors(doctorsData);
-
       } catch (error) {
         console.error("Lỗi khi khởi tạo dữ liệu:", error);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -78,10 +81,10 @@ const BookingPage = () => {
           message.warning("Vui lòng chọn đầy đủ ngày và ca khám.");
           return false;
         }
-        
+
         // Kiểm tra ngày trong quá khứ
         const selectedDate = dayjs(bookingData.date);
-        if (selectedDate.isBefore(dayjs().startOf('day'))) {
+        if (selectedDate.isBefore(dayjs().startOf("day"))) {
           message.error("Không thể đặt lịch cho ngày trong quá khứ.");
           return false;
         }
@@ -108,15 +111,15 @@ const BookingPage = () => {
   const submitBooking = async () => {
     try {
       setLoading(true);
-      
+
       // Kiểm tra lại ngày trước khi submit
       const selectedDate = dayjs(bookingData.date);
-      if (selectedDate.isBefore(dayjs().startOf('day'))) {
+      if (selectedDate.isBefore(dayjs().startOf("day"))) {
         message.error("Không thể đặt lịch cho ngày trong quá khứ.");
         setLoading(false);
         return;
       }
-      
+
       const payload = {
         slotId: bookingData.slot,
         workDate: bookingData.date,
@@ -125,8 +128,11 @@ const BookingPage = () => {
       };
 
       const res = await Booking(payload);
+      console.log(res);
       message.success("Đặt lịch thành công!");
-      const bookingId = res.data.data.bookingId;
+      setLoading(false);
+      const bookingId = res.data.data.booking.bookingId;
+      console.log(res.data.data.booking.bookingId);
       navigate(`/bookingDetail/${bookingId}`);
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
@@ -142,7 +148,7 @@ const BookingPage = () => {
   const steps = [
     ...(showCustomerInfo ? ["Thông tin bệnh nhân"] : []),
     "Chọn bác sĩ và lịch trình",
-    "Xác nhận"
+    "Xác nhận",
   ];
 
   // Tính toán content components động
@@ -181,12 +187,14 @@ const BookingPage = () => {
     return (
       <Layout>
         <Header />
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '60vh' 
-        }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "60vh",
+          }}
+        >
           <Spin size="large" tip="Đang tải dữ liệu..." />
         </div>
         <Footer />

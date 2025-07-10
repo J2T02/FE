@@ -13,6 +13,7 @@ import { BookingDetail, checkBooking } from "../../../apis/bookingService";
 import ReceptionistHeader from "../components/ReceptionistHeader";
 import ReceptionistStoreProvider from "../contexts/ReceptionistStoreProvider";
 import Footer from "~components/footer/Footer";
+import { createTreatment } from "../../../apis/treatmentService";
 const { Content } = Layout;
 
 export default function BookingDetailPage() {
@@ -60,11 +61,31 @@ export default function BookingDetailPage() {
     }
   };
 
-  const handleCreateTreatmentPlan = () => {
-    message.success("Tạo hồ sơ bệnh án thành công (giả lập)");
-    const newTpId = 500 + bookingId;
-    setTreatmentPlan({ tpId: newTpId, bookingId });
-    navigate(`/treatmentplan/${newTpId}`);
+  const handleCreateTreatmentPlan = async () => {
+    if (bookingData) {
+      const { cus, doc } = bookingData;
+      const payload = {
+        docId: doc.docId,
+        serId: 1,
+        cusId: cus.cusId,
+      };
+      await createTreatment(payload)
+        .then((res) => {
+          if (res.data.success) {
+            setTreatmentPlan(res.data.data);
+            message.success(res.data.message);
+            const newTpId = res.data.data.tpId;
+            navigate(`/receptionist/treatmentplandetail/${newTpId}`);
+          } else {
+            message.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+
+          message.error("Tạo hồ sơ bệnh án thất bại!");
+        });
+    }
   };
 
   if (loading || !bookingData) return <Spin fullscreen />;

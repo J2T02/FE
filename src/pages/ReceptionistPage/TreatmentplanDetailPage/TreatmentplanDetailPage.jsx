@@ -26,7 +26,7 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-
+import { getTreatmentDetail } from "../../../apis/treatmentService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -88,71 +88,76 @@ export default function TreatmentPlanDetailPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const mockTP = {
-      TP_ID: tpId,
-      StartDate: "2025-07-07",
-      EndDate: "2025-07-21",
-      Status: 1,
-      Result: "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.",
-      service: { Ser_ID: 1, Ser_Name: "Thụ tinh nhân tạo" },
-      customer: {
-        Hus_Name: "Nguyễn Văn A",
-        Wife_Name: "Trần Thị B",
-        Hus_YOB: "1990-01-01",
-        Wife_YOB: "1992-03-03",
-        acc: {
-          fullName: "Nguyễn Văn A",
-          mail: "nguyenvana@example.com",
-          phone: "0912345678",
-        },
-      },
-      doctor: {
-        docId: 301,
-        acc: {
-          fullName: "BS. Lê Văn C",
-          phone: "0901234567",
-          mail: "levanc@example.com",
-        },
-      },
-      stepDetails: [], // ✳️ Để test trường hợp chưa có StepDetail
+    const fetchTreatmentPlan = async () => {
+      try {
+        const res = await getTreatmentDetail(tpId);
+        if (res?.data?.success && res.data.data) {
+          const apiData = res.data.data;
+          // Map API response to UI expected format
+          const mappedTP = {
+            TP_ID: apiData.tpId,
+            StartDate: apiData.startDate ? apiData.startDate.split("T")[0] : "",
+            EndDate: apiData.endDate ? apiData.endDate.split("T")[0] : "",
+            Status: apiData.status?.statusId || 1,
+            Result:
+              apiData.result ||
+              "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.",
+            service: {
+              Ser_ID: apiData.serviceInfo?.serId || 1,
+              Ser_Name: apiData.serviceInfo?.serName || "IVF",
+            },
+            customer: {
+              Hus_Name: apiData.cusInfo?.husName || "Nguyen van A",
+              Wife_Name: apiData.cusInfo?.wifeName || "Nguyen THI B",
+              Hus_YOB: apiData.cusInfo?.husYob || "2000-05-11",
+              Wife_YOB: apiData.cusInfo?.wifeYob || "2000-05-11",
+              acc: {
+                fullName: apiData.cusInfo?.husName || "Nguyen van A",
+                mail: "mock@example.com",
+                phone: "0900000000",
+              },
+            },
+            doctor: {
+              docId: apiData.doctorInfo?.docId || 1,
+              acc: {
+                fullName:
+                  apiData.doctorInfo?.accountInfo?.fullName || "Doctor 01",
+                phone: apiData.doctorInfo?.accountInfo?.phone || "0900000020",
+                mail:
+                  apiData.doctorInfo?.accountInfo?.mail ||
+                  "doctor01@example.com",
+              },
+            },
+            stepDetails: Array.isArray(apiData.stepDetails)
+              ? apiData.stepDetails.map((step, idx) => ({
+                  SD_ID: step.sdId || idx + 1,
+                  Step_Name: step.stepName || `Bước ${idx + 1}`,
+                  PlanDate: step.planDate ? step.planDate.split("T")[0] : "",
+                  doc: { fullName: step.doctorName || "Chưa rõ" },
+                }))
+              : [],
+          };
+          setTreatmentPlan(mappedTP);
+        } else {
+          setTreatmentPlan(null);
+        }
+      } catch (err) {
+        setTreatmentPlan(null);
+      }
     };
-
-    mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
-    setTreatmentPlan(mockTP);
-
-    const mockBiosamples = tpId === 1 ? [
-      {
-        BS_ID: 101,
-        BS_Name: "Mẫu máu",
-        CollectionDate: "2025-07-08",
-        Status: 1,
-        BQS_ID: 1,
-        Note: "Mẫu ổn định",
-      },
-    ] : [];
-
-    setBiosamples(mockBiosamples);
-
-    const mockTests = tpId === 1 ? [
-      {
-        Test_ID: 201,
-        TestType_ID: 2,
-        TestDate: "2025-07-12",
-        Status: 3,
-        Person: "Vợ",
-        TQS_ID: 1,
-      },
-    ] : [];
-
-    setTests(mockTests);
+    fetchTreatmentPlan();
   }, [tpId]);
 
   const getStatusTag = (status) => {
     switch (status) {
-      case 1: return <Tag color="blue">Đang điều trị</Tag>;
-      case 2: return <Tag color="green">Đã hoàn thành</Tag>;
-      case 3: return <Tag color="red">Đã hủy</Tag>;
-      default: return <Tag>Không xác định</Tag>;
+      case 1:
+        return <Tag color="blue">Đang điều trị</Tag>;
+      case 2:
+        return <Tag color="green">Đã hoàn thành</Tag>;
+      case 3:
+        return <Tag color="red">Đã hủy</Tag>;
+      default:
+        return <Tag>Không xác định</Tag>;
     }
   };
 
@@ -163,7 +168,12 @@ export default function TreatmentPlanDetailPage() {
       <Content style={{ padding: 24 }}>
         <Button
           icon={<ArrowLeftOutlined />}
-          style={{ backgroundColor: "#f78db3", color: "white", border: "none", marginBottom: 24 }}
+          style={{
+            backgroundColor: "#f78db3",
+            color: "white",
+            border: "none",
+            marginBottom: 24,
+          }}
           onClick={() => navigate(-1)}
         >
           Quay lại
@@ -175,31 +185,80 @@ export default function TreatmentPlanDetailPage() {
             Mã hồ sơ: {treatmentPlan.TP_ID}
           </Text>
 
-          <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5" }}>
+          <Card
+            title={<Text strong>Tổng quan hồ sơ bệnh án</Text>}
+            bodyStyle={{ backgroundColor: "#fff0f5" }}
+          >
             <Row gutter={[16, 16]}>
-              <Col span={12}><Text strong>Ngày bắt đầu:</Text><br /><Text>{treatmentPlan.StartDate}</Text></Col>
+              <Col span={12}>
+                <Text strong>Ngày bắt đầu:</Text>
+                <br />
+                <Text>{treatmentPlan.StartDate}</Text>
+              </Col>
               {treatmentPlan.EndDate && (
-                <Col span={12}><Text strong>Ngày kết thúc:</Text><br /><Text>{treatmentPlan.EndDate}</Text></Col>
+                <Col span={12}>
+                  <Text strong>Ngày kết thúc:</Text>
+                  <br />
+                  <Text>{treatmentPlan.EndDate}</Text>
+                </Col>
               )}
-              <Col span={12}><Text strong>Trạng thái:</Text><br />{getStatusTag(treatmentPlan.Status)}</Col>
-              <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{treatmentPlan.Result}</Text></Col>
-              <Col span={24}><Text strong>Dịch vụ điều trị:</Text><br /><Text>{treatmentPlan.service?.Ser_Name}</Text></Col>
+              <Col span={12}>
+                <Text strong>Trạng thái:</Text>
+                <br />
+                {getStatusTag(treatmentPlan.Status)}
+              </Col>
+              <Col span={24}>
+                <Text strong>Ghi chú:</Text>
+                <br />
+                <Text>{treatmentPlan.Result}</Text>
+              </Col>
+              <Col span={24}>
+                <Text strong>Dịch vụ điều trị:</Text>
+                <br />
+                <Text>{treatmentPlan.service?.Ser_Name}</Text>
+              </Col>
             </Row>
           </Card>
 
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
-              <Card title={<Text strong><UserOutlined /> Thông tin khách hàng</Text>} bodyStyle={{ backgroundColor: "#fde7ef" }}>
+              <Card
+                title={
+                  <Text strong>
+                    <UserOutlined /> Thông tin khách hàng
+                  </Text>
+                }
+                bodyStyle={{ backgroundColor: "#fde7ef" }}
+              >
                 <Row>
-                  <Col span={12}><Text type="secondary">Tên chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_Name}</Text><br /><Text type="secondary">Năm sinh chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_YOB}</Text></Col>
-                  <Col span={12}><Text type="secondary">Tên vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_Name}</Text><br /><Text type="secondary">Năm sinh vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_YOB}</Text></Col>
+                  <Col span={12}>
+                    <Text type="secondary">Tên chồng</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Hus_Name}</Text>
+                    <br />
+                    <Text type="secondary">Năm sinh chồng</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Hus_YOB}</Text>
+                  </Col>
+                  <Col span={12}>
+                    <Text type="secondary">Tên vợ</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Wife_Name}</Text>
+                    <br />
+                    <Text type="secondary">Năm sinh vợ</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Wife_YOB}</Text>
+                  </Col>
                 </Row>
                 <Divider />
-                <Text strong>Thông tin liên hệ</Text><br />
+                <Text strong>Thông tin liên hệ</Text>
+                <br />
                 <UserOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.fullName}<br />
+                {treatmentPlan.customer?.acc?.fullName}
+                <br />
                 <MailOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.mail}<br />
+                {treatmentPlan.customer?.acc?.mail}
+                <br />
                 <PhoneOutlined style={{ marginRight: 8 }} />
                 {treatmentPlan.customer?.acc?.phone}
               </Card>
@@ -211,15 +270,29 @@ export default function TreatmentPlanDetailPage() {
                   <Button
                     shape="circle"
                     icon={<InfoCircleOutlined />}
-                    style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-                    onClick={() => navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)}
+                    style={{
+                      backgroundColor: "#f78db3",
+                      color: "white",
+                      border: "none",
+                    }}
+                    onClick={() =>
+                      navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)
+                    }
                   />
                 }
                 bodyStyle={{ backgroundColor: "#fce6ec" }}
               >
-                <Text strong>Họ tên:</Text><br /><Text>{treatmentPlan.doctor?.acc?.fullName}</Text><br />
-                <Text strong>Email:</Text><br /><Text>{treatmentPlan.doctor?.acc?.mail}</Text><br />
-                <Text strong>SĐT:</Text><br /><Text>{treatmentPlan.doctor?.acc?.phone}</Text>
+                <Text strong>Họ tên:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.fullName}</Text>
+                <br />
+                <Text strong>Email:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.mail}</Text>
+                <br />
+                <Text strong>SĐT:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.phone}</Text>
               </Card>
             </Col>
           </Row>
@@ -229,7 +302,14 @@ export default function TreatmentPlanDetailPage() {
             title={
               <Space>
                 <Text strong>Quá trình điều trị</Text>
-                <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/treatmentstep/${tpId}`)}>Xem đầy đủ</Link>
+                <Link
+                  style={{ color: "#f78db3" }}
+                  onClick={() =>
+                    navigate(`/receptionist/treatmentstep/${tpId}`)
+                  }
+                >
+                  Xem đầy đủ
+                </Link>
               </Space>
             }
             bodyStyle={{ backgroundColor: "#fff7fa" }}
@@ -238,15 +318,30 @@ export default function TreatmentPlanDetailPage() {
               <Space direction="vertical" style={{ width: "100%" }}>
                 {treatmentPlan.stepDetails?.length > 0 ? (
                   treatmentPlan.stepDetails.map((step) => (
-                    <Card key={step.SD_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                    <Card
+                      key={step.SD_ID}
+                      type="inner"
+                      style={{ borderLeft: "5px solid #f78db3" }}
+                    >
                       <Row justify="space-between">
                         <Col>
-                          <Text strong>{step.Step_Name}</Text><br />
-                          <Text type="secondary">Ngày hẹn: {step.PlanDate}</Text><br />
+                          <Text strong>{step.Step_Name}</Text>
+                          <br />
+                          <Text type="secondary">
+                            Ngày hẹn: {step.PlanDate}
+                          </Text>
+                          <br />
                           <Text>Bác sĩ: {step.doc?.fullName}</Text>
                         </Col>
                         <Col>
-                          <Link onClick={() => navigate(`/receptionist/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3" }}>Xem chi tiết</Link>
+                          <Link
+                            onClick={() =>
+                              navigate(`/receptionist/stepdetail/${step.SD_ID}`)
+                            }
+                            style={{ color: "#f78db3" }}
+                          >
+                            Xem chi tiết
+                          </Link>
                         </Col>
                       </Row>
                     </Card>
@@ -257,7 +352,11 @@ export default function TreatmentPlanDetailPage() {
                       icon={<PlusOutlined />}
                       size="large"
                       type="dashed"
-                      style={{ fontSize: 28, color: "#f78db3", borderColor: "#f78db3" }}
+                      style={{
+                        fontSize: 28,
+                        color: "#f78db3",
+                        borderColor: "#f78db3",
+                      }}
                       onClick={() => setIsModalOpen(true)}
                     >
                       Thêm bước điều trị đầu tiên
@@ -290,22 +389,38 @@ export default function TreatmentPlanDetailPage() {
             okText="Xác nhận"
             cancelText="Hủy"
           >
-            <Form form={form} layout="vertical" initialValues={{
-              Step_Name: "Khám tư vấn buổi 1",
-              TS_ID: 1,
-              PlanDate: dayjs(),
-            }}>
-              <Form.Item name="Step_Name" label="Tên bước điều trị" rules={[{ required: true }]}>
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={{
+                Step_Name: "Khám tư vấn buổi 1",
+                TS_ID: 1,
+                PlanDate: dayjs(),
+              }}
+            >
+              <Form.Item
+                name="Step_Name"
+                label="Tên bước điều trị"
+                rules={[{ required: true }]}
+              >
                 <Input />
               </Form.Item>
-              <Form.Item name="TS_ID" label="Loại bước điều trị" rules={[{ required: true }]}>
+              <Form.Item
+                name="TS_ID"
+                label="Loại bước điều trị"
+                rules={[{ required: true }]}
+              >
                 <Select>
                   <Select.Option value={1}>Khám tư vấn</Select.Option>
                   <Select.Option value={2}>Siêu âm</Select.Option>
                   <Select.Option value={3}>Xét nghiệm</Select.Option>
                 </Select>
               </Form.Item>
-              <Form.Item name="PlanDate" label="Ngày hẹn" rules={[{ required: true }]}>
+              <Form.Item
+                name="PlanDate"
+                label="Ngày hẹn"
+                rules={[{ required: true }]}
+              >
                 <DatePicker style={{ width: "100%" }} />
               </Form.Item>
             </Form>
@@ -317,7 +432,10 @@ export default function TreatmentPlanDetailPage() {
               title={
                 <Space>
                   <Text strong>Danh sách xét nghiệm</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/testlist/${tpId}`)}>
+                  <Link
+                    style={{ color: "#f78db3" }}
+                    onClick={() => navigate(`/receptionist/testlist/${tpId}`)}
+                  >
                     Xem đầy đủ
                   </Link>
                 </Space>
@@ -327,14 +445,27 @@ export default function TreatmentPlanDetailPage() {
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 <Space direction="vertical" style={{ width: "100%" }}>
                   {tests.map((test) => (
-                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                    <Card
+                      key={test.Test_ID}
+                      type="inner"
+                      style={{ borderLeft: "5px solid #f78db3" }}
+                    >
                       <Row justify="space-between">
                         <Col>
-                          <Text strong>Loại xét nghiệm: </Text>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}<br />
-                          <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                          <Text strong>Người xét nghiệm: </Text>{test.Person}<br />
-                          <Text strong>Trạng thái: </Text>{TEST_STATUS[test.Status] || "Không xác định"}<br />
-                          <Text strong>Tình trạng kết quả: </Text>{TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
+                          <Text strong>Loại xét nghiệm: </Text>
+                          {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
+                          <br />
+                          <Text strong>Ngày xét nghiệm: </Text>
+                          {test.TestDate}
+                          <br />
+                          <Text strong>Người xét nghiệm: </Text>
+                          {test.Person}
+                          <br />
+                          <Text strong>Trạng thái: </Text>
+                          {TEST_STATUS[test.Status] || "Không xác định"}
+                          <br />
+                          <Text strong>Tình trạng kết quả: </Text>
+                          {TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
                         </Col>
                         <Col>
                           <Link
@@ -357,7 +488,12 @@ export default function TreatmentPlanDetailPage() {
               title={
                 <Space>
                   <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosamplelist/${tpId}`)}>
+                  <Link
+                    style={{ color: "#f78db3" }}
+                    onClick={() =>
+                      navigate(`/receptionist/biosamplelist/${tpId}`)
+                    }
+                  >
                     Xem đầy đủ
                   </Link>
                 </Space>
@@ -367,18 +503,34 @@ export default function TreatmentPlanDetailPage() {
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 <Space direction="vertical" style={{ width: "100%" }}>
                   {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                    <Card
+                      key={bs.BS_ID}
+                      type="inner"
+                      style={{ borderLeft: "5px solid #f78db3" }}
+                    >
                       <Row justify="space-between">
                         <Col>
-                          <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                          <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                          <Text strong>Trạng thái: </Text>{BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}<br />
-                          <Text strong>Chất lượng: </Text>{BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}<br />
+                          <Text strong>Tên mẫu: </Text>
+                          {bs.BS_Name}
+                          <br />
+                          <Text strong>Ngày thu thập: </Text>
+                          {bs.CollectionDate}
+                          <br />
+                          <Text strong>Trạng thái: </Text>
+                          {BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}
+                          <br />
+                          <Text strong>Chất lượng: </Text>
+                          {BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}
+                          <br />
                         </Col>
                         <Col>
                           <Link
                             style={{ color: "#f78db3" }}
-                            onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}
+                            onClick={() =>
+                              navigate(
+                                `/receptionist/biosampledetail/${bs.BS_ID}`
+                              )
+                            }
                           >
                             Xem chi tiết
                           </Link>
@@ -390,7 +542,6 @@ export default function TreatmentPlanDetailPage() {
               </div>
             </Card>
           )}
-
         </Space>
       </Content>
     </Layout>
