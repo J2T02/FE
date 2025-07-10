@@ -136,6 +136,18 @@ const routers = [
       import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")
     ),
   },
+  {
+    path: "/changepassword",
+    component: lazy(() =>
+      import("~pages/CustomerPage/ChangePasswordPage/ChangePasswordPage")
+    ),
+  },
+  {
+    path: "/forgotpassword",
+    component: lazy(() =>
+      import("~pages/CustomerPage/ForgotPasswordPage/ForgotPasswordPage")
+    ),
+  },
   //Receptionist
   {
     path: "/receptionistsignin",
