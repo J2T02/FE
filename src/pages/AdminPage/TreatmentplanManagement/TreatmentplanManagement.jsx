@@ -97,7 +97,7 @@ const TreatmentplanManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a href={`/treatmentplans/${record.tp_ID}`} style={{ color: "#1677ff" }}>
+        <a href={`/admin/treatmentplandetail/${record.tp_ID}`} style={{ color: "#1677ff" }}>
           Xem chi tiết
         </a>
       ),
