@@ -73,6 +73,7 @@ const DoctorSelection = ({
         if (selectedDoctor === doctorId) {
           setSelectedDoctor(null);
           setSelectedDoctorDetail(null);
+          onUpdate({ doctorId: null, doctorName: null });
         } else {
           setSelectedDoctor(doctorId);
         }
@@ -81,7 +82,7 @@ const DoctorSelection = ({
         message.error("Có lỗi xảy ra khi chọn bác sĩ.");
       }
     },
-    [selectedDoctor]
+    [selectedDoctor, onUpdate]
   );
 
   if (loading) {

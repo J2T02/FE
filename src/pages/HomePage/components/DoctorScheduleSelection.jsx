@@ -284,15 +284,21 @@ const DoctorScheduleSelection = ({
 
   const handleDoctorSelect = useCallback((doctorId) => {
     try {
-      setSelectedDoctor(doctorId);
-      // Reset schedule selection when doctor changes
-      setSelectedDate(null);
-      setSelectedSlot(null);
+      if (selectedDoctor === doctorId) {
+        setSelectedDoctor(null);
+        setSelectedDoctorDetail(null);
+        onUpdate({ doctorId: null, doctorName: null });
+      } else {
+        setSelectedDoctor(doctorId);
+        // Reset schedule selection when doctor changes
+        setSelectedDate(null);
+        setSelectedSlot(null);
+      }
     } catch (error) {
       console.error("Error in handleDoctorSelect:", error);
       message.error("Có lỗi xảy ra khi chọn bác sĩ.");
     }
-  }, []);
+  }, [selectedDoctor, onUpdate]);
 
   const showDoctorModal = useCallback(
     (doctorId, e) => {
