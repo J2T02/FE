@@ -3,7 +3,6 @@ import {
   Layout,
   Typography,
   Card,
-  Space,
   Row,
   Col,
   Button,
@@ -50,12 +49,13 @@ export default function TestDetailPage() {
   const [testDetail, setTestDetail] = useState(null);
 
   useEffect(() => {
-    // 👇 Mock dữ liệu xét nghiệm
+    // ✅ Mock dữ liệu
     const mockTest = {
       Test_ID: testId,
+      TP_ID: 1001,
       TestType_ID: 2,
       TestDate: "2025-07-12",
-      ResultDay: null, // hoặc "2025-07-13"
+      ResultDay: "2025-07-13",
       Note: "Làm vào buổi sáng",
       File_Path: "/files/test-results/test2.pdf",
       Status: 4,
@@ -93,67 +93,65 @@ export default function TestDetailPage() {
         <Title level={3}>Chi tiết xét nghiệm</Title>
 
         <Card title="Thông tin xét nghiệm" bodyStyle={{ backgroundColor: "#fff0f5" }}>
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <Row>
-              <Col span={8}><Text strong>Loại xét nghiệm:</Text></Col>
-              <Col span={16}>{TEST_TYPE_MAP[testDetail.TestType_ID] || "Không xác định"}</Col>
-            </Row>
-            <Row>
-              <Col span={8}><Text strong>Ngày xét nghiệm:</Text></Col>
-              <Col span={16}>{testDetail.TestDate}</Col>
-            </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Text strong>Mã bệnh án:</Text><br />
+              <Text>{testDetail.TP_ID}</Text>
+            </Col>
 
-            {/* ✅ Chỉ hiển thị nếu ResultDay không null */}
+            <Col span={12}>
+              <Text strong>Loại xét nghiệm:</Text><br />
+              <Text>{TEST_TYPE_MAP[testDetail.TestType_ID] || "Không xác định"}</Text>
+            </Col>
+
+            <Col span={12}>
+              <Text strong>Giai đoạn điều trị:</Text><br />
+              <Text>{testDetail.stepDetail?.treatmentStep?.Step_Name || "Không xác định"}</Text>
+            </Col>
+
+            <Col span={12}>
+              <Text strong>Bước điều trị:</Text><br />
+              <Text>{testDetail.stepDetail?.Step_Name || "Không xác định"}</Text>
+            </Col>
+
+            <Col span={12}>
+              <Text strong>Ngày xét nghiệm:</Text><br />
+              <Text>{testDetail.TestDate}</Text>
+            </Col>
+
             {testDetail.ResultDay && (
-              <Row>
-                <Col span={8}><Text strong>Ngày có kết quả:</Text></Col>
-                <Col span={16}>{testDetail.ResultDay}</Col>
-              </Row>
+              <Col span={12}>
+                <Text strong>Ngày có kết quả:</Text><br />
+                <Text>{testDetail.ResultDay}</Text>
+              </Col>
             )}
 
-            <Row>
-              <Col span={8}><Text strong>Trạng thái:</Text></Col>
-              <Col span={16}>{TEST_STATUS[testDetail.Status] || "Không xác định"}</Col>
-            </Row>
-            <Row>
-              <Col span={8}><Text strong>Tình trạng kết quả:</Text></Col>
-              <Col span={16}>{TEST_QUALITY_RESULT_STATUS[testDetail.TQS_ID] || "Không rõ"}</Col>
-            </Row>
-            <Row>
-              <Col span={8}><Text strong>Ghi chú:</Text></Col>
-              <Col span={16}>{testDetail.Note || "Không có"}</Col>
-            </Row>
+            <Col span={12}>
+              <Text strong>Trạng thái:</Text><br />
+              <Text>{TEST_STATUS[testDetail.Status] || "Không xác định"}</Text>
+            </Col>
 
-            {/* ✅ Giai đoạn điều trị */}
-            <Row>
-              <Col span={8}><Text strong>Giai đoạn điều trị:</Text></Col>
-              <Col span={16}>
-                {testDetail.stepDetail?.treatmentStep?.Step_Name || "Không xác định"}
-              </Col>
-            </Row>
+            <Col span={12}>
+              <Text strong>Tình trạng kết quả:</Text><br />
+              <Text>{TEST_QUALITY_RESULT_STATUS[testDetail.TQS_ID] || "Không rõ"}</Text>
+            </Col>
 
-            {/* ✅ Bước điều trị */}
-            <Row>
-              <Col span={8}><Text strong>Bước điều trị:</Text></Col>
-              <Col span={16}>
-                {testDetail.stepDetail?.Step_Name || "Không xác định"}
-              </Col>
-            </Row>
+            <Col span={24}>
+              <Text strong>Ghi chú:</Text><br />
+              <Text>{testDetail.Note || "Không có"}</Text>
+            </Col>
 
-            {/* ✅ File kết quả */}
-            <Row>
-              <Col span={8}><Text strong>Kết quả xét nghiệm:</Text></Col>
-              <Col span={16}>
-                <Link
-                  style={{ color: "#f78db3" }}
-                  href={testDetail.File_Path}
-                  target="_blank"
-                >
-                  Xem file kết quả
-                </Link>
-              </Col>
-            </Row>
-          </Space>
+            <Col span={24}>
+              <Text strong>Kết quả xét nghiệm:</Text><br />
+              <Link
+                href={testDetail.File_Path}
+                target="_blank"
+                style={{ color: "#f78db3" }}
+              >
+                Xem file kết quả
+              </Link>
+            </Col>
+          </Row>
         </Card>
       </Content>
     </Layout>
