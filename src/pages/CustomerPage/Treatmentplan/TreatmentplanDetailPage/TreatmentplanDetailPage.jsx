@@ -204,66 +204,99 @@ export default function TreatmentPlanDetailPage() {
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
-      <Content style={{ padding: 24 }}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          style={{ backgroundColor: "#f78db3", color: "white", border: "none", marginBottom: 24 }}
-          onClick={() => navigate(-1)}
-        >
-          Quay lại
-        </Button>
+      <Content style={{ padding: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
+            onClick={() => navigate(-1)}
+          >
+            Quay lại
+          </Button>
+          <div style={{ textAlign: 'right' }}>
+            <Title level={3} style={{ margin: 0 }}>Chi tiết hồ sơ bệnh án</Title>
+            <Text style={{ color: "#f78db3", fontWeight: 500 }}>
+              Mã hồ sơ: {treatmentPlan.TP_ID}
+            </Text>
+          </div>
+        </div>
 
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <Title level={3}>Chi tiết hồ sơ bệnh án</Title>
-          <Text style={{ color: "#f78db3", fontWeight: 500 }}>
-            Mã hồ sơ: {treatmentPlan.TP_ID}
-          </Text>
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
 
-          <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5" }}>
-            <Row gutter={[16, 16]}>
-              <Col span={12}><Text strong>Ngày bắt đầu:</Text><br /><Text>{treatmentPlan.StartDate}</Text></Col>
+          <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
+            <Row gutter={[12, 8]}>
+              <Col span={8}><Text strong>Ngày bắt đầu:</Text><br /><Text>{treatmentPlan.StartDate}</Text></Col>
               {treatmentPlan.EndDate && (
-                <Col span={12}><Text strong>Ngày kết thúc:</Text><br /><Text>{treatmentPlan.EndDate}</Text></Col>
+                <Col span={8}><Text strong>Ngày kết thúc:</Text><br /><Text>{treatmentPlan.EndDate}</Text></Col>
               )}
-              <Col span={12}><Text strong>Trạng thái:</Text><br />{getStatusTag(treatmentPlan.Status)}</Col>
-              <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{treatmentPlan.Result}</Text></Col>
-              <Col span={24}><Text strong>Dịch vụ điều trị:</Text><br /><Text>{treatmentPlan.service?.Ser_Name}</Text></Col>
+              <Col span={8}><Text strong>Trạng thái:</Text><br />{getStatusTag(treatmentPlan.Status)}</Col>
+              <Col span={12}><Text strong>Dịch vụ điều trị:</Text><br /><Text>{treatmentPlan.service?.Ser_Name}</Text></Col>
+              <Col span={12}><Text strong>Ghi chú:</Text><br /><Text>{treatmentPlan.Result}</Text></Col>
             </Row>
           </Card>
 
-          <Row gutter={[24, 24]}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Card title={<Text strong><UserOutlined /> Thông tin khách hàng</Text>} bodyStyle={{ backgroundColor: "#fde7ef" }}>
-                <Row>
-                  <Col span={12}><Text type="secondary">Tên chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_Name}</Text><br /><Text type="secondary">Năm sinh chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_YOB}</Text></Col>
-                  <Col span={12}><Text type="secondary">Tên vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_Name}</Text><br /><Text type="secondary">Năm sinh vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_YOB}</Text></Col>
+              <Card 
+                title={<Text strong style={{ fontSize: '14px' }}><UserOutlined /> Thông tin khách hàng</Text>} 
+                bodyStyle={{ 
+                  backgroundColor: "#fde7ef", 
+                  padding: 12,
+                  height: '120px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }} 
+                size="small"
+              >
+                <Row gutter={[8, 4]}>
+                  <Col span={12}>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>Chồng:</Text>{' '}
+                    <Text style={{ fontSize: '13px' }}>{treatmentPlan.customer?.Hus_Name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: '11px' }}>({treatmentPlan.customer?.Hus_YOB})</Text>
+                  </Col>
+                  <Col span={12}>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>Vợ:</Text>{' '}
+                    <Text style={{ fontSize: '13px' }}>{treatmentPlan.customer?.Wife_Name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: '11px' }}>({treatmentPlan.customer?.Wife_YOB})</Text>
+                  </Col>
                 </Row>
-                <Divider />
-                <Text strong>Thông tin liên hệ</Text><br />
-                <UserOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.fullName}<br />
-                <MailOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.mail}<br />
-                <PhoneOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.phone}
+                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
+                  <UserOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.fullName}<br />
+                  <MailOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.mail}<br />
+                  <PhoneOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.phone}
+                </div>
               </Card>
             </Col>
             <Col xs={24} md={12}>
               <Card
-                title={<Text strong>Bác sĩ chính phụ trách</Text>}
+                title={<Text strong style={{ fontSize: '14px' }}>Bác sĩ phụ trách</Text>}
                 extra={
                   <Button
                     shape="circle"
                     icon={<InfoCircleOutlined />}
+                    size="small"
                     style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
                     onClick={() => navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)}
                   />
                 }
-                bodyStyle={{ backgroundColor: "#fce6ec" }}
+                bodyStyle={{ 
+                  backgroundColor: "#fce6ec", 
+                  padding: 12,
+                  height: '120px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
+                }}
+                size="small"
               >
-                <Text strong>Họ tên:</Text><br /><Text>{treatmentPlan.doctor?.acc?.fullName}</Text><br />
-                <Text strong>Email:</Text><br /><Text>{treatmentPlan.doctor?.acc?.mail}</Text><br />
-                <Text strong>SĐT:</Text><br /><Text>{treatmentPlan.doctor?.acc?.phone}</Text>
+                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
+                  <Text strong style={{ fontSize: '13px' }}>{treatmentPlan.doctor?.acc?.fullName}</Text><br />
+                  <MailOutlined style={{ marginRight: 4 }} />{treatmentPlan.doctor?.acc?.mail}<br />
+                  <PhoneOutlined style={{ marginRight: 4 }} />{treatmentPlan.doctor?.acc?.phone}
+                </div>
               </Card>
             </Col>
           </Row>
@@ -275,20 +308,20 @@ export default function TreatmentPlanDetailPage() {
                 <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/treatmentstep/${tpId}`)}>Xem đầy đủ</Link>
               </Space>
             }
-            bodyStyle={{ backgroundColor: "#fff7fa" }}
+            bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
+            size="small"
           >
-            <div style={{ maxHeight: 260, overflowY: "auto" }}>
-              <Space direction="vertical" style={{ width: "100%" }}>
+            <div style={{ maxHeight: 200, overflowY: "auto" }}>
+              <Space direction="vertical" size="small" style={{ width: "100%" }}>
                 {treatmentPlan.stepDetails.map((step) => (
-                  <Card key={step.SD_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                    <Row justify="space-between">
-                      <Col>
-                        <Text strong>{step.Step_Name}</Text><br />
-                        <Text type="secondary">Ngày hẹn: {step.PlanDate}</Text><br />
-                        <Text>Bác sĩ: {step.doc?.fullName}</Text>
+                  <Card key={step.SD_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                    <Row justify="space-between" align="middle">
+                      <Col flex="auto">
+                        <Text strong style={{ fontSize: '14px' }}>{step.Step_Name}</Text><br />
+                        <Text type="secondary" style={{ fontSize: '12px' }}>Ngày: {step.PlanDate} | BS: {step.doc?.fullName}</Text>
                       </Col>
                       <Col>
-                        <Link onClick={() => navigate(`/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3" }}>Xem chi tiết</Link>
+                        <Link onClick={() => navigate(`/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Chi tiết</Link>
                       </Col>
                     </Row>
                   </Card>
@@ -301,31 +334,32 @@ export default function TreatmentPlanDetailPage() {
             <Card
               title={
                 <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
+                  <Text strong>Mẫu sinh học</Text>
                   <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosamplelist/${tpId}`)}>
                     Xem đầy đủ
                   </Link>
                 </Space>
               }
-              bodyStyle={{ backgroundColor: "#fff0f5" }}
+              bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+              size="small"
             >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
+              <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
                   {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                          <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                          <Text strong>Trạng thái: </Text>{BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}<br />
-                          <Text strong>Chất lượng: </Text>{BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}<br />
+                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                      <Row justify="space-between" align="middle">
+                        <Col flex="auto">
+                          <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
+                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                            {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                          </Text>
                         </Col>
                         <Col>
                           <Link
-                            style={{ color: "#f78db3" }}
+                            style={{ color: "#f78db3", fontSize: '12px' }}
                             onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}
                           >
-                            Xem chi tiết
+                            Chi tiết
                           </Link>
                         </Col>
                       </Row>
@@ -341,32 +375,32 @@ export default function TreatmentPlanDetailPage() {
             <Card
               title={
                 <Space>
-                  <Text strong>Danh sách xét nghiệm</Text>
+                  <Text strong>Xét nghiệm</Text>
                   <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testlist/${tpId}`)}>
                     Xem đầy đủ
                   </Link>
                 </Space>
               }
-              bodyStyle={{ backgroundColor: "#fef2f6" }}
+              bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
+              size="small"
             >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
+              <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
                   {tests.map((test) => (
-                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Loại xét nghiệm: </Text>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}<br />
-                          <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                          <Text strong>Người xét nghiệm: </Text>{test.Person}<br />
-                          <Text strong>Trạng thái: </Text>{TEST_STATUS[test.Status] || "Không xác định"}<br />
-                          <Text strong>Tình trạng kết quả: </Text>{TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
+                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                      <Row justify="space-between" align="middle">
+                        <Col flex="auto">
+                          <Text strong style={{ fontSize: '14px' }}>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}</Text><br />
+                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                            {test.TestDate} | {test.Person} | {TEST_STATUS[test.Status]} | {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                          </Text>
                         </Col>
                         <Col>
                           <Link
-                            style={{ color: "#f78db3" }}
+                            style={{ color: "#f78db3", fontSize: '12px' }}
                             onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
                           >
-                            Xem chi tiết
+                            Chi tiết
                           </Link>
                         </Col>
                       </Row>
