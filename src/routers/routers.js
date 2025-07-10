@@ -150,6 +150,50 @@ const routers = [
       import("~pages/DoctorPage/BookingDetail/BookingDetailPage")
     ),
   },
+  {
+    path: "/doctorpage/treatmentplandetail/:id",
+    component: lazy(() =>
+      import(
+        "~pages/DoctorPage/TreatmentplanManagement/TreatmentplanDetailPage/TreatmentplanDetailPage"
+      )
+    ),
+  },
+  {
+    path: "/doctorpage/treatmentstep/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/TreatmentStepPage/TreatmentStepPage")
+    ),
+  },
+  {
+    path: "/doctorpage/stepdetail/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/StepDetailPage/StepDetailPage")
+    ),
+  },
+  {
+    path: "/doctorpage/biosamplelist/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/BiosampleListPage/BiosampleListPage")
+    ),
+  },
+   {
+    path: "/doctorpage/biosampledetail/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/BiosampleDetailPage/BiosampleDetailPage")
+    ),
+  },
+  {
+    path: "/doctorpage/testlist/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/TestListPage/TestListPage")
+    ),
+  },
+  {
+    path: "/doctorpage/testdetail/:id",
+    component: lazy(() =>
+      import("~pages/DoctorPage/TreatmentplanManagement/TestDetailPage/TestDetailPage")
+    ),
+  },
   //admin
   {
     path: "/admin",
