@@ -5,7 +5,7 @@ const ConsultBanner = () => {
   return (
     <div
       style={{
-        backgroundColor: "#64A87A",
+        backgroundColor: "#fdf1f5",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -20,7 +20,7 @@ const ConsultBanner = () => {
       {/* Tiêu đề giữa */}
       <h3
         style={{
-          color: "white",
+          color: "#D75C78",
           fontWeight: "bold",
           fontSize: 22,
           margin: 0,

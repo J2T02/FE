@@ -37,13 +37,13 @@ import styles from "./DoctorScheduleSelection.module.css";
 const SLOT_CONFIG = {
   sang: {
     start: "08:00:00",
-    end: "12:00:00",
+    // end: "12:00:00",
     id: 1,
     label: "Ca sáng (08:00 - 12:00)",
   },
   chieu: {
     start: "13:00:00",
-    end: "17:00:00",
+    // end: "17:00:00",
     id: 2,
     label: "Ca chiều (13:00 - 17:00)",
   },
@@ -85,7 +85,6 @@ const DoctorScheduleSelection = ({
   const [availableSchedules, setAvailableSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
-
   // Modal states
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalDoctor, setModalDoctor] = useState(null);
@@ -282,23 +281,26 @@ const DoctorScheduleSelection = ({
     }
   }, [onUpdate, onNext, selectedDate, selectedSlot]);
 
-  const handleDoctorSelect = useCallback((doctorId) => {
-    try {
-      if (selectedDoctor === doctorId) {
-        setSelectedDoctor(null);
-        setSelectedDoctorDetail(null);
-        onUpdate({ doctorId: null, doctorName: null });
-      } else {
-        setSelectedDoctor(doctorId);
-        // Reset schedule selection when doctor changes
-        setSelectedDate(null);
-        setSelectedSlot(null);
+  const handleDoctorSelect = useCallback(
+    (doctorId) => {
+      try {
+        if (selectedDoctor === doctorId) {
+          setSelectedDoctor(null);
+          setSelectedDoctorDetail(null);
+          onUpdate({ doctorId: null, doctorName: null });
+        } else {
+          setSelectedDoctor(doctorId);
+          // Reset schedule selection when doctor changes
+          setSelectedDate(null);
+          setSelectedSlot(null);
+        }
+      } catch (error) {
+        console.error("Error in handleDoctorSelect:", error);
+        message.error("Có lỗi xảy ra khi chọn bác sĩ.");
       }
-    } catch (error) {
-      console.error("Error in handleDoctorSelect:", error);
-      message.error("Có lỗi xảy ra khi chọn bác sĩ.");
-    }
-  }, [selectedDoctor, onUpdate]);
+    },
+    [selectedDoctor, onUpdate]
+  );
 
   const showDoctorModal = useCallback(
     (doctorId, e) => {
@@ -776,8 +778,7 @@ const DoctorScheduleSelection = ({
                                           }}
                                         />
                                         <Text strong>
-                                          {item.slot.slotStart} -{" "}
-                                          {item.slot.slotEnd}
+                                          {item.slot.slotStart}
                                         </Text>
                                         <br />
                                         <Text
@@ -811,7 +812,7 @@ const DoctorScheduleSelection = ({
                                             color: "#1890ff",
                                           }}
                                         />
-                                        <Text strong>08:00 - 12:00</Text>
+                                        <Text strong>08:00</Text>
                                         <br />
                                         <Text
                                           type="secondary"
@@ -838,7 +839,7 @@ const DoctorScheduleSelection = ({
                                             color: "#1890ff",
                                           }}
                                         />
-                                        <Text strong>13:00 - 17:00</Text>
+                                        <Text strong>13:00</Text>
                                         <br />
                                         <Text
                                           type="secondary"

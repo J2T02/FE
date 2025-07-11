@@ -1,6 +1,6 @@
 // FeedbackCarousel.jsx
 import React from "react";
-import { Typography, Rate, Avatar } from "antd";
+import { Typography, Rate, Avatar, theme } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
@@ -54,19 +54,20 @@ const FeedbackCarousel = ({
     },
   ],
 }) => {
+  const { token } = theme.useToken();
   return (
     <div
       style={{
         textAlign: "center",
         padding: "4rem 1rem",
-        background: "#1b1b1b",
+        background: "#fdf1f5",
         color: "white",
       }}
     >
       <Title level={3} style={{ color: "#e91e63", marginBottom: 0 }}>
         Cảm nhận của Khách hàng
       </Title>
-      <div style={{ fontSize: 40, color: "#64ffda", marginBottom: 32 }}>“</div>
+      <div style={{ fontSize: 40, color: "#e91e63", marginBottom: 32 }}>“</div>
 
       <Swiper
         modules={[Pagination]}

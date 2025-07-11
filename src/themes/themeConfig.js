@@ -14,6 +14,9 @@ const themeConfig = {
     colorTextBase: "#333",
     colorBgBase: "#fffafc", // Nền tổng thể nhẹ nhàng
     colorBgPage: "#f5f7fa", // Nền cho các page, dịu hơn, tách biệt với header/footer
+    colorFooterBg: "#232946", // Footer: xanh tím than dịu, sang trọng
+    colorFooterText: "#f4f4f8", // Footer: trắng xám nhẹ, dễ đọc
+    colorFooterLink: "#f78db3", // Footer: hồng nhạt nổi bật khi hover
   },
 
   components: {
@@ -55,6 +58,13 @@ const themeConfig = {
 
     Layout: {
       colorBgHeader: "#fffafc", // Màu nền Header
+    },
+    Footer: {
+      colorBgContainer: "#232946", // Nền footer
+      colorText: "#f4f4f8", // Màu chữ chính
+      colorLink: "#f4f4f8", // Màu link mặc định
+      colorLinkHover: "#f78db3", // Màu link hover
+      borderColor: "#393e5c", // Viền trên footer
     },
   },
 };

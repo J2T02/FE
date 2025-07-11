@@ -1,4 +1,4 @@
-import { Layout, Row, Col, Typography, Space, Divider } from "antd";
+import { Layout, Row, Col, Typography, Space, Divider, theme } from "antd";
 import {
   FacebookFilled,
   YoutubeFilled,
@@ -26,13 +26,14 @@ const socialLinks = [
 ];
 
 function CustomFooter() {
+  const { token } = theme.useToken();
   return (
     <Footer
       style={{
-        background: "#1a1a1a url(/fbg.jpg) repeat",
+        background: token.colorFooterBg,
         padding: "40px 0 0 0",
-        borderTop: "1px solid #333",
-        color: "#ccc",
+        borderTop: `1px solid ${token.colorFooterBorder || "#393e5c"}`,
+        color: token.colorFooterText,
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
@@ -45,10 +46,13 @@ function CustomFooter() {
                 alt="logo"
                 style={{ width: 120, marginBottom: 8 }}
               />
-              <Title level={5} style={{ margin: 0, color: "#fff" }}>
+              <Title
+                level={5}
+                style={{ margin: 0, color: token.colorFooterText }}
+              >
                 Phòng khám điều trị hiếm muộn
               </Title>
-              <Text style={{ fontSize: 13, color: "#aaa" }}>
+              <Text style={{ fontSize: 13, color: "#bfc0c0" }}>
                 "Nơi gửi trọn niềm tin cho hạnh phúc gia đình"
               </Text>
             </div>
@@ -56,19 +60,19 @@ function CustomFooter() {
 
           {/* Liên hệ nhanh */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#fff" }}>
+            <Title level={5} style={{ color: token.colorFooterText }}>
               Liên hệ
             </Title>
             <Space direction="vertical" size={8}>
-              <Text style={{ color: "#ccc" }}>
+              <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
                 <PhoneOutlined style={{ color: "#f78db3", marginRight: 8 }} />
                 <b>1900 565656</b>
               </Text>
-              <Text style={{ color: "#ccc" }}>
+              <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
                 <MailOutlined style={{ color: "#f78db3", marginRight: 8 }} />
                 ConYeu@hiemmuon.vn
               </Text>
-              <Text style={{ color: "#ccc" }}>
+              <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
                 <EnvironmentOutlined
                   style={{ color: "#f78db3", marginRight: 8 }}
                 />
@@ -79,7 +83,7 @@ function CustomFooter() {
 
           {/* Liên kết nhanh */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#fff" }}>
+            <Title level={5} style={{ color: token.colorFooterText }}>
               Liên kết nhanh
             </Title>
             <Space direction="vertical" size={6}>
@@ -87,7 +91,13 @@ function CustomFooter() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  style={{ color: "#ccc", fontWeight: 500 }}
+                  style={{ color: token.colorFooterText, fontWeight: 500 }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.color = token.colorFooterLink)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.color = token.colorFooterText)
+                  }
                 >
                   {item.label}
                 </Link>
@@ -97,7 +107,7 @@ function CustomFooter() {
 
           {/* Mạng xã hội */}
           <Col xs={24} md={6}>
-            <Title level={5} style={{ color: "#fff" }}>
+            <Title level={5} style={{ color: token.colorFooterText }}>
               Kết nối với chúng tôi
             </Title>
             <Space size={16} style={{ marginBottom: 8 }}>
@@ -109,7 +119,7 @@ function CustomFooter() {
                   rel="noopener noreferrer"
                   style={{
                     fontSize: 20,
-                    color: item.color,
+                    color: item.color || token.colorFooterText,
                   }}
                 >
                   {item.icon}
@@ -124,28 +134,51 @@ function CustomFooter() {
                 height={80}
                 style={{ borderRadius: 8, border: "1px solid #555" }}
               />
-              <div style={{ fontSize: 12, color: "#aaa", marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: "#bfc0c0", marginTop: 4 }}>
                 Quét mã QR để tải app
               </div>
             </div>
           </Col>
         </Row>
 
-        <Divider style={{ margin: "32px 0 16px 0", borderColor: "#444" }} />
+        <Divider
+          style={{
+            margin: "32px 0 16px 0",
+            borderColor: token.colorFooterBorder || "#393e5c",
+          }}
+        />
 
         <Row
           justify="space-between"
           align="middle"
-          style={{ fontSize: 13, color: "#888" }}
+          style={{ fontSize: 13, color: "#bfc0c0" }}
         >
           <Col xs={24} md={12} style={{ textAlign: "left" }}>
             © {new Date().getFullYear()} CON YÊU. All rights reserved.
           </Col>
           <Col xs={24} md={12} style={{ textAlign: "right" }}>
-            <Link href="#" style={{ color: "#888", marginRight: 16 }}>
+            <Link
+              href="#"
+              style={{ color: "#bfc0c0", marginRight: 16 }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.color = token.colorFooterLink)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.color = token.colorFooterText)
+              }
+            >
               Chính sách bảo mật
             </Link>
-            <Link href="#" style={{ color: "#888" }}>
+            <Link
+              href="#"
+              style={{ color: "#bfc0c0" }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.color = token.colorFooterLink)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.color = token.colorFooterText)
+              }
+            >
               Điều khoản sử dụng
             </Link>
           </Col>

@@ -39,23 +39,7 @@ const TopBar = () => (
       position: "relative",
       zIndex: 100,
     }}
-  >
-    <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-      <span>
-        <span
-          role="img"
-          aria-label="location"
-          style={{ marginRight: 4 }}
-        ></span>
-        7 Đ. D1, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh 700000, Việt Nam
-      </span>
-      <span>MỞ CỬA: 8:00 - 18:00 (KỂ CẢ T7 - CN)</span>
-      <span>
-        <span role="img" aria-label="phone" style={{ marginRight: 4 }}></span>
-        HOTLINE: 024.367.88888 VÀ 082.999.2020
-      </span>
-    </div>
-  </div>
+  ></div>
 );
 
 function Header() {
