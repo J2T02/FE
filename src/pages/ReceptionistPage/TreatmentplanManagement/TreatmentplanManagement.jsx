@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Table,
   Input,
@@ -19,14 +19,23 @@ import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import axios from "axios";
-
+import { ReceptionistStoreContext } from "../contexts/ReceptionistStoreProvider";
+import { findCustomerByPhoneOrEmail } from "../../../apis/CustomerService";
+import CustomerInfoCard from "../BookingDetail/components/CustomerInfoCard";
+import {
+  createTreatment,
+  createTreatmentForGuest,
+} from "../../../apis/treatmentService";
+import { useNavigate } from "react-router-dom";
 dayjs.extend(customParseFormat);
 const { Title } = Typography;
 const { Option } = Select;
 
 const TreatmentplanManagement = () => {
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Remove local plans and loading state
+  // const [plans, setPlans] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [form] = Form.useForm();
@@ -35,55 +44,48 @@ const TreatmentplanManagement = () => {
   const [services, setServices] = useState([]);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [accountInfo, setAccountInfo] = useState(null);
+  const [customerInfo, setCustomerInfo] = useState(null);
+
+  // Use context for treatment list
+  const {
+    treatmentList,
+    treatmentListLoading,
+    fetchTreatmentList,
+    doctorList,
+    doctorListLoading,
+    serviceList,
+    serviceListLoading,
+    fetchDoctorList,
+    fetchServiceList,
+  } = useContext(ReceptionistStoreContext);
 
   useEffect(() => {
-    fetchTreatmentPlans();
-    fetchDoctors();
-    fetchServices();
+    // fetchTreatmentPlans();
+    // fetchDoctors();
+    // fetchServices();
   }, []);
 
-  const fetchTreatmentPlans = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/treatmentplans");
-      setPlans(res.data);
-    } catch (error) {
-      message.error("Không thể tải danh sách hồ sơ bệnh án");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Map API data to table data
+  const mappedPlans = (treatmentList || []).map((item) => ({
+    tp_ID: item.tpId,
+    service_Name: item.serviceInfo?.serName,
+    status: item.status,
+    doctor: item.doctorInfo?.accountInfo?.fullName,
+    cusInfo: item.cusInfo,
+  }));
 
-  const fetchDoctors = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/doctors");
-      setDoctors(res.data);
-    } catch {
-      message.error("Không thể tải danh sách bác sĩ");
-    }
-  };
-
-  const fetchServices = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/services");
-      setServices(res.data);
-      const defaultService = res.data.find((s) => s.Ser_Name === "Khám tổng quát");
-      if (defaultService) {
-        form.setFieldsValue({ ser_ID: defaultService.Ser_ID });
-      }
-    } catch {
-      message.error("Không thể tải dịch vụ");
-    }
-  };
-
-  const getStatusTag = (status) => {
-    const statusMap = {
-      0: { text: "Đang tiến hành", color: "blue" },
-      1: { text: "Đã hoàn thành", color: "green" },
-      2: { text: "Đã huỷ", color: "red" },
+  const getStatusTag = (statusObj) => {
+    if (!statusObj) return <Tag color="default">Không xác định</Tag>;
+    const colorMap = {
+      1: "blue", // Đang tiến hành
+      2: "green", // Đã hoàn thành
+      3: "red", // Đã huỷ
     };
-    const s = statusMap[status] || { text: "Không xác định", color: "default" };
-    return <Tag color={s.color}>{s.text}</Tag>;
+    return (
+      <Tag color={colorMap[statusObj.statusId] || "default"}>
+        {statusObj.statusName}
+      </Tag>
+    );
   };
 
   const columns = [
@@ -100,6 +102,12 @@ const TreatmentplanManagement = () => {
       render: (name) => name || "Không rõ",
     },
     {
+      title: "Bác sĩ",
+      dataIndex: "doctor",
+      key: "doctor",
+      render: (name) => name || "Không rõ",
+    },
+    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -110,34 +118,38 @@ const TreatmentplanManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a href={`/treatmentplans/${record.tp_ID}`} style={{ color: "#1677ff" }}>
+        <a
+          href={`/receptionist/treatmentplandetail/${record.tp_ID}`}
+          style={{ color: "#1677ff" }}
+        >
           Xem chi tiết
         </a>
       ),
     },
   ];
 
-  const filteredData = plans.filter((item) =>
-    item.tp_ID.toString().includes(searchKeyword)
+  const filteredData = mappedPlans.filter((item) =>
+    item.tp_ID?.toString().includes(searchKeyword)
   );
 
   const handleSearchAccount = async (value) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/accounts/search`, {
-        params: { keyword: value },
-      });
-      if (res.data) {
-        setAccountInfo(res.data);
+      const res = await findCustomerByPhoneOrEmail(value);
+      if (res.data && res.data.success && res.data.data) {
+        setCustomerInfo(res.data.data);
+        setAccountInfo(res.data.data); // for compatibility with form submit
         form.setFieldsValue({
-          husName: res.data.husName,
-          wifeName: res.data.wifeName,
-          husYOB: dayjs(res.data.husYOB),
-          wifeYOB: dayjs(res.data.wifeYOB),
+          husName: res.data.data.husName,
+          wifeName: res.data.data.wifeName,
+          husYOB: dayjs(res.data.data.husYob),
+          wifeYOB: dayjs(res.data.data.wifeYob),
         });
       } else {
+        setCustomerInfo(null);
         message.warning("Không tìm thấy tài khoản");
       }
     } catch {
+      setCustomerInfo(null);
       message.error("Lỗi khi tìm tài khoản");
     }
   };
@@ -166,46 +178,61 @@ const TreatmentplanManagement = () => {
   };
 
   const handleCreate = async (values) => {
-    try {
-      const payload = {
-        ...values,
-        startDate: dayjs().format("YYYY-MM-DD"),
+    let payload = null;
+    if (isNewCustomer) {
+      payload = {
+        husName: values.husName,
+        husYob: values.husYOB.format("YYYY-MM-DD"),
+        wifeName: values.wifeName,
+        wifeYob: values.wifeYOB.format("YYYY-MM-DD"),
+        phone: values.phone,
+        mail: values.mail,
+        docId: values.doc_ID,
+        serId: values.ser_ID,
+      };
+      await createTreatmentForGuest(payload)
+        .then((res) => {
+          if (res.data.success) {
+            message.success(res.data.message);
+            setOpenModal(false);
+            fetchTreatmentList();
+            form.resetFields();
+            setAccountInfo(null);
+            const newTpId = res.data.data.tpId;
+            navigate(`/receptionist/treatmentplandetail/${newTpId}`);
+          } else {
+            message.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error("Tạo hồ sơ thất bại!");
+        });
+    } else {
+      payload = {
+        docId: values.doc_ID,
+        serId: values.ser_ID,
+        cusId: customerInfo.cusId,
       };
 
-      if (isNewCustomer) {
-        const accRes = await axios.post("http://localhost:5000/api/accounts", {
-          fullName: `${values.husName} & ${values.wifeName}`,
-          phone: values.phone,
-          mail: values.mail,
-          password: values.phone,
+      await createTreatment(payload)
+        .then((res) => {
+          if (res.data.success) {
+            message.success(res.data.message);
+            setOpenModal(false);
+            fetchTreatmentList();
+            form.resetFields();
+            setAccountInfo(null);
+            const newTpId = res.data.data.tpId;
+            navigate(`/receptionist/treatmentplandetail/${newTpId}`);
+          } else {
+            message.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error("Tạo hồ sơ thất bại!");
         });
-
-        const cusRes = await axios.post("http://localhost:5000/api/customers", {
-          acc_ID: accRes.data.acc_ID,
-          hus_Name: values.husName,
-          wife_Name: values.wifeName,
-          hus_YOB: values.husYOB,
-          wife_YOB: values.wifeYOB,
-        });
-
-        payload.cus_ID = cusRes.data.cus_ID;
-      } else {
-        payload.cus_ID = accountInfo.cus_ID;
-      }
-
-      await axios.post("http://localhost:5000/api/treatmentplans", {
-        ...payload,
-        status: 0,
-      });
-
-      message.success("Tạo hồ sơ thành công");
-      setOpenModal(false);
-      fetchTreatmentPlans();
-      form.resetFields();
-      setAccountInfo(null);
-    } catch (err) {
-      console.error(err);
-      message.error("Tạo hồ sơ thất bại");
     }
   };
 
@@ -235,7 +262,7 @@ const TreatmentplanManagement = () => {
         columns={columns}
         dataSource={filteredData}
         rowKey="tp_ID"
-        loading={loading}
+        loading={treatmentListLoading}
         pagination={{ pageSize: 5 }}
       />
 
@@ -246,6 +273,7 @@ const TreatmentplanManagement = () => {
           setOpenModal(false);
           form.resetFields();
           setAccountInfo(null);
+          setCustomerInfo(null);
         }}
         onOk={() => form.submit()}
         okText="Tạo"
@@ -271,17 +299,24 @@ const TreatmentplanManagement = () => {
           </Form.Item>
 
           {!isNewCustomer ? (
-            <Form.Item
-              label="Tìm theo SĐT hoặc email"
-              name="search"
-              rules={[{ required: true }]}
-            >
-              <Input.Search
-                placeholder="Nhập SĐT hoặc Email"
-                enterButton="Tìm"
-                onSearch={handleSearchAccount}
-              />
-            </Form.Item>
+            <>
+              <Form.Item
+                label="Tìm theo SĐT hoặc email"
+                name="search"
+                rules={[{ required: true }]}
+              >
+                <Input.Search
+                  placeholder="Nhập SĐT hoặc Email"
+                  enterButton="Tìm"
+                  onSearch={handleSearchAccount}
+                />
+              </Form.Item>
+              {customerInfo && (
+                <div style={{ marginBottom: 16 }}>
+                  <CustomerInfoCard data={customerInfo} />
+                </div>
+              )}
+            </>
           ) : (
             <>
               <Form.Item
@@ -334,10 +369,10 @@ const TreatmentplanManagement = () => {
             name="doc_ID"
             rules={[{ required: true }]}
           >
-            <Select placeholder="Chọn bác sĩ">
-              {doctors.map((doc) => (
-                <Option key={doc.Doc_ID} value={doc.Doc_ID}>
-                  {doc.Full_Name}
+            <Select placeholder="Chọn bác sĩ" loading={doctorListLoading}>
+              {doctorList.map((doc) => (
+                <Option key={doc.docId} value={doc.docId}>
+                  {doc.accountInfo?.fullName}
                 </Option>
               ))}
             </Select>
@@ -348,10 +383,10 @@ const TreatmentplanManagement = () => {
             name="ser_ID"
             rules={[{ required: true }]}
           >
-            <Select placeholder="Chọn dịch vụ">
-              {services.map((ser) => (
-                <Option key={ser.Ser_ID} value={ser.Ser_ID}>
-                  {ser.Ser_Name}
+            <Select placeholder="Chọn dịch vụ" loading={serviceListLoading}>
+              {serviceList.map((ser) => (
+                <Option key={ser.serId} value={ser.serId}>
+                  {ser.serName}
                 </Option>
               ))}
             </Select>

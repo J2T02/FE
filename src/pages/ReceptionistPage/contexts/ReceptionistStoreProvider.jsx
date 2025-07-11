@@ -3,23 +3,22 @@ import Cookies from "js-cookie";
 import { message } from "antd";
 import { getInfo } from "../../../apis/authService";
 import { useNavigate } from "react-router-dom";
-
+import { getTreatmentList } from "../../../apis/treatmentService";
+import { getDoctorList } from "../../../apis/doctorService";
+import { GetAllService } from "../../../apis/service";
 export const ReceptionistStoreContext = createContext();
-
-const mockReceptionistInfo = {
-  receptionistId: 1,
-  fullName: "Nguyễn Thị Lễ Tân",
-  email: "receptionist@example.com",
-  phone: "0909123456",
-  img: "/anhthinh.jpg",
-  role: "Receptionist",
-};
 
 const ReceptionistStoreProvider = ({ children }) => {
   const [receptionistInfo, setReceptionistInfo] = useState(null);
   const [receptionistId, setReceptionistId] = useState(
     Cookies.get("accReceptionistId")
   );
+  const [treatmentList, setTreatmentList] = useState([]);
+  const [treatmentListLoading, setTreatmentListLoading] = useState(false);
+  const [doctorList, setDoctorList] = useState([]);
+  const [doctorListLoading, setDoctorListLoading] = useState(false);
+  const [serviceList, setServiceList] = useState([]);
+  const [serviceListLoading, setServiceListLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -27,6 +26,54 @@ const ReceptionistStoreProvider = ({ children }) => {
     Cookies.remove("accReceptionistId");
     setReceptionistInfo(null);
     navigate("/receptionistSignin");
+  };
+
+  const fetchTreatmentList = async () => {
+    setTreatmentListLoading(true);
+    try {
+      const res = await getTreatmentList();
+      if (res.data && res.data.success) {
+        setTreatmentList(res.data.data);
+      } else {
+        setTreatmentList([]);
+      }
+    } catch (err) {
+      setTreatmentList([]);
+    } finally {
+      setTreatmentListLoading(false);
+    }
+  };
+
+  const fetchDoctorList = async () => {
+    setDoctorListLoading(true);
+    try {
+      const res = await getDoctorList();
+      if (res.data && res.data.success) {
+        setDoctorList(res.data.data);
+      } else {
+        setDoctorList([]);
+      }
+    } catch (err) {
+      setDoctorList([]);
+    } finally {
+      setDoctorListLoading(false);
+    }
+  };
+
+  const fetchServiceList = async () => {
+    setServiceListLoading(true);
+    try {
+      const res = await GetAllService();
+      if (res.data && res.data.success) {
+        setServiceList(res.data.data);
+      } else {
+        setServiceList([]);
+      }
+    } catch (err) {
+      setServiceList([]);
+    } finally {
+      setServiceListLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -46,6 +93,9 @@ const ReceptionistStoreProvider = ({ children }) => {
         .catch((err) => {
           setReceptionistInfo(mockReceptionistInfo); // fallback to mock
         });
+      fetchTreatmentList();
+      fetchDoctorList();
+      fetchServiceList();
     }
   }, [receptionistId]);
 
@@ -57,6 +107,15 @@ const ReceptionistStoreProvider = ({ children }) => {
         receptionistId,
         setReceptionistId,
         handleLogout,
+        treatmentList,
+        treatmentListLoading,
+        fetchTreatmentList,
+        doctorList,
+        doctorListLoading,
+        fetchDoctorList,
+        serviceList,
+        serviceListLoading,
+        fetchServiceList,
       }}
     >
       {children}
