@@ -1,4 +1,6 @@
-// ... giữ nguyên import ban đầu
+
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
   Row,
@@ -9,28 +11,38 @@ import {
   Space,
   Tag,
   Divider,
+  Select,
+  Modal,
+  message,
+  Rate
 } from "antd";
 import {
   ArrowLeftOutlined,
   InfoCircleOutlined,
+  InfoCircleTwoTone,
   MailOutlined,
   PhoneOutlined,
   UserOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
 } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
 
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
+const { Option } = Select;
 
-// ✅ Mapping cho trạng thái và chất lượng mẫu sinh học
+const EDUCATION_LEVEL = {
+  1: "Cử nhân",
+  2: "Thạc sĩ",
+  3: "Tiến sĩ",
+  4: "Giáo sư",
+};
 const BIO_SAMPLE_STATUS = {
   1: "Kiểm tra chất lượng",
   2: "Đang trữ",
   3: "Đã dùng",
   4: "Đã hủy",
 };
-
 const BIO_QUALITY_STATUS = {
   1: "Tốt",
   2: "Khá",
@@ -40,8 +52,6 @@ const BIO_QUALITY_STATUS = {
   6: "Không thể thụ tinh",
   7: "Cần xử lý thêm",
 };
-
-// ✅ Mapping loại xét nghiệm và trạng thái xét nghiệm
 const TEST_TYPE_MAP = {
   1: "Siêu âm tử cung - buồng trứng",
   2: "Xét nghiệm nội tiết tố",
@@ -53,7 +63,6 @@ const TEST_TYPE_MAP = {
   8: "Xét nghiệm di truyền",
   9: "Xét nghiệm dịch âm đạo",
 };
-
 const TEST_STATUS = {
   1: "Chờ xét nghiệm",
   2: "Đang xét nghiệm",
@@ -61,14 +70,12 @@ const TEST_STATUS = {
   4: "Đã có kết quả",
   5: "Đã trả kết quả",
 };
-// ✅ Mapping tình trạng kết quả (TQS_ID)
 const TEST_QUALITY_RESULT_STATUS = {
   1: "Bình thường",
   2: "Bất thường",
   3: "Dương tính",
   4: "Âm tính",
 };
-
 
 export default function TreatmentPlanDetailPage() {
   const { id } = useParams();
@@ -78,6 +85,9 @@ export default function TreatmentPlanDetailPage() {
   const [treatmentPlan, setTreatmentPlan] = useState(null);
   const [biosamples, setBiosamples] = useState([]);
   const [tests, setTests] = useState([]);
+  const [doctorList, setDoctorList] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isDoctorInactive, setIsDoctorInactive] = useState(false);
 
   useEffect(() => {
     const mockTP = {
@@ -92,111 +102,81 @@ export default function TreatmentPlanDetailPage() {
         Wife_Name: "Trần Thị B",
         Hus_YOB: "1990-01-01",
         Wife_YOB: "1992-03-03",
-        acc: {
-          fullName: "Nguyễn Văn A",
-          mail: "nguyenvana@example.com",
-          phone: "0912345678",
-        },
+        acc: { fullName: "Nguyễn Văn A", mail: "nguyenvana@example.com", phone: "0912345678" },
       },
       doctor: {
         docId: 301,
-        acc: {
-          fullName: "BS. Lê Văn C",
-          phone: "0901234567",
-          mail: "levanc@example.com",
-        },
+        Status: 3,
+        acc: { fullName: "BS. Lê Văn C", phone: "0901234567", mail: "levanc@example.com" },
       },
       stepDetails: [
-        {
-          SD_ID: 1,
-          Step_Name: "Khám tổng quát",
-          PlanDate: "2025-07-08",
-          doc: { fullName: "BS. Nguyễn Văn X" },
-        },
-        {
-          SD_ID: 2,
-          Step_Name: "Siêu âm tử cung",
-          PlanDate: "2025-07-10",
-          doc: { fullName: "BS. Trần Thị Y" },
-        },
-        {
-          SD_ID: 3,
-          Step_Name: "Xét nghiệm nội tiết",
-          PlanDate: "2025-07-12",
-          doc: { fullName: "BS. Lê Văn C" },
-        },
-        {
-          SD_ID: 4,
-          Step_Name: "Tư vấn hướng điều trị",
-          PlanDate: "2025-07-14",
-          doc: { fullName: "BS. Nguyễn Văn X" },
-        },
+        { SD_ID: 1, Step_Name: "Khám tổng quát", PlanDate: "2025-07-08", doc: { fullName: "BS. Nguyễn Văn X" } },
+        { SD_ID: 2, Step_Name: "Siêu âm tử cung", PlanDate: "2025-07-10", doc: { fullName: "BS. Trần Thị Y" } },
+        { SD_ID: 3, Step_Name: "Xét nghiệm nội tiết", PlanDate: "2025-07-12", doc: { fullName: "BS. Lê Văn C" } },
       ],
     };
-
-    // ✅ Sắp xếp các bước điều trị theo ngày hẹn mới nhất ở trên
     mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
     setTreatmentPlan(mockTP);
 
-    const mockBiosamples = tpId === 1
-      ? [
-          {
-            BS_ID: 101,
-            BS_Name: "Mẫu máu",
-            CollectionDate: "2025-07-08",
-            Status: 1,
-            BQS_ID: 1,
-            Note: "Mẫu ổn định",
-          },
-          {
-            BS_ID: 102,
-            BS_Name: "Tinh trùng",
-            CollectionDate: "2025-07-09",
-            Status: 2,
-            BQS_ID: 5,
-            Note: "Cần kiểm tra thêm",
-          },
-        ]
-      : [];
+    if (mockTP.doctor?.Status === 3) setIsDoctorInactive(true);
 
+    const mockDoctors = [
+      { docId: 300, fullName: "BS. Lê Văn A", Edu_ID: 2, Experience: 13, avgStar: 4.7 },
+      { docId: 301, fullName: "BS. Phạm Văn B", Edu_ID: 2, Experience: 4, avgStar: 3.8 },
+      { docId: 302, fullName: "BS. Đỗ Văn C", Edu_ID: 4, Experience: 4, avgStar: 4.2 },
+      { docId: 303, fullName: "BS. Lê Văn D", Edu_ID: 4, Experience: 14, avgStar: 4.9 },
+      { docId: 304, fullName: "BS. Trần Văn E", Edu_ID: 3, Experience: 8, avgStar: 4.0 },
+      { docId: 305, fullName: "BS. Trần Văn F", Edu_ID: 1, Experience: 6, avgStar: 3.5 },
+      { docId: 306, fullName: "BS. Phạm Văn G", Edu_ID: 4, Experience: 3, avgStar: 3.9 },
+      { docId: 307, fullName: "BS. Nguyễn Văn H", Edu_ID: 2, Experience: 10, avgStar: 4.5 },
+      { docId: 308, fullName: "BS. Lê Văn I", Edu_ID: 1, Experience: 7, avgStar: 4.1 },
+      { docId: 309, fullName: "BS. Phạm Văn J", Edu_ID: 3, Experience: 7, avgStar: 3.7 },
+    ];
+    setDoctorList(mockDoctors);
+
+    const mockBiosamples = [
+      { BS_ID: 101, BS_Name: "Mẫu máu", CollectionDate: "2025-07-08", Status: 1, BQS_ID: 1, Note: "Mẫu ổn định" },
+      { BS_ID: 102, BS_Name: "Tinh trùng", CollectionDate: "2025-07-09", Status: 2, BQS_ID: 5, Note: "Cần kiểm tra thêm" },
+    ];
     setBiosamples(mockBiosamples);
 
-    // ✅ Thêm mock danh sách xét nghiệm
-    const mockTests = tpId === 1
-  ? [
-      {
-        Test_ID: 201,
-        TestType_ID: 2,
-        TestDate: "2025-07-12",
-        Status: 3,
-        Person: "Vợ",
-        TQS_ID: 1,
-      },
-      {
-        Test_ID: 202,
-        TestType_ID: 3,
-        TestDate: "2025-07-12",
-        Status: 4,
-        Person: "Chồng",
-        TQS_ID: 3,
-      },
-    ]
-  : [];
-
-
+    const mockTests = [
+      { Test_ID: 201, TestType_ID: 2, TestDate: "2025-07-12", Status: 3, Person: "Vợ", TQS_ID: 1 },
+      { Test_ID: 202, TestType_ID: 3, TestDate: "2025-07-12", Status: 4, Person: "Chồng", TQS_ID: 3 },
+    ];
     setTests(mockTests);
   }, [tpId]);
 
+  const handleDoctorChange = () => {
+    if (!selectedDoctor) {
+      message.warning("Vui lòng chọn bác sĩ mới.");
+      return;
+    }
+    message.success(`Đã chọn bác sĩ mới: ${selectedDoctor}`);
+    setIsDoctorInactive(false);
+  };
+
+  const handleCancelPlan = () => {
+    Modal.confirm({
+      title: "Xác nhận hủy hồ sơ điều trị?",
+      content: "Bạn sẽ được hoàn lại 50% số tiền.",
+      okText: "Xác nhận hủy",
+      okButtonProps: { danger: true },
+      cancelText: "Không",
+      onOk: () => {
+        message.success("Hồ sơ điều trị đã được hủy. Sẽ hoàn lại 50% số tiền.");
+        navigate("/");
+      },
+    });
+  };
+
   const getStatusTag = (status) => {
     switch (status) {
-      case 1:
-        return <Tag color="blue">Đang điều trị</Tag>;
-      case 2:
-        return <Tag color="green">Đã hoàn thành</Tag>;
-      case 3:
-        return <Tag color="red">Đã hủy</Tag>;
-      default:
-        return <Tag>Không xác định</Tag>;
+      case 1: return <Tag color="blue">Đang điều trị</Tag>;
+      case 2: return <Tag color="green">Thành công</Tag>;
+      case 3: return <Tag color="red">Thất bại</Tag>;
+      case 4: return <Tag color="red">Đã hủy</Tag>;
+      default: return <Tag>Không xác định</Tag>;
     }
   };
 
@@ -205,7 +185,7 @@ export default function TreatmentPlanDetailPage() {
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
           <Button
             icon={<ArrowLeftOutlined />}
             style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
@@ -213,16 +193,163 @@ export default function TreatmentPlanDetailPage() {
           >
             Quay lại
           </Button>
-          <div style={{ textAlign: 'right' }}>
-            <Title level={3} style={{ margin: 0 }}>Chi tiết hồ sơ bệnh án</Title>
-            <Text style={{ color: "#f78db3", fontWeight: 500 }}>
-              Mã hồ sơ: {treatmentPlan.TP_ID}
-            </Text>
-          </div>
+          <Title level={3} style={{ margin: 0 }}>Chi tiết hồ sơ bệnh án</Title>
         </div>
 
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        {isDoctorInactive ? (
+          <Card
+            style={{
+              padding: 32,
+              borderRadius: 18,
+              background: "linear-gradient(135deg, #fffdfc 0%, #fff0f5 100%)",
+              border: "1px solid #fcd4de",
+              boxShadow: "0 8px 30px rgba(255, 175, 189, 0.25)",
+            }}
+          >
+            <Row gutter={[32, 32]} align="middle">
+              <Col xs={24} md={12}>
+                <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <img src="/doctor-leave.png" alt="doctor leave" width={48} />
+                    <div>
+                      <Title level={3} style={{ color: "#d4376e", margin: 0 }}>
+                        Bác sĩ đã dừng công tác
+                      </Title>
+                      <Text type="secondary" style={{ fontSize: 13 }}>
+                        Hãy chọn bác sĩ thay thế để tiếp tục điều trị
+                      </Text>
+                    </div>
+                  </div>
 
+                  <Text style={{ fontSize: 15.5, lineHeight: 1.9 }}>
+                    Rất tiếc khi bác sĩ <Text strong>{treatmentPlan.doctor?.acc?.fullName}</Text> đã <Text strong>ngừng công tác</Text> tại trung tâm.
+                    <br />
+                    Đừng lo lắng! Hãy lựa chọn <Text strong>bác sĩ thay thế</Text> để tiếp tục hành trình điều trị cùng đội ngũ chuyên môn của chúng tôi 💕
+                  </Text>
+
+                  <Divider style={{ borderColor: "#f78db3", marginTop: 8 }} />
+
+                  <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      disabled={!selectedDoctor}
+                      icon={<CheckCircleTwoTone twoToneColor="#f78db3" />}
+                      onClick={handleDoctorChange}
+                      style={{
+                        backgroundColor: "#f78db3",
+                        border: "none",
+                        fontWeight: "bold",
+                        fontSize: "16px",
+                        boxShadow: "0 4px 10px rgba(247, 141, 179, 0.4)",
+                      }}
+                    >
+                      Xác nhận bác sĩ mới
+                    </Button>
+
+                    <Button
+                      danger
+                      block
+                      size="large"
+                      icon={<CloseCircleTwoTone twoToneColor="#f5222d" />}
+                      onClick={handleCancelPlan}
+                      style={{
+                        fontWeight: 500,
+                        fontSize: "15px",
+                        background: "#fff0f5",
+                        borderColor: "#f78db3",
+                        color: "#c53030",
+                      }}
+                    >
+                      Hủy hồ sơ điều trị
+                    </Button>
+
+                    <Text type="secondary" style={{ fontStyle: "italic", fontSize: 13 }}>
+                      * Trung tâm sẽ hoàn lại <Text strong>50%</Text> chi phí nếu bạn quyết định hủy hồ sơ.
+                    </Text>
+                  </Space>
+
+                  <Divider style={{ margin: "16px 0", borderColor: "#f78db3" }} />
+
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    🌱 Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn vượt qua mọi giai đoạn của hành trình điều trị. Cảm ơn bạn đã tin tưởng 💖
+                  </Text>
+                </Space>
+              </Col>
+
+              <Col xs={24} md={12}>
+                <Title level={4} style={{ color: "#f78db3", marginBottom: 16 }}>
+                  📋 Danh sách bác sĩ thay thế
+                </Title>
+                <Row gutter={[16, 16]}>
+                  {doctorList.map((doc) => (
+                    <Col xs={24} sm={12} md={12} key={doc.docId}>
+                      <Card
+                        hoverable
+                        onClick={() => setSelectedDoctor(doc.docId)}
+                        style={{
+                          border: selectedDoctor === doc.docId ? "2px solid #f78db3" : "1px solid #f0f0f0",
+                          borderRadius: 16,
+                          boxShadow:
+                            selectedDoctor === doc.docId
+                              ? "0 0 18px rgba(247, 141, 179, 0.4)"
+                              : "0 2px 6px rgba(0,0,0,0.06)",
+                          transition: "all 0.3s ease",
+                        }}
+                        bodyStyle={{ padding: 16 }}
+                      >
+                        <Row align="middle" gutter={12}>
+                          <Col flex="64px">
+                            <img
+                              src={`https://api.dicebear.com/7.x/initials/svg?seed=${doc.fullName}`}
+                              alt="avatar"
+                              style={{
+                                width: 64,
+                                height: 64,
+                                borderRadius: "50%",
+                                border: "3px solid #f78db3",
+                                objectFit: "cover",
+                                background: "#fff0f5",
+                              }}
+                            />
+                          </Col>
+                          <Col flex="auto">
+                            <Space direction="vertical" size={2}>
+                              <Text strong style={{ fontSize: 15 }}>{doc.fullName}</Text>
+                              <Text type="secondary" style={{ fontSize: 13 }}>
+                                {EDUCATION_LEVEL[doc.Edu_ID] || "Chưa rõ"} – {doc.Experience} năm kinh nghiệm
+                              </Text>
+                              <Rate disabled allowHalf value={doc.avgStar || 0} style={{ fontSize: 14 }} />
+                            </Space>
+                          </Col>
+                          <Col>
+                            <Button
+                              shape="circle"
+                              icon={<InfoCircleTwoTone twoToneColor="#f78db3" />}
+                              size="small"
+                              style={{
+                                backgroundColor: "#fff0f5",
+                                border: "none",
+                                boxShadow: "0 0 4px rgba(247, 141, 179, 0.4)",
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/doctordetail/${doc.docId}`);
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </Col>
+            </Row>
+          </Card>
+        ) : (
+
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
             <Row gutter={[12, 8]}>
               <Col span={8}><Text strong>Ngày bắt đầu:</Text><br /><Text>{treatmentPlan.StartDate}</Text></Col>
@@ -330,7 +457,6 @@ export default function TreatmentPlanDetailPage() {
             </div>
           </Card>
 
-          {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
           {Array.isArray(tests) && tests.length > 0 && (
             <Card
               title={
@@ -410,8 +536,8 @@ export default function TreatmentPlanDetailPage() {
               </div>
             </Card>
           )}
-
         </Space>
+        )}
       </Content>
     </Layout>
   );
