@@ -121,7 +121,7 @@ const BookingPage = () => {
       const paymentUrl = res.data.data.paymentUrl;
 
       message.success("Đặt lịch thành công! ");
-      navigate(`/bookingDetail/${bookingId}`);
+      
       window.open(paymentUrl, "_blank");
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
