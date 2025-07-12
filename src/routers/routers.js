@@ -301,6 +301,22 @@ const routers = [
       )
     ),
   },
+    {
+    path: "/admin/dashboard",
+    component: lazy(() =>
+      import(
+        "~pages/AdminPage/ManagerDashboardPage/ManagerDashboardPage"
+      )
+    ),
+  },
+  {
+    path: "/admin/dashboardrevenue",
+    component: lazy(() =>
+      import(
+        "~pages/AdminPage/ManagerRevenueDashboardPage/ManagerRevenueDashboardPage"
+      )
+    ),
+  },
   //receptionist
   {
     path: "/receptionist",

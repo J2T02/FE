@@ -5,6 +5,7 @@ import {
   TeamOutlined,
   FileTextOutlined,
   AppstoreOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { FaUserDoctor } from "react-icons/fa6";
 import AdminHeader from "./components/AdminHeader";
@@ -13,6 +14,8 @@ import ServiceManagement from "./ServiceManagement/ServiceManagement";
 import PatientManagement from "./PatientManagement/PatientManagement";
 import BookingManagement from "./BookingManagement/BookingManagement";
 import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
+import ManagerDashboardPage from "./ManagerDashboardPage/ManagerDashboardPage";
+import ManagerRevenueDashboardPage from "./ManagerRevenueDashboardPage/ManagerRevenueDashboardPage";
 import { useToken } from "antd/lib/theme/useToken";
 const { Sider, Content, Header } = Layout;
 const { Title } = Typography;
@@ -33,6 +36,10 @@ const AdminPanel = () => {
         return <TreatmentplanManagement />;
       case "5":
         return <ServiceManagement />;
+      case "6":
+        return <ManagerDashboardPage />;
+      case "7":
+        return <ManagerRevenueDashboardPage />;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -83,6 +90,15 @@ const AdminPanel = () => {
             icon={<AppstoreOutlined style={{ fontSize: 20 }} />}
           >
             Quản lý dịch vụ
+          </Menu.Item>
+          <Menu.Item
+            key="6"
+            icon={<AppstoreOutlined style={{ fontSize: 20 }} />}
+          >
+            Thống kê tổng quan dịch vụ
+          </Menu.Item>
+          <Menu.Item key="7" icon={<BarChartOutlined style={{ fontSize: 20 }} />}>
+            Thống kê Doanh thu
           </Menu.Item>
         </Menu>
       </Sider>
