@@ -369,6 +369,13 @@ const routers = [
       import("~pages/AdminPage/DoctorManagement/DoctorDetailManagement")
     ),
   },
+
+  {
+    path: "/payment-result/:id",
+    component: lazy(() =>
+      import("~pages/HomePage/BookingPage/PaymentResultPage")
+    ),
+  },
 ];
 
 export default routers;
