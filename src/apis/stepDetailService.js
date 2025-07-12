@@ -7,6 +7,11 @@ const getStepDetailList = async () => {
 const getStepDetailDetail = async (id) => {
   return await axiosClients.get(`/StepDetail/GetStepDetailById/${id}`);
 };
+const getStepDetailByTreatmentPlanId = async (treatmentPlanId) => {
+  return await axiosClients.get(
+    `/StepDetail/GetAllStepDetailByTreatmentPlanId/${treatmentPlanId}`
+  );
+};
 const createStepDetail = async (data) => {
   return await axiosClients.post("/StepDetail/CreateStepDetail", data);
 };
@@ -20,6 +25,7 @@ const deleteStepDetail = async (id) => {
 export {
   getStepDetailList,
   getStepDetailDetail,
+  getStepDetailByTreatmentPlanId,
   createStepDetail,
   updateStepDetail,
   deleteStepDetail,

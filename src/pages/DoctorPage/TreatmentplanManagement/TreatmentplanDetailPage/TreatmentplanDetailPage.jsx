@@ -21,8 +21,8 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import TreatmentProcessCard from "./components/TreatmentProcessCard"; // ✅ Import
-import TreatmentOverviewCard from "./components/TreatmentOverviewCard"
-
+import TreatmentOverviewCard from "./components/TreatmentOverviewCard";
+import { getTreatmentDetail } from "../../../../apis/treatmentService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -78,114 +78,142 @@ export default function TreatmentPlanDetailPage() {
   const [treatmentPlan, setTreatmentPlan] = useState(null);
   const [biosamples, setBiosamples] = useState([]);
   const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchData = () => {
-    const mockTP = {
-      TP_ID: tpId,
-      StartDate: "2025-07-07",
-      EndDate: null,
-      Status: 1,
-      Result: "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.",
-      service: { Ser_ID: 1, Ser_Name: "Thụ tinh nhân tạo" },
-      customer: {
-        Hus_Name: "Nguyễn Văn A",
-        Wife_Name: "Trần Thị B",
-        Hus_YOB: "1990-01-01",
-        Wife_YOB: "1992-03-03",
-        acc: {
-          fullName: "Nguyễn Văn A",
-          mail: "nguyenvana@example.com",
-          phone: "0912345678",
-        },
-      },
-      doctor: {
-        docId: 301,
-        acc: {
-          fullName: "BS. Lê Văn C",
-          phone: "0901234567",
-          mail: "levanc@example.com",
-        },
-      },
-      stepDetails: [
-        {
-          SD_ID: 1,
-          TS_ID: 1,
-          Step_Name: "Khám tổng quát",
-          PlanDate: "2025-07-08",
-          doc: { fullName: "BS. Nguyễn Văn X" },
-        },
-        {
-          SD_ID: 2,
-          TS_ID: 2,
-          Step_Name: "Siêu âm tử cung",
-          PlanDate: "2025-07-10",
-          doc: { fullName: "BS. Trần Thị Y" },
-        },
-        {
-          SD_ID: 3,
-          TS_ID: 3,
-          Step_Name: "Xét nghiệm nội tiết",
-          PlanDate: "2025-07-12",
-          doc: { fullName: "BS. Lê Văn C" },
-        },
-        {
-          SD_ID: 4,
-          TS_ID: 3,
-          Step_Name: "Tư vấn hướng điều trị",
-          PlanDate: "2025-07-14",
-          doc: { fullName: "BS. Nguyễn Văn X" },
-        },
-      ],
-    };
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await getTreatmentDetail(tpId);
 
-    mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
-    setTreatmentPlan(mockTP);
+      if (response.data.success) {
+        const apiData = response.data.data;
 
-    const mockBiosamples = tpId === 1
-      ? [
-          {
-            BS_ID: 101,
-            BS_Name: "Mẫu máu",
-            CollectionDate: "2025-07-08",
-            Status: 1,
-            BQS_ID: 1,
-            Note: "Mẫu ổn định",
+        // Map API data to match existing UI structure
+        const mappedTreatmentPlan = {
+          TP_ID: apiData.tpId,
+          StartDate: apiData.startDate,
+          EndDate: apiData.endDate,
+          Status: apiData.status.statusId,
+          StatusName: apiData.status.statusName,
+          Result:
+            "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.", // Keep mock data
+          service: {
+            Ser_ID: apiData.serviceInfo.serId,
+            Ser_Name: apiData.serviceInfo.serName,
           },
-          {
-            BS_ID: 102,
-            BS_Name: "Tinh trùng",
-            CollectionDate: "2025-07-09",
-            Status: 2,
-            BQS_ID: 5,
-            Note: "Cần kiểm tra thêm",
+          customer: {
+            Hus_Name: apiData.cusInfo.husName,
+            Wife_Name: apiData.cusInfo.wifeName,
+            Hus_YOB: apiData.cusInfo.husYob,
+            Wife_YOB: apiData.cusInfo.wifeYob,
+            acc: {
+              fullName: "Nguyễn Văn A", // Keep mock data as API doesn't provide this
+              mail: "nguyenvana@example.com", // Keep mock data
+              phone: "0912345678", // Keep mock data
+            },
           },
-        ]
-      : [];
-
-    setBiosamples(mockBiosamples);
-
-    const mockTests = tpId === 1
-      ? [
-          {
-            Test_ID: 201,
-            TestType_ID: 2,
-            TestDate: "2025-07-12",
-            Status: 3,
-            Person: "Vợ",
-            TQS_ID: 1,
+          doctor: {
+            docId: apiData.doctorInfo.docId,
+            acc: {
+              fullName: apiData.doctorInfo.accountInfo.fullName,
+              phone: apiData.doctorInfo.accountInfo.phone,
+              mail: apiData.doctorInfo.accountInfo.mail,
+            },
           },
-          {
-            Test_ID: 202,
-            TestType_ID: 3,
-            TestDate: "2025-07-12",
-            Status: 4,
-            Person: "Chồng",
-            TQS_ID: 3,
-          },
-        ]
-      : [];
+          stepDetails: [
+            {
+              SD_ID: 1,
+              TS_ID: 1,
+              Step_Name: "Khám tổng quát",
+              PlanDate: "2025-07-08",
+              doc: { fullName: "BS. Nguyễn Văn X" },
+            },
+            {
+              SD_ID: 2,
+              TS_ID: 2,
+              Step_Name: "Siêu âm tử cung",
+              PlanDate: "2025-07-10",
+              doc: { fullName: "BS. Trần Thị Y" },
+            },
+            {
+              SD_ID: 3,
+              TS_ID: 3,
+              Step_Name: "Xét nghiệm nội tiết",
+              PlanDate: "2025-07-12",
+              doc: { fullName: "BS. Lê Văn C" },
+            },
+            {
+              SD_ID: 4,
+              TS_ID: 3,
+              Step_Name: "Tư vấn hướng điều trị",
+              PlanDate: "2025-07-14",
+              doc: { fullName: "BS. Nguyễn Văn X" },
+            },
+          ],
+        };
 
-    setTests(mockTests);
+        mappedTreatmentPlan.stepDetails.sort(
+          (a, b) => new Date(b.PlanDate) - new Date(a.PlanDate)
+        );
+        setTreatmentPlan(mappedTreatmentPlan);
+
+        // Keep mock data for biosamples and tests as API doesn't provide these
+        const mockBiosamples =
+          tpId === 1
+            ? [
+                {
+                  BS_ID: 101,
+                  BS_Name: "Mẫu máu",
+                  CollectionDate: "2025-07-08",
+                  Status: 1,
+                  BQS_ID: 1,
+                  Note: "Mẫu ổn định",
+                },
+                {
+                  BS_ID: 102,
+                  BS_Name: "Tinh trùng",
+                  CollectionDate: "2025-07-09",
+                  Status: 2,
+                  BQS_ID: 5,
+                  Note: "Cần kiểm tra thêm",
+                },
+              ]
+            : [];
+
+        setBiosamples(mockBiosamples);
+
+        const mockTests =
+          tpId === 1
+            ? [
+                {
+                  Test_ID: 201,
+                  TestType_ID: 2,
+                  TestDate: "2025-07-12",
+                  Status: 3,
+                  Person: "Vợ",
+                  TQS_ID: 1,
+                },
+                {
+                  Test_ID: 202,
+                  TestType_ID: 3,
+                  TestDate: "2025-07-12",
+                  Status: 4,
+                  Person: "Chồng",
+                  TQS_ID: 3,
+                },
+              ]
+            : [];
+
+        setTests(mockTests);
+      } else {
+        message.error("Không thể tải thông tin hồ sơ bệnh án");
+      }
+    } catch (error) {
+      console.error("Error fetching treatment plan:", error);
+      message.error("Có lỗi xảy ra khi tải thông tin hồ sơ bệnh án");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -194,12 +222,33 @@ export default function TreatmentPlanDetailPage() {
 
   const getStatusTag = (status) => {
     switch (status) {
-      case 1: return <Tag color="blue">Đang điều trị</Tag>;
-      case 2: return <Tag color="green">Đã hoàn thành</Tag>;
-      case 3: return <Tag color="red">Đã hủy</Tag>;
-      default: return <Tag>Không xác định</Tag>;
+      case 1:
+        return <Tag color="blue">Đang điều trị</Tag>;
+      case 2:
+        return <Tag color="green">Đã hoàn thành</Tag>;
+      case 3:
+        return <Tag color="red">Đã hủy</Tag>;
+      default:
+        return <Tag>Không xác định</Tag>;
     }
   };
+
+  if (loading) {
+    return (
+      <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
+        <Content
+          style={{
+            padding: 24,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div>Đang tải...</div>
+        </Content>
+      </Layout>
+    );
+  }
 
   if (!treatmentPlan) return null;
 
@@ -208,7 +257,12 @@ export default function TreatmentPlanDetailPage() {
       <Content style={{ padding: 24 }}>
         <Button
           icon={<ArrowLeftOutlined />}
-          style={{ backgroundColor: "#f78db3", color: "white", border: "none", marginBottom: 24 }}
+          style={{
+            backgroundColor: "#f78db3",
+            color: "white",
+            border: "none",
+            marginBottom: 24,
+          }}
           onClick={() => navigate(-1)}
         >
           Quay lại
@@ -221,7 +275,10 @@ export default function TreatmentPlanDetailPage() {
           </Text>
 
           {/* Tổng quan */}
-          <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5" }}>
+          <Card
+            title={<Text strong>Tổng quan hồ sơ bệnh án</Text>}
+            bodyStyle={{ backgroundColor: "#fff0f5" }}
+          >
             <Row gutter={[16, 16]}>
               <Col span={24}>
                 <TreatmentOverviewCard
@@ -235,17 +292,43 @@ export default function TreatmentPlanDetailPage() {
           {/* Thông tin khách hàng & bác sĩ */}
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
-              <Card title={<Text strong><UserOutlined /> Thông tin khách hàng</Text>} bodyStyle={{ backgroundColor: "#fde7ef" }}>
+              <Card
+                title={
+                  <Text strong>
+                    <UserOutlined /> Thông tin khách hàng
+                  </Text>
+                }
+                bodyStyle={{ backgroundColor: "#fde7ef" }}
+              >
                 <Row>
-                  <Col span={12}><Text type="secondary">Tên chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_Name}</Text><br /><Text type="secondary">Năm sinh chồng</Text><br /><Text>{treatmentPlan.customer?.Hus_YOB}</Text></Col>
-                  <Col span={12}><Text type="secondary">Tên vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_Name}</Text><br /><Text type="secondary">Năm sinh vợ</Text><br /><Text>{treatmentPlan.customer?.Wife_YOB}</Text></Col>
+                  <Col span={12}>
+                    <Text type="secondary">Tên chồng</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Hus_Name}</Text>
+                    <br />
+                    <Text type="secondary">Năm sinh chồng</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Hus_YOB}</Text>
+                  </Col>
+                  <Col span={12}>
+                    <Text type="secondary">Tên vợ</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Wife_Name}</Text>
+                    <br />
+                    <Text type="secondary">Năm sinh vợ</Text>
+                    <br />
+                    <Text>{treatmentPlan.customer?.Wife_YOB}</Text>
+                  </Col>
                 </Row>
                 <Divider />
-                <Text strong>Thông tin liên hệ</Text><br />
+                <Text strong>Thông tin liên hệ</Text>
+                <br />
                 <UserOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.fullName}<br />
+                {treatmentPlan.customer?.acc?.fullName}
+                <br />
                 <MailOutlined style={{ marginRight: 8 }} />
-                {treatmentPlan.customer?.acc?.mail}<br />
+                {treatmentPlan.customer?.acc?.mail}
+                <br />
                 <PhoneOutlined style={{ marginRight: 8 }} />
                 {treatmentPlan.customer?.acc?.phone}
               </Card>
@@ -257,15 +340,29 @@ export default function TreatmentPlanDetailPage() {
                   <Button
                     shape="circle"
                     icon={<InfoCircleOutlined />}
-                    style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-                    onClick={() => navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)}
+                    style={{
+                      backgroundColor: "#f78db3",
+                      color: "white",
+                      border: "none",
+                    }}
+                    onClick={() =>
+                      navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)
+                    }
                   />
                 }
                 bodyStyle={{ backgroundColor: "#fce6ec" }}
               >
-                <Text strong>Họ tên:</Text><br /><Text>{treatmentPlan.doctor?.acc?.fullName}</Text><br />
-                <Text strong>Email:</Text><br /><Text>{treatmentPlan.doctor?.acc?.mail}</Text><br />
-                <Text strong>SĐT:</Text><br /><Text>{treatmentPlan.doctor?.acc?.phone}</Text>
+                <Text strong>Họ tên:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.fullName}</Text>
+                <br />
+                <Text strong>Email:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.mail}</Text>
+                <br />
+                <Text strong>SĐT:</Text>
+                <br />
+                <Text>{treatmentPlan.doctor?.acc?.phone}</Text>
               </Card>
             </Col>
           </Row>
@@ -286,7 +383,12 @@ export default function TreatmentPlanDetailPage() {
               title={
                 <Space>
                   <Text strong>Danh sách xét nghiệm</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/doctorpage/testlist/${tpId}`)}>Xem đầy đủ</Link>
+                  <Link
+                    style={{ color: "#f78db3" }}
+                    onClick={() => navigate(`/doctorpage/testlist/${tpId}`)}
+                  >
+                    Xem đầy đủ
+                  </Link>
                 </Space>
               }
               bodyStyle={{ backgroundColor: "#fef2f6" }}
@@ -294,17 +396,37 @@ export default function TreatmentPlanDetailPage() {
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 <Space direction="vertical" style={{ width: "100%" }}>
                   {tests.map((test) => (
-                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                    <Card
+                      key={test.Test_ID}
+                      type="inner"
+                      style={{ borderLeft: "5px solid #f78db3" }}
+                    >
                       <Row justify="space-between">
                         <Col>
-                          <Text strong>Loại xét nghiệm: </Text>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}<br />
-                          <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                          <Text strong>Người xét nghiệm: </Text>{test.Person}<br />
-                          <Text strong>Trạng thái: </Text>{TEST_STATUS[test.Status] || "Không xác định"}<br />
-                          <Text strong>Tình trạng kết quả: </Text>{TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
+                          <Text strong>Loại xét nghiệm: </Text>
+                          {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
+                          <br />
+                          <Text strong>Ngày xét nghiệm: </Text>
+                          {test.TestDate}
+                          <br />
+                          <Text strong>Người xét nghiệm: </Text>
+                          {test.Person}
+                          <br />
+                          <Text strong>Trạng thái: </Text>
+                          {TEST_STATUS[test.Status] || "Không xác định"}
+                          <br />
+                          <Text strong>Tình trạng kết quả: </Text>
+                          {TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
                         </Col>
                         <Col>
-                          <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/doctorpage/testdetail/${test.Test_ID}`)}>Xem chi tiết</Link>
+                          <Link
+                            style={{ color: "#f78db3" }}
+                            onClick={() =>
+                              navigate(`/doctorpage/testdetail/${test.Test_ID}`)
+                            }
+                          >
+                            Xem chi tiết
+                          </Link>
                         </Col>
                       </Row>
                     </Card>
@@ -320,7 +442,14 @@ export default function TreatmentPlanDetailPage() {
               title={
                 <Space>
                   <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/doctorpage/biosamplelist/${tpId}`)}>Xem đầy đủ</Link>
+                  <Link
+                    style={{ color: "#f78db3" }}
+                    onClick={() =>
+                      navigate(`/doctorpage/biosamplelist/${tpId}`)
+                    }
+                  >
+                    Xem đầy đủ
+                  </Link>
                 </Space>
               }
               bodyStyle={{ backgroundColor: "#fff0f5" }}
@@ -328,16 +457,37 @@ export default function TreatmentPlanDetailPage() {
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 <Space direction="vertical" style={{ width: "100%" }}>
                   {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                    <Card
+                      key={bs.BS_ID}
+                      type="inner"
+                      style={{ borderLeft: "5px solid #f78db3" }}
+                    >
                       <Row justify="space-between">
                         <Col>
-                          <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                          <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                          <Text strong>Trạng thái: </Text>{BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}<br />
-                          <Text strong>Chất lượng: </Text>{BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}<br />
+                          <Text strong>Tên mẫu: </Text>
+                          {bs.BS_Name}
+                          <br />
+                          <Text strong>Ngày thu thập: </Text>
+                          {bs.CollectionDate}
+                          <br />
+                          <Text strong>Trạng thái: </Text>
+                          {BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}
+                          <br />
+                          <Text strong>Chất lượng: </Text>
+                          {BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}
+                          <br />
                         </Col>
                         <Col>
-                          <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/doctorpage/biosampledetail/${bs.BS_ID}`)}>Xem chi tiết</Link>
+                          <Link
+                            style={{ color: "#f78db3" }}
+                            onClick={() =>
+                              navigate(
+                                `/doctorpage/biosampledetail/${bs.BS_ID}`
+                              )
+                            }
+                          >
+                            Xem chi tiết
+                          </Link>
                         </Col>
                       </Row>
                     </Card>

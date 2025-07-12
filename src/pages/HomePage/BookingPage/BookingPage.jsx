@@ -134,6 +134,7 @@ const BookingPage = () => {
       const bookingId = res.data.data.booking.bookingId;
       console.log(res.data.data.booking.bookingId);
       navigate(`/bookingDetail/${bookingId}`);
+      window.open(res.data.data.paymentUrl, "_blank");
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       const errorMessage = error.response?.data?.message || "Lỗi khi đặt lịch.";

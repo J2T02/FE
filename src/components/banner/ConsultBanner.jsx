@@ -15,7 +15,7 @@ const ConsultBanner = () => {
       }}
     >
       {/* Ảnh y tá */}
-      <img src="/consult.png" alt="consult" style={{ height: 100 }} />
+      <img src="/consult.png" alt="consult" style={{ height: 150 }} />
 
       {/* Tiêu đề giữa */}
       <h3

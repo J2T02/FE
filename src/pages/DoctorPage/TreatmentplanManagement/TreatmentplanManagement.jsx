@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Table,
   Input,
@@ -13,11 +13,16 @@ import {
 } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
+import { getTreatmentListForDoctor } from "../../../apis/treatmentService";
+import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
 const { Title } = Typography;
 const { Option } = Select;
 
 const TreatmentplanManagement = () => {
+  const context = useContext(DoctorStoreContext);
+  const { doctorInfo } = context;
+  const docId = doctorInfo.docId;
+  console.log(docId);
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,27 +30,34 @@ const TreatmentplanManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
-    fetchMockTreatmentPlans();
+    fetchTreatmentPlans();
   }, []);
 
-  const fetchMockTreatmentPlans = () => {
+  const fetchTreatmentPlans = async () => {
     setLoading(true);
-    setTimeout(() => {
-      const mockData = [
-        { tp_ID: 1, service_Name: "Khám tổng quát", status: 0 },
-        { tp_ID: 2, service_Name: "IVF", status: 1 },
-        { tp_ID: 3, service_Name: "IUI", status: 2 },
-        { tp_ID: 4, service_Name: "Hỗ trợ sinh sản", status: 0 },
-        { tp_ID: 5, service_Name: "Xét nghiệm nội tiết", status: 1 },
-        { tp_ID: 6, service_Name: "Chọc hút trứng", status: 0 },
-        { tp_ID: 7, service_Name: "Khám phụ khoa", status: 2 },
-        { tp_ID: 8, service_Name: "IUI nâng cao", status: 0 },
-        { tp_ID: 9, service_Name: "Khám hiếm muộn", status: 1 },
-        { tp_ID: 10, service_Name: "IVF lần 2", status: 2 },
-      ];
-      setPlans(mockData);
-      setLoading(false);
-    }, 300);
+    try {
+      const res = await getTreatmentListForDoctor(docId);
+      if (res && res.data && Array.isArray(res.data.data)) {
+        // Map API data to UI format
+        const mappedPlans = res.data.data.map((item) => ({
+          tp_ID: item.tpId,
+          service_Name: item.serviceInfo?.serName || "",
+          status:
+            item.status?.statusId === 1
+              ? 0
+              : item.status?.statusId === 2
+              ? 1
+              : 2, // Map statusId to UI status
+          // You can add more fields if needed
+        }));
+        setPlans(mappedPlans);
+      } else {
+        setPlans([]);
+      }
+    } catch (error) {
+      setPlans([]);
+    }
+    setLoading(false);
   };
 
   const getStatusTag = (status) => {
@@ -81,7 +93,10 @@ const TreatmentplanManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a href={`/treatmentplans/${record.tp_ID}`} style={{ color: "#1677ff" }}>
+        <a
+          href={`/doctorpage/treatmentplandetail/${record.tp_ID}`}
+          style={{ color: "#1677ff" }}
+        >
           Xem chi tiết
         </a>
       ),

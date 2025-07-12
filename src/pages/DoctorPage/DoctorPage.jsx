@@ -29,11 +29,13 @@ const SidebarLogo = () => {
   if (!context) return null;
 
   const { doctorInfo } = context;
+  console.log(doctorInfo);
+  console.log(doctorInfo);
   const avatarUrl = doctorInfo?.accountInfo?.img || null;
   const fullName = doctorInfo?.accountInfo?.fullName || "Bác sĩ";
 
   const handleAvatarClick = () => {
-    navigate("/doctordetail"); // 👉 Điều hướng khi click avatar
+    navigate(`/doctorpage/doctordetail/${doctorInfo.docId}`); // 👉 Điều hướng khi click avatar
   };
 
   return (
@@ -47,19 +49,20 @@ const SidebarLogo = () => {
       onClick={handleAvatarClick}
     >
       <Avatar
-        src={avatarUrl}
-        icon={!avatarUrl && <UserOutlined />}
+        src={doctorInfo?.acc?.img}
+        icon={!doctorInfo?.acc?.img && <UserOutlined />}
         size={80}
         style={{ marginBottom: 8 }}
       />
       <Text strong style={{ display: "block", fontSize: 14 }}>
-        {fullName}
+        {doctorInfo?.acc?.fullName}
       </Text>
     </div>
   );
 };
 
 const DoctorPanel = () => {
+  // const docId = doctorInfo.docId;
   const [selectedKey, setSelectedKey] = useState("1");
 
   const menuItems = [
@@ -104,7 +107,7 @@ const DoctorPanel = () => {
     <DoctorStoreProvider>
       <Layout style={{ minHeight: "100vh" }}>
         <Sider theme="light" width={220} style={{ paddingTop: 16 }}>
-          <SidebarLogo />
+          <SidebarLogo sr />
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}

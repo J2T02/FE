@@ -11,5 +11,7 @@ const loginDoctor = async (body) => {
 const getDoctorInfo = async (id) => {
   return await axiosClients.get(`/Doctor/${id}`);
 };
-
-export { loginDoctor, getDoctorInfo, getDoctorList };
+const getDoctorInfoByAccId = async (accId) => {
+  return await axiosClients.get(`/Doctor/GetSlotByAccId/${accId}`);
+};
+export { loginDoctor, getDoctorInfo, getDoctorList, getDoctorInfoByAccId };

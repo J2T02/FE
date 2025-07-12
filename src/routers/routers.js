@@ -167,6 +167,12 @@ const routers = [
     component: lazy(() => import("~pages/DoctorPage/DoctorPage")),
   },
   {
+    path: "/doctorpage/doctordetail/:doctorId",
+    component: lazy(() =>
+      import("~pages/DoctorPage/DoctorInfo/DoctorDetailManagement")
+    ),
+  },
+  {
     path: "/doctorpage/bookingdetail/:id",
     component: lazy(() =>
       import("~pages/DoctorPage/BookingDetail/BookingDetailPage")

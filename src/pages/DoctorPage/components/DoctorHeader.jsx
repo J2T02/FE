@@ -30,7 +30,6 @@ const DoctorHeader = () => {
   if (!context) return null;
 
   const { doctorInfo, handleLogout } = context;
-  console.log(doctorInfo);
   // 👉 Link ảnh nền và logo
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1588776814546-ec7a1f2c3441?auto=format&fit=crop&w=1600&q=80";
@@ -215,7 +214,7 @@ const DoctorHeader = () => {
             >
               <Avatar
                 size="small"
-                src={doctorInfo?.accountInfo?.img || null}
+                src={doctorInfo?.acc?.img || null}
                 icon={!doctorInfo?.accountInfo?.img && <UserOutlined />}
                 style={{ backgroundColor: token.colorPrimary }}
               />
@@ -229,7 +228,7 @@ const DoctorHeader = () => {
                     fontSize: 12,
                   }}
                 >
-                  {doctorInfo?.accountInfo?.fullName || "Chưa rõ tên"}
+                  {doctorInfo?.acc?.fullName || "Chưa rõ tên"}
                 </span>
               </div>
             </div>

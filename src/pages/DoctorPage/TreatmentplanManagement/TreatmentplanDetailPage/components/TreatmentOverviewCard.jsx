@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Card, Row, Col, Typography, Tag, Select, Input, Button, message } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Tag,
+  Select,
+  Input,
+  Button,
+  message,
+} from "antd";
 import dayjs from "dayjs";
 
 const { Text } = Typography;
@@ -8,10 +18,14 @@ const { TextArea } = Input;
 
 const getStatusTag = (status) => {
   switch (status) {
-    case 1: return <Tag color="blue">Đang điều trị</Tag>;
-    case 2: return <Tag color="green">Đã hoàn thành</Tag>;
-    case 3: return <Tag color="red">Đã hủy</Tag>;
-    default: return <Tag>Không xác định</Tag>;
+    case 1:
+      return <Tag color="blue">Đang điều trị</Tag>;
+    case 2:
+      return <Tag color="green">Đã hoàn thành</Tag>;
+    case 3:
+      return <Tag color="red">Đã hủy</Tag>;
+    default:
+      return <Tag>Không xác định</Tag>;
   }
 };
 
@@ -24,17 +38,21 @@ const SERVICE_OPTIONS = {
 export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
   const [status, setStatus] = useState(treatmentPlan.Status);
   const [service, setService] = useState(treatmentPlan.service?.Ser_ID);
-  const [note, setNote] = useState(treatmentPlan.Result);
+  const [note, setNote] = useState(treatmentPlan.Result || "");
   const [endDate, setEndDate] = useState(treatmentPlan.EndDate || null);
-  const [isEditable, setIsEditable] = useState(true); // Cho chỉnh sửa ban đầu
+  const [isEditable, setIsEditable] = useState(true);
 
   const handleSave = () => {
     const updated = {
       ...treatmentPlan,
       Status: status,
-      Ser_ID: service,
+      service: {
+        ...treatmentPlan.service,
+        Ser_ID: service,
+      },
       Result: note,
-      EndDate: (status === 2 || status === 3) ? dayjs().format("YYYY-MM-DD") : null,
+      EndDate:
+        status === 2 || status === 3 ? dayjs().format("YYYY-MM-DD") : null,
     };
 
     if (updated.EndDate) {
@@ -58,7 +76,14 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
       bodyStyle={{ backgroundColor: "#fff0f5" }}
       extra={
         isEditable && (
-          <Button onClick={handleSave} style={{ backgroundColor: "#f78db3", color: "#fff", border: "none" }}>
+          <Button
+            onClick={handleSave}
+            style={{
+              backgroundColor: "#f78db3",
+              color: "#fff",
+              border: "none",
+            }}
+          >
             Lưu cập nhật
           </Button>
         )
@@ -66,21 +91,32 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
     >
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Text strong>Ngày bắt đầu:</Text><br />
-          <Text>{treatmentPlan.StartDate}</Text>
+          <Text strong>Ngày bắt đầu:</Text>
+          <br />
+          <Text>
+            {treatmentPlan.StartDate
+              ? dayjs(treatmentPlan.StartDate).format("DD/MM/YYYY")
+              : "Chưa có"}
+          </Text>
         </Col>
 
         {endDate && (
           <Col span={12}>
-            <Text strong>Ngày kết thúc:</Text><br />
-            <Text>{endDate}</Text>
+            <Text strong>Ngày kết thúc:</Text>
+            <br />
+            <Text>{dayjs(endDate).format("DD/MM/YYYY")}</Text>
           </Col>
         )}
 
         <Col span={12}>
-          <Text strong>Trạng thái:</Text><br />
+          <Text strong>Trạng thái:</Text>
+          <br />
           {isEditable ? (
-            <Select value={status} onChange={setStatus} style={{ width: "100%" }}>
+            <Select
+              value={status}
+              onChange={setStatus}
+              style={{ width: "100%" }}
+            >
               <Option value={1}>Đang điều trị</Option>
               <Option value={2}>Đã hoàn thành</Option>
               <Option value={3}>Đã hủy</Option>
@@ -91,24 +127,41 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
         </Col>
 
         <Col span={24}>
-          <Text strong>Ghi chú:</Text><br />
+          <Text strong>Ghi chú:</Text>
+          <br />
           {isEditable ? (
-            <TextArea rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+            <TextArea
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Nhập ghi chú về quá trình điều trị..."
+            />
           ) : (
-            <Text>{note}</Text>
+            <Text>{note || "Chưa có ghi chú"}</Text>
           )}
         </Col>
 
         <Col span={24}>
-          <Text strong>Dịch vụ điều trị:</Text><br />
+          <Text strong>Dịch vụ điều trị:</Text>
+          <br />
           {isEditable ? (
-            <Select value={service} onChange={setService} style={{ width: "100%" }}>
+            <Select
+              value={service}
+              onChange={setService}
+              style={{ width: "100%" }}
+            >
               {Object.entries(SERVICE_OPTIONS).map(([id, name]) => (
-                <Option key={id} value={parseInt(id)}>{name}</Option>
+                <Option key={id} value={parseInt(id)}>
+                  {name}
+                </Option>
               ))}
             </Select>
           ) : (
-            <Text>{SERVICE_OPTIONS[service]}</Text>
+            <Text>
+              {treatmentPlan.service?.Ser_Name ||
+                SERVICE_OPTIONS[service] ||
+                "Không xác định"}
+            </Text>
           )}
         </Col>
       </Row>

@@ -22,6 +22,11 @@ const GetSchedule = async (id) => {
 const GetAllDoctorSchedule = async (id) => {
   return await axiosClients.get(`/Doctor/GetAllDoctorSchedule/${id}`);
 };
+const getAllDoctorScheduleByDoctorId = async (doctorId) => {
+  return await axiosClients.get(
+    `/Doctor/GetAllDoctorScheduleByDoctorId/${doctorId}`
+  );
+};
 const Booking = async (body) => {
   return await axiosClients.post(`/Booking/Booking`, body);
 };
@@ -53,6 +58,7 @@ const GetCustomerInfo = async (id) => {
 export {
   GetAllDoctor,
   GetSchedule,
+  getAllDoctorScheduleByDoctorId,
   Booking,
   BookingHistory,
   BookingDetail,
