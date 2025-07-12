@@ -39,27 +39,45 @@ const LIGHT_PINK = "#FDE9EF";
 const GREEN = "#52c41a";
 const YELLOW = "#faad14";
 
+const mockPayments = [
+  { Payment_ID: 1, PaymentDate: "2025-07-01", Amount: 5000000, PaymentType_ID: 2, Status_ID: 2 },
+  { Payment_ID: 2, PaymentDate: "2025-07-03", Amount: 4800000, PaymentType_ID: 2, Status_ID: 2 },
+  { Payment_ID: 3, PaymentDate: "2025-07-04", Amount: 3000000, PaymentType_ID: 2, Status_ID: 2 },
+  { Payment_ID: 4, PaymentDate: "2025-07-05", Amount: 4500000, PaymentType_ID: 2, Status_ID: 2 },
+  { Payment_ID: 5, PaymentDate: "2025-07-06", Amount: 3200000, PaymentType_ID: 2, Status_ID: 2 },
+  { Payment_ID: 6, PaymentDate: "2025-07-08", Amount: 3100000, PaymentType_ID: 2, Status_ID: 1 },
+  { Payment_ID: 7, PaymentDate: "2025-07-09", Amount: 4600000, PaymentType_ID: 2, Status_ID: 2 },
+];
+
 const mockTreatmentPlans = [
-  { TP_ID: 1, StartDate: "2025-07-01", Status: 1, Ser_ID: 2, Price: 5000000 },
-  { TP_ID: 2, StartDate: "2025-07-03", Status: 1, Ser_ID: 2, Price: 4800000 },
-  { TP_ID: 3, StartDate: "2025-07-04", Status: 1, Ser_ID: 3, Price: 3000000 },
-  { TP_ID: 4, StartDate: "2025-07-05", Status: 1, Ser_ID: 2, Price: 4500000 },
-  { TP_ID: 5, StartDate: "2025-07-06", Status: 1, Ser_ID: 3, Price: 3200000 },
-  { TP_ID: 6, StartDate: "2025-07-08", Status: 1, Ser_ID: 3, Price: 3100000 },
-  { TP_ID: 7, StartDate: "2025-07-09", Status: 1, Ser_ID: 2, Price: 4600000 },
+  { TP_ID: 1, StartDate: "2025-07-01", Ser_ID: 2 },
+  { TP_ID: 2, StartDate: "2025-07-03", Ser_ID: 2 },
+  { TP_ID: 3, StartDate: "2025-07-04", Ser_ID: 3 },
+  { TP_ID: 4, StartDate: "2025-07-05", Ser_ID: 2 },
+  { TP_ID: 5, StartDate: "2025-07-06", Ser_ID: 3 },
+  { TP_ID: 6, StartDate: "2025-07-08", Ser_ID: 3 },
+  { TP_ID: 7, StartDate: "2025-07-09", Ser_ID: 2 },
 ];
 
 const mockBookings = [
-  { Booking_ID: 1, Date: "2025-07-01" },
-  { Booking_ID: 2, Date: "2025-07-02" },
-  { Booking_ID: 3, Date: "2025-07-03" },
-  { Booking_ID: 4, Date: "2025-07-04" },
+  { Booking_ID: 1, Date: "2025-07-01", Doc_ID: 1 },
+  { Booking_ID: 2, Date: "2025-07-02", Doc_ID: 2 },
+  { Booking_ID: 3, Date: "2025-07-03", Doc_ID: 1 },
+  { Booking_ID: 4, Date: "2025-07-04", Doc_ID: 2 },
+  { Booking_ID: 5, Date: "2025-07-05", Doc_ID: 1 },
+  { Booking_ID: 6, Date: "2025-07-05", Doc_ID: 1 },
+];
+
+const mockAccounts = [
+  { Acc_ID: 1, Full_Name: "Dr. A" },
+  { Acc_ID: 2, Full_Name: "Dr. B" },
+  { Acc_ID: 3, Full_Name: "Dr. C" },
 ];
 
 const mockDoctors = [
-  { Doc_ID: 1, Name: "Dr. A", BookingCount: 6 },
-  { Doc_ID: 2, Name: "Dr. B", BookingCount: 4 },
-  { Doc_ID: 3, Name: "Dr. C", BookingCount: 2 },
+  { Doc_ID: 1, Acc_ID: 1 },
+  { Doc_ID: 2, Acc_ID: 2 },
+  { Doc_ID: 3, Acc_ID: 3 },
 ];
 
 const serviceMap = {
@@ -93,6 +111,12 @@ export default function ManagerRevenueDashboardPage() {
 
   const [startDate, endDate] = getStartEndDate();
 
+  const filteredPayments = mockPayments.filter(
+    (p) =>
+      p.Status_ID === 2 &&
+      dayjs(p.PaymentDate).isBetween(startDate, endDate, "day", "[]")
+  );
+
   const filteredPlans = mockTreatmentPlans.filter((plan) =>
     dayjs(plan.StartDate).isBetween(startDate, endDate, "day", "[]")
   );
@@ -101,7 +125,7 @@ export default function ManagerRevenueDashboardPage() {
     dayjs(b.Date).isBetween(startDate, endDate, "day", "[]")
   );
 
-  const totalRevenue = filteredPlans.reduce((sum, p) => sum + p.Price, 0);
+  const totalRevenue = filteredPayments.reduce((sum, p) => sum + p.Amount, 0);
   const totalBookings = filteredBookings.length;
   const totalTreatmentPlans = filteredPlans.length;
 
@@ -109,9 +133,9 @@ export default function ManagerRevenueDashboardPage() {
   const days = endDate.diff(startDate, "day");
   for (let i = 0; i <= days; i++) {
     const date = startDate.add(i, "day");
-    const revenue = filteredPlans
-      .filter((p) => dayjs(p.StartDate).isSame(date, "day"))
-      .reduce((sum, p) => sum + p.Price, 0);
+    const revenue = filteredPayments
+      .filter((p) => dayjs(p.PaymentDate).isSame(date, "day"))
+      .reduce((sum, p) => sum + p.Amount, 0);
     chartData.push({
       name: date.format("DD/MM"),
       DoanhThu: revenue,
@@ -127,7 +151,19 @@ export default function ManagerRevenueDashboardPage() {
   });
 
   const topService = Object.entries(serviceStats).sort((a, b) => b[1] - a[1])[0];
-  const topDoctor = mockDoctors.sort((a, b) => b.BookingCount - a.BookingCount)[0];
+
+  const doctorStats = {};
+  filteredBookings.forEach((b) => {
+    doctorStats[b.Doc_ID] = (doctorStats[b.Doc_ID] || 0) + 1;
+  });
+
+  const topDoctorEntry = Object.entries(doctorStats).sort((a, b) => b[1] - a[1])[0];
+  const topDoctor = topDoctorEntry
+    ? mockDoctors.find((d) => d.Doc_ID === parseInt(topDoctorEntry[0]))
+    : null;
+  const topDoctorName = topDoctor
+    ? mockAccounts.find((a) => a.Acc_ID === topDoctor.Acc_ID)?.Full_Name
+    : null;
 
   return (
     <Layout style={{ padding: 24, background: LIGHT_PINK, minHeight: "100vh" }}>
@@ -206,12 +242,12 @@ export default function ManagerRevenueDashboardPage() {
         </Col>
         <Col span={12}>
           <Card title="🏥 Bác sĩ có nhiều booking nhất">
-            {topDoctor ? (
+            {topDoctorName ? (
               <Space>
                 <Avatar icon={<UserOutlined />} />
                 <Space direction="vertical">
-                  <Text strong>{topDoctor.Name}</Text>
-                  <Text>{topDoctor.BookingCount} lượt đặt khám</Text>
+                  <Text strong>{topDoctorName}</Text>
+                  <Text>{topDoctorEntry[1]} lượt đặt khám</Text>
                 </Space>
               </Space>
             ) : (
