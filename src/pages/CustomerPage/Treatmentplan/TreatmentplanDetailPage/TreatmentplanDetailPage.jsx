@@ -13,6 +13,7 @@ import {
   Divider,
   Select,
   Modal,
+  Input,
   message,
   Rate
 } from "antd";
@@ -26,6 +27,8 @@ import {
   CheckCircleTwoTone,
   CloseCircleTwoTone,
 } from "@ant-design/icons";
+import { motion } from "framer-motion";
+
 
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
@@ -88,13 +91,15 @@ export default function TreatmentPlanDetailPage() {
   const [doctorList, setDoctorList] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [isDoctorInactive, setIsDoctorInactive] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([])
 
   useEffect(() => {
     const mockTP = {
       TP_ID: tpId,
       StartDate: "2025-07-07",
       EndDate: "2025-07-21",
-      Status: 1,
+      Status: 2,
       Result: "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.",
       service: { Ser_ID: 1, Ser_Name: "Thụ tinh nhân tạo" },
       customer: {
@@ -107,32 +112,18 @@ export default function TreatmentPlanDetailPage() {
       doctor: {
         docId: 301,
         Status: 3,
-        acc: { fullName: "BS. Lê Văn C", phone: "0901234567", mail: "levanc@example.com" },
+        acc: { fullName: "Lê Văn C", phone: "0901234567", mail: "levanc@example.com" },
       },
       stepDetails: [
-        { SD_ID: 1, Step_Name: "Khám tổng quát", PlanDate: "2025-07-08", doc: { fullName: "BS. Nguyễn Văn X" } },
-        { SD_ID: 2, Step_Name: "Siêu âm tử cung", PlanDate: "2025-07-10", doc: { fullName: "BS. Trần Thị Y" } },
-        { SD_ID: 3, Step_Name: "Xét nghiệm nội tiết", PlanDate: "2025-07-12", doc: { fullName: "BS. Lê Văn C" } },
+        { SD_ID: 1, Step_Name: "Khám tổng quát", PlanDate: "2025-07-08", doc: { fullName: "Nguyễn Văn X", docId: 999 } },
+        { SD_ID: 2, Step_Name: "Siêu âm tử cung", PlanDate: "2025-07-10", doc: { fullName: "Trần Thị Y", docId: 302 } },
+        { SD_ID: 3, Step_Name: "Xét nghiệm nội tiết", PlanDate: "2025-07-12", doc: { fullName: "Lê Văn C", docId: 301 } },
       ],
     };
     mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
     setTreatmentPlan(mockTP);
 
-    if (mockTP.doctor?.Status === 3) setIsDoctorInactive(true);
-
-    const mockDoctors = [
-      { docId: 300, fullName: "BS. Lê Văn A", Edu_ID: 2, Experience: 13, avgStar: 4.7 },
-      { docId: 301, fullName: "BS. Phạm Văn B", Edu_ID: 2, Experience: 4, avgStar: 3.8 },
-      { docId: 302, fullName: "BS. Đỗ Văn C", Edu_ID: 4, Experience: 4, avgStar: 4.2 },
-      { docId: 303, fullName: "BS. Lê Văn D", Edu_ID: 4, Experience: 14, avgStar: 4.9 },
-      { docId: 304, fullName: "BS. Trần Văn E", Edu_ID: 3, Experience: 8, avgStar: 4.0 },
-      { docId: 305, fullName: "BS. Trần Văn F", Edu_ID: 1, Experience: 6, avgStar: 3.5 },
-      { docId: 306, fullName: "BS. Phạm Văn G", Edu_ID: 4, Experience: 3, avgStar: 3.9 },
-      { docId: 307, fullName: "BS. Nguyễn Văn H", Edu_ID: 2, Experience: 10, avgStar: 4.5 },
-      { docId: 308, fullName: "BS. Lê Văn I", Edu_ID: 1, Experience: 7, avgStar: 4.1 },
-      { docId: 309, fullName: "BS. Phạm Văn J", Edu_ID: 3, Experience: 7, avgStar: 3.7 },
-    ];
-    setDoctorList(mockDoctors);
+    if ([2, 3, 4].includes(mockTP.Status)) setShowFeedbackForm(true);
 
     const mockBiosamples = [
       { BS_ID: 101, BS_Name: "Mẫu máu", CollectionDate: "2025-07-08", Status: 1, BQS_ID: 1, Note: "Mẫu ổn định" },
@@ -147,28 +138,158 @@ export default function TreatmentPlanDetailPage() {
     setTests(mockTests);
   }, [tpId]);
 
-  const handleDoctorChange = () => {
-    if (!selectedDoctor) {
-      message.warning("Vui lòng chọn bác sĩ mới.");
-      return;
+  const getFeedbackTargets = () => {
+    if (!treatmentPlan) return [];
+
+    const doctorSet = new Set();
+    const doctorTargets = [];
+
+    // ✅ Bác sĩ chính
+    if (treatmentPlan.doctor?.docId) {
+      doctorTargets.push({
+        docId: treatmentPlan.doctor.docId,
+        fullName: treatmentPlan.doctor.acc?.fullName || "Không rõ tên",
+        type: "main-doctor"
+      });
     }
-    message.success(`Đã chọn bác sĩ mới: ${selectedDoctor}`);
-    setIsDoctorInactive(false);
+
+    // ✅ Bác sĩ phụ trong stepDetails (khác với bác sĩ chính)
+    treatmentPlan.stepDetails.forEach(step => {
+      const stepDoc = step.doc;
+      if (
+        stepDoc?.docId &&
+        stepDoc.docId !== treatmentPlan.doctor?.docId &&
+        !doctorSet.has(stepDoc.docId)
+      ) {
+        doctorSet.add(stepDoc.docId);
+        doctorTargets.push({
+          docId: stepDoc.docId,
+          fullName: stepDoc.fullName || "Không rõ tên",
+          stepName: step.Step_Name,
+          type: "step-doctor"
+        });
+      }
+    });
+
+    return [
+      { docId: null, type: "service" },
+      ...doctorTargets
+    ];
   };
 
-  const handleCancelPlan = () => {
-    Modal.confirm({
-      title: "Xác nhận hủy hồ sơ điều trị?",
-      content: "Bạn sẽ được hoàn lại 50% số tiền.",
-      okText: "Xác nhận hủy",
-      okButtonProps: { danger: true },
-      cancelText: "Không",
-      onOk: () => {
-        message.success("Hồ sơ điều trị đã được hủy. Sẽ hoàn lại 50% số tiền.");
-        navigate("/");
-      },
-    });
+  const renderFeedbackForm = () => {
+  const targets = getFeedbackTargets();
+  const handleSubmit = () => {
+    console.log("📨 Gửi đánh giá:", feedbacks.map(f => ({
+      TP_ID: tpId,
+      Doc_ID: f.docId,
+      Star: f.star,
+      Content: f.content,
+    })));
+    message.success("💖 Cảm ơn bạn đã gửi đánh giá!");
+    setShowFeedbackForm(false);
   };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <Card
+        title={<Title level={4} style={{ color: "#d4376e" }}>
+          Trung tâm luôn trân trọng mọi ý kiến đóng góp từ bạn – giúp cải thiện chất lượng điều trị từng ngày 💖
+          </Title>}
+        extra={
+          <Button
+            onClick={() => setShowFeedbackForm(false)}
+            style={{ 
+              backgroundColor: "#f78db3",
+              color: "white",
+              border: "none" 
+            }}
+          >
+            Bỏ qua đánh giá
+          </Button>
+        }
+        style={{
+          background: "rgba(255, 240, 245, 0.4)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid #ffd6e5",
+          borderRadius: 20,
+          boxShadow: "0 12px 40px rgba(247, 141, 179, 0.3)",
+          padding: 24,
+        }}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {targets.map(({ docId, type, fullName, stepName }) => (
+            <motion.div
+              key={docId ?? "service"}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card
+                size="small"
+                style={{
+                  background: "rgba(255,255,255,0.8)",
+                  border: "1px solid #fcd4de",
+                  borderRadius: 18,
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.05)",
+                  padding: 20,
+                }}
+              >
+                <Title level={5} style={{ marginBottom: 8, color: "#d4376e" }}>
+                  {type === "service" && "🏥 Dịch vụ điều trị & Cơ sở vật chất"}
+                  {type === "main-doctor" && `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách chính)`}
+                  {type === "step-doctor" && `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách: ${stepName})`}
+                </Title>
+
+                <Rate
+                  allowHalf
+                  onChange={(value) => handleStarChange(value, docId)}
+                  style={{ fontSize: 22, color: "#ee4d2d" }}
+                />
+
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Chia sẻ cảm nhận chân thực của bạn..."
+                  onChange={(e) => handleContentChange(e, docId)}
+                  style={{
+                    marginTop: 12,
+                    borderRadius: 12,
+                    border: "1px solid #ffd6e5",
+                    backgroundColor: "#fffafc",
+                    resize: "none",
+                    fontStyle: "italic",
+                  }}
+                />
+              </Card>
+            </motion.div>
+          ))}
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+              style={{
+                alignSelf: "flex-end",
+                background: "linear-gradient(to right, #ff9eb5, #f78db3)",
+                border: "none",
+                fontWeight: "bold",
+                padding: "12px 28px",
+                fontSize: 16,
+                borderRadius: 14,
+                boxShadow: "0 6px 18px rgba(247, 141, 179, 0.4)",
+              }}
+            >
+              💖 Gửi đánh giá
+            </Button>
+          </motion.div>
+        </Space>
+      </Card>
+    </motion.div>
+  );
+};
+
 
   const getStatusTag = (status) => {
     switch (status) {
@@ -185,169 +306,28 @@ export default function TreatmentPlanDetailPage() {
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Button
-            icon={<ArrowLeftOutlined />}
-            style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-            onClick={() => navigate(-1)}
-          >
-            Quay lại
-          </Button>
-          <Title level={3} style={{ margin: 0 }}>Chi tiết hồ sơ bệnh án</Title>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div style={{ flex: 1 }}>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
+              onClick={() => navigate(-1)}
+            >
+              Quay lại
+            </Button>
+          </div>
+
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <Title level={3} style={{ margin: 0, color: "#d4376e" }}>
+              Chi tiết hồ sơ bệnh án
+            </Title>
+          </div>
+
+          <div style={{ flex: 1 }}></div>
         </div>
-
-        {isDoctorInactive ? (
-          <Card
-            style={{
-              padding: 32,
-              borderRadius: 18,
-              background: "linear-gradient(135deg, #fffdfc 0%, #fff0f5 100%)",
-              border: "1px solid #fcd4de",
-              boxShadow: "0 8px 30px rgba(255, 175, 189, 0.25)",
-            }}
-          >
-            <Row gutter={[32, 32]} align="middle">
-              <Col xs={24} md={12}>
-                <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <img src="/doctor-leave.png" alt="doctor leave" width={48} />
-                    <div>
-                      <Title level={3} style={{ color: "#d4376e", margin: 0 }}>
-                        Bác sĩ đã dừng công tác
-                      </Title>
-                      <Text type="secondary" style={{ fontSize: 13 }}>
-                        Hãy chọn bác sĩ thay thế để tiếp tục điều trị
-                      </Text>
-                    </div>
-                  </div>
-
-                  <Text style={{ fontSize: 15.5, lineHeight: 1.9 }}>
-                    Rất tiếc khi bác sĩ <Text strong>{treatmentPlan.doctor?.acc?.fullName}</Text> đã <Text strong>ngừng công tác</Text> tại trung tâm.
-                    <br />
-                    Đừng lo lắng! Hãy lựa chọn <Text strong>bác sĩ thay thế</Text> để tiếp tục hành trình điều trị cùng đội ngũ chuyên môn của chúng tôi 💕
-                  </Text>
-
-                  <Divider style={{ borderColor: "#f78db3", marginTop: 8 }} />
-
-                  <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-                    <Button
-                      type="primary"
-                      block
-                      size="large"
-                      disabled={!selectedDoctor}
-                      icon={<CheckCircleTwoTone twoToneColor="#f78db3" />}
-                      onClick={handleDoctorChange}
-                      style={{
-                        backgroundColor: "#f78db3",
-                        border: "none",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        boxShadow: "0 4px 10px rgba(247, 141, 179, 0.4)",
-                      }}
-                    >
-                      Xác nhận bác sĩ mới
-                    </Button>
-
-                    <Button
-                      danger
-                      block
-                      size="large"
-                      icon={<CloseCircleTwoTone twoToneColor="#f5222d" />}
-                      onClick={handleCancelPlan}
-                      style={{
-                        fontWeight: 500,
-                        fontSize: "15px",
-                        background: "#fff0f5",
-                        borderColor: "#f78db3",
-                        color: "#c53030",
-                      }}
-                    >
-                      Hủy hồ sơ điều trị
-                    </Button>
-
-                    <Text type="secondary" style={{ fontStyle: "italic", fontSize: 13 }}>
-                      * Trung tâm sẽ hoàn lại <Text strong>50%</Text> chi phí nếu bạn quyết định hủy hồ sơ.
-                    </Text>
-                  </Space>
-
-                  <Divider style={{ margin: "16px 0", borderColor: "#f78db3" }} />
-
-                  <Text type="secondary" style={{ fontSize: 13 }}>
-                    🌱 Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn vượt qua mọi giai đoạn của hành trình điều trị. Cảm ơn bạn đã tin tưởng 💖
-                  </Text>
-                </Space>
-              </Col>
-
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ color: "#f78db3", marginBottom: 16 }}>
-                  📋 Danh sách bác sĩ thay thế
-                </Title>
-                <Row gutter={[16, 16]}>
-                  {doctorList.map((doc) => (
-                    <Col xs={24} sm={12} md={12} key={doc.docId}>
-                      <Card
-                        hoverable
-                        onClick={() => setSelectedDoctor(doc.docId)}
-                        style={{
-                          border: selectedDoctor === doc.docId ? "2px solid #f78db3" : "1px solid #f0f0f0",
-                          borderRadius: 16,
-                          boxShadow:
-                            selectedDoctor === doc.docId
-                              ? "0 0 18px rgba(247, 141, 179, 0.4)"
-                              : "0 2px 6px rgba(0,0,0,0.06)",
-                          transition: "all 0.3s ease",
-                        }}
-                        bodyStyle={{ padding: 16 }}
-                      >
-                        <Row align="middle" gutter={12}>
-                          <Col flex="64px">
-                            <img
-                              src={`https://api.dicebear.com/7.x/initials/svg?seed=${doc.fullName}`}
-                              alt="avatar"
-                              style={{
-                                width: 64,
-                                height: 64,
-                                borderRadius: "50%",
-                                border: "3px solid #f78db3",
-                                objectFit: "cover",
-                                background: "#fff0f5",
-                              }}
-                            />
-                          </Col>
-                          <Col flex="auto">
-                            <Space direction="vertical" size={2}>
-                              <Text strong style={{ fontSize: 15 }}>{doc.fullName}</Text>
-                              <Text type="secondary" style={{ fontSize: 13 }}>
-                                {EDUCATION_LEVEL[doc.Edu_ID] || "Chưa rõ"} – {doc.Experience} năm kinh nghiệm
-                              </Text>
-                              <Rate disabled allowHalf value={doc.avgStar || 0} style={{ fontSize: 14 }} />
-                            </Space>
-                          </Col>
-                          <Col>
-                            <Button
-                              shape="circle"
-                              icon={<InfoCircleTwoTone twoToneColor="#f78db3" />}
-                              size="small"
-                              style={{
-                                backgroundColor: "#fff0f5",
-                                border: "none",
-                                boxShadow: "0 0 4px rgba(247, 141, 179, 0.4)",
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/doctordetail/${doc.docId}`);
-                              }}
-                            />
-                          </Col>
-                        </Row>
-                      </Card>
-                    </Col>
-                  ))}
-                </Row>
-              </Col>
-            </Row>
-          </Card>
-        ) : (
+        {showFeedbackForm ? (
+          renderFeedbackForm()
+        ):(
 
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
