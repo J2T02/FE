@@ -27,19 +27,19 @@ const AdminPanel = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
-        return <DoctorModule />;
-      case "2":
-        return <BookingManagement />;
-      case "3":
-        return <PatientManagement />;
-      case "4":
-        return <TreatmentplanManagement />;
-      case "5":
-        return <ServiceManagement />;
-      case "6":
         return <ManagerDashboardPage />;
-      case "7":
+      case "2":
         return <ManagerRevenueDashboardPage />;
+      case "3":
+        return <DoctorModule />;
+      case "4":
+        return <BookingManagement />;
+      case "5":
+        return <PatientManagement />;
+      case "6":
+        return <TreatmentplanManagement />;
+      case "7":
+        return <ServiceManagement />;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -67,38 +67,26 @@ const AdminPanel = () => {
           defaultSelectedKeys={["1"]}
           onClick={({ key }) => setSelectedKey(key)}
         >
-          <Menu.Item key="1" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
+          <Menu.Item key="1" icon={<AppstoreOutlined style={{ fontSize: 20 }} />}>
+            Tổng quan dịch vụ
+          </Menu.Item>
+          <Menu.Item key="2" icon={<BarChartOutlined style={{ fontSize: 20 }} />}>
+            Doanh thu
+          </Menu.Item>
+          <Menu.Item key="3" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
             Quản lý bác sĩ
           </Menu.Item>
-          <Menu.Item
-            key="2"
-            icon={<CalendarOutlined style={{ fontSize: 20 }} />}
-          >
+          <Menu.Item key="4" icon={<CalendarOutlined style={{ fontSize: 20 }} />}>
             Quản lý booking
           </Menu.Item>
-          <Menu.Item key="3" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
+          <Menu.Item key="5" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
             Quản lý bệnh nhân
           </Menu.Item>
-          <Menu.Item
-            key="4"
-            icon={<FileTextOutlined style={{ fontSize: 20 }} />}
-          >
+          <Menu.Item key="6" icon={<FileTextOutlined style={{ fontSize: 20 }} />}>
             Quản lý hồ sơ bệnh nhân
           </Menu.Item>
-          <Menu.Item
-            key="5"
-            icon={<AppstoreOutlined style={{ fontSize: 20 }} />}
-          >
+          <Menu.Item key="7" icon={<AppstoreOutlined style={{ fontSize: 20 }} />}>
             Quản lý dịch vụ
-          </Menu.Item>
-          <Menu.Item
-            key="6"
-            icon={<AppstoreOutlined style={{ fontSize: 20 }} />}
-          >
-            Thống kê tổng quan dịch vụ
-          </Menu.Item>
-          <Menu.Item key="7" icon={<BarChartOutlined style={{ fontSize: 20 }} />}>
-            Thống kê Doanh thu
           </Menu.Item>
         </Menu>
       </Sider>
