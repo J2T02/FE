@@ -23,14 +23,11 @@ const BookingPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Pre-load data khi component mount
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
       setError(null);
-
       try {
-        // Load customer info và doctors song song
         const [customerRes, doctorsRes] = await Promise.all([
           GetCustomerInfo(Cookies.get("accId")),
           GetAllDoctor(),
@@ -39,7 +36,6 @@ const BookingPage = () => {
         const customerData = customerRes?.data?.data;
         const doctorsData = doctorsRes?.data?.data || [];
 
-        // Set customer info
         if (customerData) {
           if (customerData.husName && customerData.wifeName) {
             setShowCustomerInfo(false);
@@ -47,7 +43,6 @@ const BookingPage = () => {
           setBookingData((prev) => ({ ...prev, ...customerData }));
         }
 
-        // Set doctors data
         setDoctors(doctorsData);
       } catch (error) {
         console.error("Lỗi khi khởi tạo dữ liệu:", error);
@@ -57,7 +52,6 @@ const BookingPage = () => {
         setLoading(false);
       }
     };
-
     initializeData();
   }, []);
 
@@ -67,24 +61,21 @@ const BookingPage = () => {
 
   const validateCurrentStep = useCallback(() => {
     switch (current) {
-      case 0: // Customer Info (nếu có)
+      case 0:
         if (showCustomerInfo) {
           const { wifeName, husName, wifeYob, husYob } = bookingData;
           if (!wifeName || !husName || !wifeYob || !husYob) {
-            message.warning("Vui lòng điền đầy đủ thông tin.");
+            message.warning("Vui lòng điền đủ thông tin.");
             return false;
           }
         }
         break;
-      case 1: // Doctor and Schedule Selection
+      case 1:
         if (!bookingData.date || !bookingData.slot) {
           message.warning("Vui lòng chọn đầy đủ ngày và ca khám.");
           return false;
         }
-
-        // Kiểm tra ngày trong quá khứ
-        const selectedDate = dayjs(bookingData.date);
-        if (selectedDate.isBefore(dayjs().startOf("day"))) {
+        if (dayjs(bookingData.date).isBefore(dayjs().startOf("day"))) {
           message.error("Không thể đặt lịch cho ngày trong quá khứ.");
           return false;
         }
@@ -112,11 +103,9 @@ const BookingPage = () => {
     try {
       setLoading(true);
 
-      // Kiểm tra lại ngày trước khi submit
       const selectedDate = dayjs(bookingData.date);
       if (selectedDate.isBefore(dayjs().startOf("day"))) {
         message.error("Không thể đặt lịch cho ngày trong quá khứ.");
-        setLoading(false);
         return;
       }
 
@@ -128,31 +117,28 @@ const BookingPage = () => {
       };
 
       const res = await Booking(payload);
-      console.log(res);
-      message.success("Đặt lịch thành công!");
-      setLoading(false);
       const bookingId = res.data.data.booking.bookingId;
-      console.log(res.data.data.booking.bookingId);
+      const paymentUrl = res.data.data.paymentUrl;
+
+      message.success("Đặt lịch thành công! ");
       navigate(`/bookingDetail/${bookingId}`);
-      window.open(res.data.data.paymentUrl, "_blank");
+      window.open(paymentUrl, "_blank");
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       const errorMessage = error.response?.data?.message || "Lỗi khi đặt lịch.";
-      message.error(errorMessage);
       setError(errorMessage);
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  // Tính toán steps động
   const steps = [
     ...(showCustomerInfo ? ["Thông tin bệnh nhân"] : []),
     "Chọn bác sĩ và lịch trình",
     "Xác nhận",
   ];
 
-  // Tính toán content components động
   const contentComponents = [
     showCustomerInfo && (
       <CustomerInfo
@@ -196,7 +182,9 @@ const BookingPage = () => {
             minHeight: "60vh",
           }}
         >
-          <Spin size="large" tip="Đang tải dữ liệu..." />
+          <Spin size="large" tip="Đang tải dữ liệu...">
+            <div style={{ height: 60 }}></div>
+          </Spin>
         </div>
         <Footer />
       </Layout>
