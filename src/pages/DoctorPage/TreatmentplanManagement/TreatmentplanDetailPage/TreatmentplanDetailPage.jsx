@@ -25,6 +25,7 @@ import TreatmentOverviewCard from "./components/TreatmentOverviewCard";
 import { getTreatmentDetail } from "../../../../apis/treatmentService";
 import { getTestByTreatmentPlanId } from "../../../../apis/testService";
 import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
+
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -86,7 +87,7 @@ export default function TreatmentPlanDetailPage() {
     try {
       setLoading(true);
       const response = await getTreatmentDetail(tpId);
-      console.log(response);
+
       if (response.data.success) {
         const apiData = response.data.data;
 

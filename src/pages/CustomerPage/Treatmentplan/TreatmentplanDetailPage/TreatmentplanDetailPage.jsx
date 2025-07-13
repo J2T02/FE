@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -15,7 +14,7 @@ import {
   Modal,
   Input,
   message,
-  Rate
+  Rate,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -28,8 +27,10 @@ import {
   CloseCircleTwoTone,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
-
-
+import { getTreatmentDetail } from "../../../../apis/treatmentService";
+import { getStepDetailByTreatmentPlanId } from "../../../../apis/stepDetailService";
+import { getTestByTreatmentPlanId } from "../../../../apis/testService";
+import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
@@ -92,50 +93,118 @@ export default function TreatmentPlanDetailPage() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [isDoctorInactive, setIsDoctorInactive] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-  const [feedbacks, setFeedbacks] = useState([])
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const mockTP = {
-      TP_ID: tpId,
-      StartDate: "2025-07-07",
-      EndDate: "2025-07-21",
-      Status: 2,
-      Result: "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.",
-      service: { Ser_ID: 1, Ser_Name: "Thụ tinh nhân tạo" },
-      customer: {
-        Hus_Name: "Nguyễn Văn A",
-        Wife_Name: "Trần Thị B",
-        Hus_YOB: "1990-01-01",
-        Wife_YOB: "1992-03-03",
-        acc: { fullName: "Nguyễn Văn A", mail: "nguyenvana@example.com", phone: "0912345678" },
-      },
-      doctor: {
-        docId: 301,
-        Status: 3,
-        acc: { fullName: "Lê Văn C", phone: "0901234567", mail: "levanc@example.com" },
-      },
-      stepDetails: [
-        { SD_ID: 1, Step_Name: "Khám tổng quát", PlanDate: "2025-07-08", doc: { fullName: "Nguyễn Văn X", docId: 999 } },
-        { SD_ID: 2, Step_Name: "Siêu âm tử cung", PlanDate: "2025-07-10", doc: { fullName: "Trần Thị Y", docId: 302 } },
-        { SD_ID: 3, Step_Name: "Xét nghiệm nội tiết", PlanDate: "2025-07-12", doc: { fullName: "Lê Văn C", docId: 301 } },
-      ],
-    };
-    mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
-    setTreatmentPlan(mockTP);
+    setLoading(true);
+    setError(null);
+    getTreatmentDetail(tpId)
+      .then((res) => {
+        if (res && res.data && res.data.success && res.data.data) {
+          const d = res.data.data;
+          setTreatmentPlan({
+            TP_ID: d.tpId,
+            StartDate: d.startDate,
+            EndDate: d.endDate,
+            Status: d.status?.statusId,
+            Result: d.result,
+            service: d.serviceInfo
+              ? { Ser_ID: d.serviceInfo.serId, Ser_Name: d.serviceInfo.serName }
+              : undefined,
+            customer: d.cusInfo
+              ? {
+                  Hus_Name: d.cusInfo.husName,
+                  Wife_Name: d.cusInfo.wifeName,
+                  Hus_YOB: d.cusInfo.husYob,
+                  Wife_YOB: d.cusInfo.wifeYob,
+                  acc: d.cusInfo.accInfo,
+                }
+              : undefined,
+            doctor: d.doctorInfo
+              ? {
+                  docId: d.doctorInfo.docId,
+                  Status: d.doctorInfo.doctorStatus?.statusId,
+                  acc: d.doctorInfo.accountInfo,
+                }
+              : undefined,
+            stepDetails: [], // Will be set by step detail API
+          });
+          if ([2, 3, 4].includes(d.status?.statusId)) setShowFeedbackForm(true);
+        } else {
+          setError("Không tìm thấy hồ sơ điều trị");
+        }
+      })
+      .catch(() => setError("Lỗi khi lấy dữ liệu hồ sơ điều trị"))
+      .finally(() => setLoading(false));
+  }, [tpId]);
 
-    if ([2, 3, 4].includes(mockTP.Status)) setShowFeedbackForm(true);
+  // Fetch step details for this treatment plan
+  useEffect(() => {
+    if (!tpId) return;
+    getStepDetailByTreatmentPlanId(tpId).then((res) => {
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        setTreatmentPlan((prev) =>
+          prev
+            ? {
+                ...prev,
+                stepDetails: res.data.data.map((step) => ({
+                  SD_ID: step.sdId,
+                  Step_Name: step.stepName,
+                  PlanDate: step.docSchedule?.workDate,
+                  doc: step.doctorInfo
+                    ? {
+                        fullName: step.doctorInfo.accountInfo?.fullName,
+                        docId: step.doctorInfo.docId,
+                      }
+                    : undefined,
+                })),
+              }
+            : prev
+        );
+      }
+    });
+  }, [tpId]);
 
-    const mockBiosamples = [
-      { BS_ID: 101, BS_Name: "Mẫu máu", CollectionDate: "2025-07-08", Status: 1, BQS_ID: 1, Note: "Mẫu ổn định" },
-      { BS_ID: 102, BS_Name: "Tinh trùng", CollectionDate: "2025-07-09", Status: 2, BQS_ID: 5, Note: "Cần kiểm tra thêm" },
-    ];
-    setBiosamples(mockBiosamples);
+  // Fetch tests for this treatment plan
+  useEffect(() => {
+    if (!tpId) return;
+    getTestByTreatmentPlanId(tpId).then((res) => {
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        setTests(
+          res.data.data.map((test) => ({
+            Test_ID: test.testId,
+            TestType_ID: test.testType?.id,
+            TestDate: test.testDate,
+            Status: test.status?.id,
+            Person: test.testType?.person,
+            TQS_ID: test.testQualityStatus?.id,
+            Result: test.testQualityStatus?.name,
+            TestName: test.testType?.testName,
+          }))
+        );
+      }
+    });
+  }, [tpId]);
 
-    const mockTests = [
-      { Test_ID: 201, TestType_ID: 2, TestDate: "2025-07-12", Status: 3, Person: "Vợ", TQS_ID: 1 },
-      { Test_ID: 202, TestType_ID: 3, TestDate: "2025-07-12", Status: 4, Person: "Chồng", TQS_ID: 3 },
-    ];
-    setTests(mockTests);
+  // Fetch biosamples for this treatment plan
+  useEffect(() => {
+    if (!tpId) return;
+    getBioSampleByPlanId(tpId).then((res) => {
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        setBiosamples(
+          res.data.data.map((bs) => ({
+            BS_ID: bs.bsId,
+            BS_Name: bs.bsName,
+            CollectionDate: bs.collectionDate,
+            Status: bs.bioSampleStatus?.id,
+            BQS_ID: bs.qualityStatus?.id,
+            Note: bs.note,
+          }))
+        );
+      }
+    });
   }, [tpId]);
 
   const getFeedbackTargets = () => {
@@ -149,12 +218,12 @@ export default function TreatmentPlanDetailPage() {
       doctorTargets.push({
         docId: treatmentPlan.doctor.docId,
         fullName: treatmentPlan.doctor.acc?.fullName || "Không rõ tên",
-        type: "main-doctor"
+        type: "main-doctor",
       });
     }
 
     // ✅ Bác sĩ phụ trong stepDetails (khác với bác sĩ chính)
-    treatmentPlan.stepDetails.forEach(step => {
+    treatmentPlan.stepDetails.forEach((step) => {
       const stepDoc = step.doc;
       if (
         stepDoc?.docId &&
@@ -166,151 +235,177 @@ export default function TreatmentPlanDetailPage() {
           docId: stepDoc.docId,
           fullName: stepDoc.fullName || "Không rõ tên",
           stepName: step.Step_Name,
-          type: "step-doctor"
+          type: "step-doctor",
         });
       }
     });
 
-    return [
-      { docId: null, type: "service" },
-      ...doctorTargets
-    ];
+    return [{ docId: null, type: "service" }, ...doctorTargets];
   };
 
   const renderFeedbackForm = () => {
-  const targets = getFeedbackTargets();
-  const handleSubmit = () => {
-    console.log("📨 Gửi đánh giá:", feedbacks.map(f => ({
-      TP_ID: tpId,
-      Doc_ID: f.docId,
-      Star: f.star,
-      Content: f.content,
-    })));
-    message.success("💖 Cảm ơn bạn đã gửi đánh giá!");
-    setShowFeedbackForm(false);
-  };
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <Card
-        title={<Title level={4} style={{ color: "#d4376e" }}>
-          Trung tâm luôn trân trọng mọi ý kiến đóng góp từ bạn – giúp cải thiện chất lượng điều trị từng ngày 💖
-          </Title>}
-        extra={
-          <Button
-            onClick={() => setShowFeedbackForm(false)}
-            style={{ 
-              backgroundColor: "#f78db3",
-              color: "white",
-              border: "none" 
-            }}
-          >
-            Bỏ qua đánh giá
-          </Button>
-        }
-        style={{
-          background: "rgba(255, 240, 245, 0.4)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid #ffd6e5",
-          borderRadius: 20,
-          boxShadow: "0 12px 40px rgba(247, 141, 179, 0.3)",
-          padding: 24,
-        }}
+    const targets = getFeedbackTargets();
+    const handleSubmit = () => {
+      console.log(
+        "📨 Gửi đánh giá:",
+        feedbacks.map((f) => ({
+          TP_ID: tpId,
+          Doc_ID: f.docId,
+          Star: f.star,
+          Content: f.content,
+        }))
+      );
+      message.success("💖 Cảm ơn bạn đã gửi đánh giá!");
+      setShowFeedbackForm(false);
+    };
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          {targets.map(({ docId, type, fullName, stepName }) => (
-            <motion.div
-              key={docId ?? "service"}
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <Card
-                size="small"
-                style={{
-                  background: "rgba(255,255,255,0.8)",
-                  border: "1px solid #fcd4de",
-                  borderRadius: 18,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.05)",
-                  padding: 20,
-                }}
-              >
-                <Title level={5} style={{ marginBottom: 8, color: "#d4376e" }}>
-                  {type === "service" && "🏥 Dịch vụ điều trị & Cơ sở vật chất"}
-                  {type === "main-doctor" && `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách chính)`}
-                  {type === "step-doctor" && `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách: ${stepName})`}
-                </Title>
-
-                <Rate
-                  allowHalf
-                  onChange={(value) => handleStarChange(value, docId)}
-                  style={{ fontSize: 22, color: "#ee4d2d" }}
-                />
-
-                <Input.TextArea
-                  rows={3}
-                  placeholder="Chia sẻ cảm nhận chân thực của bạn..."
-                  onChange={(e) => handleContentChange(e, docId)}
-                  style={{
-                    marginTop: 12,
-                    borderRadius: 12,
-                    border: "1px solid #ffd6e5",
-                    backgroundColor: "#fffafc",
-                    resize: "none",
-                    fontStyle: "italic",
-                  }}
-                />
-              </Card>
-            </motion.div>
-          ))}
-
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+        <Card
+          title={
+            <Title level={4} style={{ color: "#d4376e" }}>
+              Trung tâm luôn trân trọng mọi ý kiến đóng góp từ bạn – giúp cải
+              thiện chất lượng điều trị từng ngày 💖
+            </Title>
+          }
+          extra={
             <Button
-              type="primary"
-              onClick={handleSubmit}
+              onClick={() => setShowFeedbackForm(false)}
               style={{
-                alignSelf: "flex-end",
-                background: "linear-gradient(to right, #ff9eb5, #f78db3)",
+                backgroundColor: "#f78db3",
+                color: "white",
                 border: "none",
-                fontWeight: "bold",
-                padding: "12px 28px",
-                fontSize: 16,
-                borderRadius: 14,
-                boxShadow: "0 6px 18px rgba(247, 141, 179, 0.4)",
               }}
             >
-              💖 Gửi đánh giá
+              Bỏ qua đánh giá
             </Button>
-          </motion.div>
-        </Space>
-      </Card>
-    </motion.div>
-  );
-};
+          }
+          style={{
+            background: "rgba(255, 240, 245, 0.4)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid #ffd6e5",
+            borderRadius: 20,
+            boxShadow: "0 12px 40px rgba(247, 141, 179, 0.3)",
+            padding: 24,
+          }}
+        >
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            {targets.map(({ docId, type, fullName, stepName }) => (
+              <motion.div
+                key={docId ?? "service"}
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Card
+                  size="small"
+                  style={{
+                    background: "rgba(255,255,255,0.8)",
+                    border: "1px solid #fcd4de",
+                    borderRadius: 18,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.05)",
+                    padding: 20,
+                  }}
+                >
+                  <Title
+                    level={5}
+                    style={{ marginBottom: 8, color: "#d4376e" }}
+                  >
+                    {type === "service" &&
+                      "🏥 Dịch vụ điều trị & Cơ sở vật chất"}
+                    {type === "main-doctor" &&
+                      `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách chính)`}
+                    {type === "step-doctor" &&
+                      `🧑‍⚕️ BS.${fullName} (bác sĩ phụ trách: ${stepName})`}
+                  </Title>
 
+                  <Rate
+                    allowHalf
+                    onChange={(value) => handleStarChange(value, docId)}
+                    style={{ fontSize: 22, color: "#ee4d2d" }}
+                  />
+
+                  <Input.TextArea
+                    rows={3}
+                    placeholder="Chia sẻ cảm nhận chân thực của bạn..."
+                    onChange={(e) => handleContentChange(e, docId)}
+                    style={{
+                      marginTop: 12,
+                      borderRadius: 12,
+                      border: "1px solid #ffd6e5",
+                      backgroundColor: "#fffafc",
+                      resize: "none",
+                      fontStyle: "italic",
+                    }}
+                  />
+                </Card>
+              </motion.div>
+            ))}
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                style={{
+                  alignSelf: "flex-end",
+                  background: "linear-gradient(to right, #ff9eb5, #f78db3)",
+                  border: "none",
+                  fontWeight: "bold",
+                  padding: "12px 28px",
+                  fontSize: 16,
+                  borderRadius: 14,
+                  boxShadow: "0 6px 18px rgba(247, 141, 179, 0.4)",
+                }}
+              >
+                💖 Gửi đánh giá
+              </Button>
+            </motion.div>
+          </Space>
+        </Card>
+      </motion.div>
+    );
+  };
 
   const getStatusTag = (status) => {
     switch (status) {
-      case 1: return <Tag color="blue">Đang điều trị</Tag>;
-      case 2: return <Tag color="green">Thành công</Tag>;
-      case 3: return <Tag color="red">Thất bại</Tag>;
-      case 4: return <Tag color="red">Đã hủy</Tag>;
-      default: return <Tag>Không xác định</Tag>;
+      case 1:
+        return <Tag color="blue">Đang điều trị</Tag>;
+      case 2:
+        return <Tag color="green">Thành công</Tag>;
+      case 3:
+        return <Tag color="red">Thất bại</Tag>;
+      case 4:
+        return <Tag color="red">Đã hủy</Tag>;
+      default:
+        return <Tag>Không xác định</Tag>;
     }
   };
 
+  if (loading) return <div>Đang tải...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
   if (!treatmentPlan) return null;
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 24,
+          }}
+        >
           <div style={{ flex: 1 }}>
             <Button
               icon={<ArrowLeftOutlined />}
-              style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
+              style={{
+                backgroundColor: "#f78db3",
+                color: "white",
+                border: "none",
+              }}
               onClick={() => navigate(-1)}
             >
               Quay lại
@@ -327,184 +422,191 @@ export default function TreatmentPlanDetailPage() {
         </div>
         {showFeedbackForm ? (
           renderFeedbackForm()
-        ):(
-
+        ) : (
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <Card title={<Text strong>Tổng quan hồ sơ bệnh án</Text>} bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
-            <Row gutter={[12, 8]}>
-              <Col span={8}><Text strong>Ngày bắt đầu:</Text><br /><Text>{treatmentPlan.StartDate}</Text></Col>
-              {treatmentPlan.EndDate && (
-                <Col span={8}><Text strong>Ngày kết thúc:</Text><br /><Text>{treatmentPlan.EndDate}</Text></Col>
-              )}
-              <Col span={8}><Text strong>Trạng thái:</Text><br />{getStatusTag(treatmentPlan.Status)}</Col>
-              <Col span={12}><Text strong>Dịch vụ điều trị:</Text><br /><Text>{treatmentPlan.service?.Ser_Name}</Text></Col>
-              <Col span={12}><Text strong>Ghi chú:</Text><br /><Text>{treatmentPlan.Result}</Text></Col>
-            </Row>
-          </Card>
-
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={12}>
-              <Card 
-                title={<Text strong style={{ fontSize: '14px' }}><UserOutlined /> Thông tin khách hàng</Text>} 
-                bodyStyle={{ 
-                  backgroundColor: "#fde7ef", 
-                  padding: 12,
-                  height: '120px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }} 
-                size="small"
-              >
-                <Row gutter={[8, 4]}>
-                  <Col span={12}>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>Chồng:</Text>{' '}
-                    <Text style={{ fontSize: '13px' }}>{treatmentPlan.customer?.Hus_Name}</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: '11px' }}>({treatmentPlan.customer?.Hus_YOB})</Text>
-                  </Col>
-                  <Col span={12}>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>Vợ:</Text>{' '}
-                    <Text style={{ fontSize: '13px' }}>{treatmentPlan.customer?.Wife_Name}</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: '11px' }}>({treatmentPlan.customer?.Wife_YOB})</Text>
-                  </Col>
-                </Row>
-                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
-                  <UserOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.fullName}<br />
-                  <MailOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.mail}<br />
-                  <PhoneOutlined style={{ marginRight: 4 }} />{treatmentPlan.customer?.acc?.phone}
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} md={12}>
-              <Card
-                title={<Text strong style={{ fontSize: '14px' }}>Bác sĩ phụ trách</Text>}
-                extra={
-                  <Button
-                    shape="circle"
-                    icon={<InfoCircleOutlined />}
-                    size="small"
-                    style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-                    onClick={() => navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)}
-                  />
-                }
-                bodyStyle={{ 
-                  backgroundColor: "#fce6ec", 
-                  padding: 12,
-                  height: '120px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center'
-                }}
-                size="small"
-              >
-                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
-                  <Text strong style={{ fontSize: '13px' }}>{treatmentPlan.doctor?.acc?.fullName}</Text><br />
-                  <MailOutlined style={{ marginRight: 4 }} />{treatmentPlan.doctor?.acc?.mail}<br />
-                  <PhoneOutlined style={{ marginRight: 4 }} />{treatmentPlan.doctor?.acc?.phone}
-                </div>
-              </Card>
-            </Col>
-          </Row>
-
-          <Card
-            title={
-              <Space>
-                <Text strong>Quá trình điều trị</Text>
-                <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/treatmentstep/${tpId}`)}>Xem đầy đủ</Link>
-              </Space>
-            }
-            bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
-            size="small"
-          >
-            <div style={{ maxHeight: 200, overflowY: "auto" }}>
-              <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                {treatmentPlan.stepDetails.map((step) => (
-                  <Card key={step.SD_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                    <Row justify="space-between" align="middle">
-                      <Col flex="auto">
-                        <Text strong style={{ fontSize: '14px' }}>{step.Step_Name}</Text><br />
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Ngày: {step.PlanDate} | BS: {step.doc?.fullName}</Text>
-                      </Col>
-                      <Col>
-                        <Link onClick={() => navigate(`/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Xem chi tiết</Link>
-                      </Col>
-                    </Row>
-                  </Card>
-                ))}
-              </Space>
-            </div>
-          </Card>
-
-          {Array.isArray(tests) && tests.length > 0 && (
             <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách xét nghiệm</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testlist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
-              size="small"
-            >
-              <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  {tests.map((test) => (
-                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                      <Row justify="space-between" align="middle">
-                        <Col flex="auto">
-                          <Text strong style={{ fontSize: '14px' }}>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}</Text><br />
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {test.TestDate} | {test.Person} | {TEST_STATUS[test.Status]} | {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
-                          </Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3", fontSize: '12px' }}
-                            onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
-          {Array.isArray(biosamples) && biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosamplelist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
+              title={<Text strong>Tổng quan hồ sơ bệnh án</Text>}
               bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
               size="small"
             >
-              <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+              <Row gutter={[12, 8]}>
+                <Col span={8}>
+                  <Text strong>Ngày bắt đầu:</Text>
+                  <br />
+                  <Text>{treatmentPlan.StartDate}</Text>
+                </Col>
+                {treatmentPlan.EndDate && (
+                  <Col span={8}>
+                    <Text strong>Ngày kết thúc:</Text>
+                    <br />
+                    <Text>{treatmentPlan.EndDate}</Text>
+                  </Col>
+                )}
+                <Col span={8}>
+                  <Text strong>Trạng thái:</Text>
+                  <br />
+                  {getStatusTag(treatmentPlan.Status)}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Dịch vụ điều trị:</Text>
+                  <br />
+                  <Text>{treatmentPlan.service?.Ser_Name}</Text>
+                </Col>
+                <Col span={12}>
+                  <Text strong>Ghi chú:</Text>
+                  <br />
+                  <Text>{treatmentPlan.Result}</Text>
+                </Col>
+              </Row>
+            </Card>
+
+            <Row gutter={[16, 16]}>
+              <Col xs={24} md={12}>
+                <Card
+                  title={
+                    <Text strong style={{ fontSize: "14px" }}>
+                      <UserOutlined /> Thông tin khách hàng
+                    </Text>
+                  }
+                  bodyStyle={{
+                    backgroundColor: "#fde7ef",
+                    padding: 12,
+                    height: "120px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                  size="small"
+                >
+                  <Row gutter={[8, 4]}>
+                    <Col span={12}>
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        Chồng:
+                      </Text>{" "}
+                      <Text style={{ fontSize: "13px" }}>
+                        {treatmentPlan.customer?.Hus_Name}
+                      </Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: "11px" }}>
+                        ({treatmentPlan.customer?.Hus_YOB})
+                      </Text>
+                    </Col>
+                    <Col span={12}>
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        Vợ:
+                      </Text>{" "}
+                      <Text style={{ fontSize: "13px" }}>
+                        {treatmentPlan.customer?.Wife_Name}
+                      </Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: "11px" }}>
+                        ({treatmentPlan.customer?.Wife_YOB})
+                      </Text>
+                    </Col>
+                  </Row>
+                  <div style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                    <UserOutlined style={{ marginRight: 4 }} />
+                    {treatmentPlan.customer?.acc?.fullName}
+                    <br />
+                    <MailOutlined style={{ marginRight: 4 }} />
+                    {treatmentPlan.customer?.acc?.mail}
+                    <br />
+                    <PhoneOutlined style={{ marginRight: 4 }} />
+                    {treatmentPlan.customer?.acc?.phone}
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} md={12}>
+                <Card
+                  title={
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Bác sĩ phụ trách
+                    </Text>
+                  }
+                  extra={
+                    <Button
+                      shape="circle"
+                      icon={<InfoCircleOutlined />}
+                      size="small"
+                      style={{
+                        backgroundColor: "#f78db3",
+                        color: "white",
+                        border: "none",
+                      }}
+                      onClick={() =>
+                        navigate(`/doctordetail/${treatmentPlan.doctor?.docId}`)
+                      }
+                    />
+                  }
+                  bodyStyle={{
+                    backgroundColor: "#fce6ec",
+                    padding: 12,
+                    height: "120px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                  size="small"
+                >
+                  <div style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                    <Text strong style={{ fontSize: "13px" }}>
+                      {treatmentPlan.doctor?.acc?.fullName}
+                    </Text>
+                    <br />
+                    <MailOutlined style={{ marginRight: 4 }} />
+                    {treatmentPlan.doctor?.acc?.mail}
+                    <br />
+                    <PhoneOutlined style={{ marginRight: 4 }} />
+                    {treatmentPlan.doctor?.acc?.phone}
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <Card
+              title={
+                <Space>
+                  <Text strong>Quá trình điều trị</Text>
+                  <Link
+                    style={{ color: "#f78db3" }}
+                    onClick={() => navigate(`/treatmentstep/${tpId}`)}
+                  >
+                    Xem đầy đủ
+                  </Link>
+                </Space>
+              }
+              bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
+              size="small"
+            >
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                <Space
+                  direction="vertical"
+                  size="small"
+                  style={{ width: "100%" }}
+                >
+                  {treatmentPlan.stepDetails.map((step) => (
+                    <Card
+                      key={step.SD_ID}
+                      type="inner"
+                      style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
+                      size="small"
+                    >
                       <Row justify="space-between" align="middle">
                         <Col flex="auto">
-                          <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                          <Text strong style={{ fontSize: "14px" }}>
+                            {step.Step_Name}
+                          </Text>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: "12px" }}>
+                            Ngày: {step.PlanDate} | BS: {step.doc?.fullName}
                           </Text>
                         </Col>
                         <Col>
                           <Link
-                            style={{ color: "#f78db3", fontSize: '12px' }}
-                            onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}
+                            onClick={() =>
+                              navigate(`/stepdetail/${step.SD_ID}`)
+                            }
+                            style={{ color: "#f78db3", fontSize: "12px" }}
                           >
                             Xem chi tiết
                           </Link>
@@ -515,8 +617,125 @@ export default function TreatmentPlanDetailPage() {
                 </Space>
               </div>
             </Card>
-          )}
-        </Space>
+
+            {Array.isArray(tests) && tests.length > 0 && (
+              <Card
+                title={
+                  <Space>
+                    <Text strong>Danh sách xét nghiệm</Text>
+                    <Link
+                      style={{ color: "#f78db3" }}
+                      onClick={() => navigate(`/testlist/${tpId}`)}
+                    >
+                      Xem đầy đủ
+                    </Link>
+                  </Space>
+                }
+                bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
+                size="small"
+              >
+                <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
+                    {tests.map((test) => (
+                      <Card
+                        key={test.Test_ID}
+                        type="inner"
+                        style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
+                        size="small"
+                      >
+                        <Row justify="space-between" align="middle">
+                          <Col flex="auto">
+                            <Text strong style={{ fontSize: "14px" }}>
+                              {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
+                            </Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: "12px" }}>
+                              {test.TestDate} | {test.Person} |{" "}
+                              {TEST_STATUS[test.Status]} |{" "}
+                              {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                            </Text>
+                          </Col>
+                          <Col>
+                            <Link
+                              style={{ color: "#f78db3", fontSize: "12px" }}
+                              onClick={() =>
+                                navigate(`/testdetail/${test.Test_ID}`)
+                              }
+                            >
+                              Xem chi tiết
+                            </Link>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))}
+                  </Space>
+                </div>
+              </Card>
+            )}
+
+            {Array.isArray(biosamples) && biosamples.length > 0 && (
+              <Card
+                title={
+                  <Space>
+                    <Text strong>Danh sách mẫu sinh học</Text>
+                    <Link
+                      style={{ color: "#f78db3" }}
+                      onClick={() => navigate(`/biosamplelist/${tpId}`)}
+                    >
+                      Xem đầy đủ
+                    </Link>
+                  </Space>
+                }
+                bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+                size="small"
+              >
+                <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
+                    {biosamples.map((bs) => (
+                      <Card
+                        key={bs.BS_ID}
+                        type="inner"
+                        style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
+                        size="small"
+                      >
+                        <Row justify="space-between" align="middle">
+                          <Col flex="auto">
+                            <Text strong style={{ fontSize: "14px" }}>
+                              {bs.BS_Name}
+                            </Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: "12px" }}>
+                              {bs.CollectionDate} |{" "}
+                              {BIO_SAMPLE_STATUS[bs.Status]} |{" "}
+                              {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                            </Text>
+                          </Col>
+                          <Col>
+                            <Link
+                              style={{ color: "#f78db3", fontSize: "12px" }}
+                              onClick={() =>
+                                navigate(`/biosampledetail/${bs.BS_ID}`)
+                              }
+                            >
+                              Xem chi tiết
+                            </Link>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))}
+                  </Space>
+                </div>
+              </Card>
+            )}
+          </Space>
         )}
       </Content>
     </Layout>

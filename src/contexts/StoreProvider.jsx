@@ -3,16 +3,19 @@ import { getInfo } from "../apis/authService";
 import Cookies from "js-cookie";
 
 import { message } from "antd";
+import { GetCustomerInfo } from "../apis/bookingService";
 export const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [accId, setAccId] = useState(Cookies.get("accId"));
+  const [customerInfo, setCustomerInfo] = useState(null);
 
   const handleLogout = () => {
     Cookies.remove("token");
     Cookies.remove("accId");
     setUserInfo(null);
+    setCustomerInfo(null);
     window.location.reload();
   };
   useEffect(() => {
@@ -24,6 +27,18 @@ export const StoreProvider = ({ children }) => {
         .catch((err) => {
           message.error(err);
         });
+      // Fetch customer info
+      GetCustomerInfo(accId)
+        .then((res) => {
+          if (res.data.success) {
+            setCustomerInfo(res.data.data);
+          } else {
+            setCustomerInfo(null);
+          }
+        })
+        .catch((err) => {
+          setCustomerInfo(null);
+        });
     }
   }, [accId]);
   return (
@@ -33,6 +48,8 @@ export const StoreProvider = ({ children }) => {
         setUserInfo,
         setAccId,
         handleLogout,
+        customerInfo,
+        setCustomerInfo,
       }}
     >
       {children}

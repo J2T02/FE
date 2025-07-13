@@ -11,6 +11,11 @@ const getTreatmentListForDoctor = async (doctorId) => {
     `/TreamentPlan/GetTreatmentPlanByDoctorId/${doctorId}`
   );
 };
+const getTreatmentListForCustomer = async (customerId) => {
+  return await axiosClients.get(
+    `/TreamentPlan/GetTreatmentPlanByCustomerId/${customerId}`
+  );
+};
 const getTreatmentDetail = async (id) => {
   return await axiosClients.get(`/TreamentPlan/GetTreatmentPlanById/${id}`);
 };
@@ -24,7 +29,10 @@ const createTreatmentForGuest = async (data) => {
   );
 };
 const updateTreatment = async (id, data) => {
-  return await axiosClients.put(`/Treatment/UpdateTreatment/${id}`, data);
+  return await axiosClients.put(
+    `/TreamentPlan/UpdateTreatmentPlan/${id}`,
+    data
+  );
 };
 const deleteTreatment = async (id) => {
   return await axiosClients.delete(`/Treatment/DeleteTreatment/${id}`);
@@ -33,6 +41,7 @@ const deleteTreatment = async (id) => {
 export {
   getTreatmentStepList,
   getTreatmentList,
+  getTreatmentListForCustomer,
   getTreatmentDetail,
   getTreatmentListForDoctor,
   createTreatment,

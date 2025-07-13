@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Row,
@@ -11,7 +11,8 @@ import {
   message,
 } from "antd";
 import dayjs from "dayjs";
-
+import { GetAllService } from "../../../../../apis/service";
+import { updateTreatment } from "../../../../../apis/treatmentService";
 const { Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -29,45 +30,63 @@ const getStatusTag = (status) => {
   }
 };
 
-const SERVICE_OPTIONS = {
-  1: "Khám tổng quan",
-  2: "IVF",
-  3: "IUI",
-};
-
 export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
+  const tpId = treatmentPlan.TP_ID;
+
   const [status, setStatus] = useState(treatmentPlan.Status);
   const [service, setService] = useState(treatmentPlan.service?.Ser_ID);
   const [note, setNote] = useState(treatmentPlan.Result || "");
   const [endDate, setEndDate] = useState(treatmentPlan.EndDate || null);
   const [isEditable, setIsEditable] = useState(true);
+  const [serviceOptions, setServiceOptions] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const [serviceError, setServiceError] = useState(null);
+  const [saveLoading, setSaveLoading] = useState(false);
 
-  const handleSave = () => {
-    const updated = {
-      ...treatmentPlan,
-      Status: status,
-      service: {
-        ...treatmentPlan.service,
-        Ser_ID: service,
-      },
-      Result: note,
-      EndDate:
-        status === 2 || status === 3 ? dayjs().format("YYYY-MM-DD") : null,
+  useEffect(() => {
+    const fetchServices = async () => {
+      setLoadingServices(true);
+      setServiceError(null);
+      try {
+        const res = await GetAllService();
+
+        if (res && res.data.success && Array.isArray(res.data.data)) {
+          setServiceOptions(res.data.data);
+        } else {
+          setServiceOptions([]);
+          setServiceError("Không lấy được danh sách dịch vụ");
+        }
+      } catch (err) {
+        setServiceOptions([]);
+        setServiceError("Lỗi khi lấy danh sách dịch vụ");
+      } finally {
+        setLoadingServices(false);
+      }
     };
+    fetchServices();
+  }, []);
 
-    if (updated.EndDate) {
-      setEndDate(updated.EndDate);
+  const handleSave = async () => {
+    setSaveLoading(true);
+    try {
+      const payload = {
+        serId: service,
+        status: status,
+        result: note,
+      };
+      await updateTreatment(tpId, payload);
+      message.success("Cập nhật thành công");
+      // Optionally update endDate if status is 2 or 3
+      if (status === 2 || status === 3) {
+        setEndDate(dayjs().format("YYYY-MM-DD"));
+        setIsEditable(false);
+      }
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      message.error("Cập nhật thất bại");
+    } finally {
+      setSaveLoading(false);
     }
-
-    message.success("Cập nhật thành công (giả lập)");
-    console.log("📋 Dữ liệu cập nhật:", updated);
-
-    // Sau khi cập nhật là hoàn thành hoặc hủy → không cho chỉnh nữa
-    if (status === 2 || status === 3) {
-      setIsEditable(false);
-    }
-
-    if (onUpdate) onUpdate();
   };
 
   return (
@@ -83,6 +102,7 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
               color: "#fff",
               border: "none",
             }}
+            loading={saveLoading}
           >
             Lưu cập nhật
           </Button>
@@ -149,20 +169,24 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
               value={service}
               onChange={setService}
               style={{ width: "100%" }}
+              loading={loadingServices}
+              placeholder={loadingServices ? "Đang tải..." : "Chọn dịch vụ"}
+              disabled={loadingServices || !!serviceError}
             >
-              {Object.entries(SERVICE_OPTIONS).map(([id, name]) => (
-                <Option key={id} value={parseInt(id)}>
-                  {name}
+              {serviceOptions.map((s) => (
+                <Option key={s.serId} value={s.serId}>
+                  {s.serName}
                 </Option>
               ))}
             </Select>
           ) : (
             <Text>
               {treatmentPlan.service?.Ser_Name ||
-                SERVICE_OPTIONS[service] ||
+                serviceOptions.find((s) => s.serId === service)?.serName ||
                 "Không xác định"}
             </Text>
           )}
+          {serviceError && <div style={{ color: "red" }}>{serviceError}</div>}
         </Col>
       </Row>
     </Card>

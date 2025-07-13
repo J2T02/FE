@@ -19,7 +19,7 @@ const TreatmentProcessCard = ({ tpId, doctorId, serviceId, onRefresh }) => {
 
       if (response.data.success) {
         const apiData = response.data.data;
-        console.log(apiData);
+
         // Map API data to match existing UI structure
         const mappedStepDetails = apiData.map((step) => ({
           SD_ID: step.sdId,

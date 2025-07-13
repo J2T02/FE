@@ -1,17 +1,9 @@
 // ... giữ nguyên import ban đầu
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Layout,
-  Typography,
-  Card,
-  Row,
-  Col,
-  Button,
-  Tag,
-  Divider,
-} from "antd";
+import { Layout, Typography, Card, Row, Col, Button, Tag, Divider } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import { getBioSamplesBySampleId } from "../../../../apis/bioSampleService";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -47,20 +39,22 @@ export default function BiosampleDetailPage() {
   const [biosample, setBiosample] = useState(null);
 
   useEffect(() => {
-    // 🧪 Mock dữ liệu mẫu sinh học
-    const mockBiosample = {
-      BS_ID: parseInt(id),
-      TP_ID: 1,
-      BT_ID: 1,
-      BS_Name: "Phôi AB",
-      Status: 2,
-      CollectionDate: "2025-07-09",
-      StorageLocation: "Tủ số 2 - Ngăn A3",
-      BQS_ID: 5,
-      Note: "Mẫu đạt chất lượng tốt, có thể sử dụng trong lần chuyển phôi tiếp theo.",
-    };
-
-    setBiosample(mockBiosample);
+    getBioSamplesBySampleId(id).then((res) => {
+      if (res && res.data && res.data.success && res.data.data) {
+        const d = res.data.data;
+        setBiosample({
+          BS_ID: d.bsId,
+          TP_ID: d.treatmentPlanInfo?.tpId,
+          BT_ID: d.bioType?.id,
+          BS_Name: d.bsName,
+          Status: d.bioSampleStatus?.id,
+          CollectionDate: d.collectionDate,
+          StorageLocation: d.storageLocation,
+          BQS_ID: d.qualityStatus?.id,
+          Note: d.note,
+        });
+      }
+    });
   }, [id]);
 
   if (!biosample) return null;

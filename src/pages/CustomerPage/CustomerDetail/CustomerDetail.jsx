@@ -21,7 +21,8 @@ import Footer from "~components/footer/Footer";
 import dayjs from "dayjs";
 import axios from "axios";
 import { updateCustomer } from "../../../apis/CustomerService";
-import { GetCustomerInfo, BookingHistory } from "../../../apis/bookingService";
+import { BookingHistory } from "../../../apis/bookingService";
+import { getTreatmentListForCustomer } from "../../../apis/treatmentService";
 import Cookies from "js-cookie";
 import { StoreContext } from "../../../contexts/StoreProvider";
 
@@ -29,11 +30,10 @@ const { Title, Text } = Typography;
 
 const CustomerDetail = () => {
   const accountId = Cookies.get("accId");
-  const { userInfo } = useContext(StoreContext);
+  const { userInfo, customerInfo, setCustomerInfo } = useContext(StoreContext);
+  console.log(customerInfo);
   const { token } = theme.useToken();
   const account = userInfo;
-
-  const [customer, setCustomer] = useState({});
 
   const [isEditing, setIsEditing] = useState(false);
   const [editCustomer, setEditCustomer] = useState({});
@@ -71,68 +71,27 @@ const CustomerDetail = () => {
       },
     },
   ]);
-  const [treatmentPlans, setTreatmentPlans] = useState([
-    {
-      tpId: 5001,
-      startDate: "2025-04-01",
-      endDate: null,
-      result: null,
-      status: "Đang thực hiện",
-      serviceInfo: {
-        serId: 3,
-        serName: "Thụ tinh trong ống nghiệm (IVF)",
-        price: 25000000,
-        description: "Quy trình IVF cơ bản",
-        file_Path: "",
-      },
-      latestStep: {
-        step_Name: "Chọc hút trứng",
-      },
-    },
-    {
-      tpId: 5002,
-      startDate: "2025-01-15",
-      endDate: "2025-04-01",
-      result: "Thành công",
-      status: "Đã hoàn thành",
-      serviceInfo: {
-        serId: 2,
-        serName: "Khám hiếm muộn",
-        price: 500000,
-        description: "Khám chẩn đoán nguyên nhân hiếm muộn",
-        file_Path: "",
-      },
-      latestStep: {
-        step_Name: "Chẩn đoán sơ bộ",
-      },
-    },
-  ]);
+  const [treatmentPlans, setTreatmentPlans] = useState([]);
+  const [treatmentLoading, setTreatmentLoading] = useState(false);
+  const [treatmentError, setTreatmentError] = useState(null);
 
   useEffect(() => {
-    fetchProfile();
-    fetchBookings();
-    fetchTreatmentPlans();
-  }, [accountId]);
+    if (customerInfo && customerInfo.cusId) {
+      fetchBookings();
+      fetchTreatmentPlans();
+    }
+  }, [customerInfo]);
 
-  const fetchProfile = async () => {
-    await GetCustomerInfo(accountId)
-      .then((res) => {
-        if (res.data.success) {
-          setCustomer(res.data.data);
-
-          setEditCustomer(res.data.data);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("không tìm thấy thông tin khách hàng!");
-      });
-  };
+  useEffect(() => {
+    if (customerInfo) {
+      setEditCustomer(customerInfo);
+    }
+  }, [customerInfo]);
 
   const fetchBookings = async () => {
-    await BookingHistory(accountId)
+    await BookingHistory(customerInfo.cusId)
       .then((res) => {
-        console.log(res);
+        setBookings([res.data.data[0], res.data.data[1]]);
       })
       .catch((err) => {
         console.log(err);
@@ -141,12 +100,42 @@ const CustomerDetail = () => {
   };
 
   const fetchTreatmentPlans = async () => {
-    // const res = await axios.get(`/api/treatmentplans/recent/${accountId}`);
-    // setTreatmentPlans(res.data);
+    setTreatmentLoading(true);
+    setTreatmentError(null);
+    try {
+      const res = await getTreatmentListForCustomer(customerInfo.cusId);
+      console.log(res);
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        // Map API data to UI format
+        const mapped = res.data.data.map((item) => ({
+          tpId: item.tpId,
+          startDate: item.startDate,
+          endDate: item.endDate,
+          result: item.result || null,
+          status: item.status?.statusName || "Không xác định",
+          serviceInfo: item.serviceInfo,
+          latestStep:
+            item.stepDetails && item.stepDetails.length > 0
+              ? {
+                  step_Name:
+                    item.stepDetails[item.stepDetails.length - 1].stepName,
+                }
+              : { step_Name: "Chưa có" },
+        }));
+        setTreatmentPlans(mapped);
+      } else {
+        setTreatmentPlans([]);
+        setTreatmentError("Không lấy được hồ sơ điều trị");
+      }
+    } catch (err) {
+      setTreatmentPlans([]);
+      setTreatmentError("Lỗi khi lấy hồ sơ điều trị");
+    } finally {
+      setTreatmentLoading(false);
+    }
   };
 
   const handleSave = async () => {
-    console.log(editCustomer);
     const { husName, wifeName, husYob, wifeYob } = editCustomer;
     const payload = {
       husName,
@@ -159,7 +148,7 @@ const CustomerDetail = () => {
         .then((res) => {
           if (res.data.success) {
             message.success(res.data.message);
-            fetchProfile();
+            setCustomerInfo(res.data.data); // Update customerInfo in context
             setIsEditing(false);
           } else {
             message.error(res.data.message);
@@ -184,7 +173,7 @@ const CustomerDetail = () => {
     // fetchProfile();
   };
 
-  if (!account && !customer) return <div>Đang tải...</div>;
+  if (!account && !customerInfo) return <div>Đang tải...</div>;
 
   return (
     <Layout>
@@ -254,8 +243,8 @@ const CustomerDetail = () => {
                   setEditCustomer({ ...editCustomer, husName: e.target.value })
                 }
               />
-            ) : customer.husName ? (
-              customer.husName
+            ) : customerInfo?.husName ? (
+              customerInfo.husName
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -270,8 +259,8 @@ const CustomerDetail = () => {
                   setEditCustomer({ ...editCustomer, husYob: date })
                 }
               />
-            ) : customer.husYob ? (
-              dayjs(customer.husYob).format("DD/MM/YYYY")
+            ) : customerInfo?.husYob ? (
+              dayjs(customerInfo.husYob).format("DD/MM/YYYY")
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -290,8 +279,8 @@ const CustomerDetail = () => {
                   })
                 }
               />
-            ) : customer.wifeName ? (
-              customer.wifeName
+            ) : customerInfo?.wifeName ? (
+              customerInfo.wifeName
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -308,8 +297,8 @@ const CustomerDetail = () => {
                   setEditCustomer({ ...editCustomer, wifeYob: date })
                 }
               />
-            ) : customer.wifeYob ? (
-              dayjs(customer.wifeYob).format("DD/MM/YYYY")
+            ) : customerInfo?.wifeYob ? (
+              dayjs(customerInfo.wifeYob).format("DD/MM/YYYY")
             ) : (
               <Text type="secondary">Bạn chưa cập nhật thông tin của bạn</Text>
             )}
@@ -349,7 +338,7 @@ const CustomerDetail = () => {
                 {
                   title: "Khung giờ",
                   dataIndex: ["doctorSchedule", "slot"],
-                  render: (slot) => `${slot.slot_Start} - ${slot.slot_End}`,
+                  render: (slot) => `${slot?.slot_Start || "8:00"}`,
                 },
                 {
                   title: "Trạng thái",
@@ -360,10 +349,7 @@ const CustomerDetail = () => {
                   title: "",
                   dataIndex: "bookingId",
                   render: (id) => (
-                    <Button
-                      type="link"
-                      href={`/customer/${accountId}/bookings/${id}`}
-                    >
+                    <Button type="link" href={`bookingDetail/${id}`}>
                       Xem chi tiết
                     </Button>
                   ),
@@ -374,7 +360,7 @@ const CustomerDetail = () => {
               pagination={false}
             />
             <div style={{ marginTop: 8, textAlign: "center" }}>
-              <Button type="link" href={`/customer/${accountId}/bookings`}>
+              <Button type="link" href={`/customer/booking`}>
                 Xem thêm
               </Button>
             </div>
@@ -400,10 +386,7 @@ const CustomerDetail = () => {
                   title: "",
                   dataIndex: "tpId",
                   render: (id) => (
-                    <Button
-                      type="link"
-                      href={`/customer/${accountId}/treatments/${id}`}
-                    >
+                    <Button type="link" href={`/treatmentplandetail/${id}`}>
                       Xem chi tiết
                     </Button>
                   ),
@@ -412,9 +395,13 @@ const CustomerDetail = () => {
               dataSource={treatmentPlans}
               rowKey="tpId"
               pagination={false}
+              loading={treatmentLoading}
             />
+            {treatmentError && (
+              <div style={{ color: "red", marginTop: 8 }}>{treatmentError}</div>
+            )}
             <div style={{ marginTop: 8, textAlign: "center" }}>
-              <Button type="link" href={`/customer/${accountId}/treatments`}>
+              <Button type="link" href={`/treatmentplandetail/`}>
                 Xem thêm
               </Button>
             </div>

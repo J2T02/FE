@@ -47,6 +47,14 @@ const routers = [
     ),
   },
   {
+    path: "/customerTreatmentplanDetailPage/:id",
+    component: lazy(() =>
+      import(
+        "~pages/CustomerPage/Treatmentplan/TreatmentplanDetailPage/TreatmentplanDetailPage"
+      )
+    ),
+  },
+  {
     path: "/treatmentplandetail/:id",
     component: lazy(() =>
       import(
