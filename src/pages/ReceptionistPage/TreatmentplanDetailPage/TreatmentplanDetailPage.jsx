@@ -26,7 +26,12 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { getTreatmentDetail } from "../../../apis/treatmentService";
+import {
+  getTreatmentDetail,
+  getTreatmentStepList,
+} from "../../../apis/treatmentService";
+import { getDoctorScheduleByDoctorId } from "../../../apis/doctorService";
+import { createStepDetail } from "../../../apis/stepDetailService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -86,6 +91,8 @@ export default function TreatmentPlanDetailPage() {
   const [tests, setTests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
+  const [stepTypes, setStepTypes] = useState([]);
+  const [doctorSchedule, setDoctorSchedule] = useState([]);
 
   useEffect(() => {
     const fetchTreatmentPlan = async () => {
@@ -138,6 +145,7 @@ export default function TreatmentPlanDetailPage() {
               : [],
           };
           setTreatmentPlan(mappedTP);
+          console.log(treatmentPlan);
         } else {
           setTreatmentPlan(null);
         }
@@ -148,6 +156,64 @@ export default function TreatmentPlanDetailPage() {
     fetchTreatmentPlan();
   }, [tpId]);
 
+  useEffect(() => {
+    const fetchStepTypes = async () => {
+      try {
+        const res = await getTreatmentStepList();
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          setStepTypes(res.data.data);
+        }
+      } catch (err) {
+        setStepTypes([]);
+      }
+    };
+    fetchStepTypes();
+  }, []);
+
+  useEffect(() => {
+    if (!treatmentPlan?.doctor?.docId) return;
+    const fetchDoctorSchedule = async () => {
+      try {
+        const res = await getDoctorScheduleByDoctorId(
+          treatmentPlan.doctor.docId
+        );
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          setDoctorSchedule(res.data.data);
+        }
+      } catch (err) {
+        setDoctorSchedule([]);
+      }
+    };
+    fetchDoctorSchedule();
+  }, [treatmentPlan?.doctor?.docId]);
+
+  const availableDates = doctorSchedule.map((item) => item.workDate);
+  const disabledDate = (current) => {
+    return !availableDates.includes(current.format("YYYY-MM-DD"));
+  };
+  const handleDateChange = (date) => {
+    const selected = doctorSchedule.find(
+      (item) => item.workDate === date.format("YYYY-MM-DD")
+    );
+    if (selected) {
+      form.setFieldsValue({ dsId: selected.dsId });
+    } else {
+      form.setFieldsValue({ dsId: undefined });
+    }
+  };
+  const createStep = async (newStep) => {
+    await createStepDetail(newStep)
+      .then((res) => {
+        if (res.data.success) {
+          message.success("Tạo bước điều trị thành công!");
+          setIsModalOpen(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Tạo bước điều trị thất bại!");
+      });
+  };
   const getStatusTag = (status) => {
     switch (status) {
       case 1:
@@ -372,18 +438,23 @@ export default function TreatmentPlanDetailPage() {
             title="Tạo bước điều trị đầu tiên"
             open={isModalOpen}
             onCancel={() => setIsModalOpen(false)}
+            cancelButtonProps={{
+              style: { color: "#f78db3", borderColor: "#f78db3" },
+            }}
             onOk={() => {
               form.validateFields().then((values) => {
                 const newStep = {
-                  ...values,
-                  TP_ID: tpId,
-                  Doc_ID: treatmentPlan.doctor?.docId,
-                  Status: 1,
-                  PlanDate: values.PlanDate.format("YYYY-MM-DD"),
+                  tpId,
+                  tsId: values.TS_ID,
+                  docId: treatmentPlan.doctor?.docId,
+                  stepName: values.Step_Name,
+                  note: "",
+                  dsId: values.dsId,
+                  drugName: "",
+                  dosage: "",
                 };
                 console.log("📥 Step mới:", newStep);
-                message.success("Tạo bước điều trị thành công!");
-                setIsModalOpen(false);
+                createStep(newStep);
               });
             }}
             okText="Xác nhận"
@@ -392,11 +463,11 @@ export default function TreatmentPlanDetailPage() {
             <Form
               form={form}
               layout="vertical"
-              initialValues={{
-                Step_Name: "Khám tư vấn buổi 1",
-                TS_ID: 1,
-                PlanDate: dayjs(),
-              }}
+              // initialValues={{
+              //   Step_Name: "Khám tư vấn buổi 1",
+              //   TS_ID: 1,
+              //   PlanDate: dayjs(),
+              // }}
             >
               <Form.Item
                 name="Step_Name"
@@ -410,10 +481,18 @@ export default function TreatmentPlanDetailPage() {
                 label="Loại bước điều trị"
                 rules={[{ required: true }]}
               >
-                <Select>
-                  <Select.Option value={1}>Khám tư vấn</Select.Option>
-                  <Select.Option value={2}>Siêu âm</Select.Option>
-                  <Select.Option value={3}>Xét nghiệm</Select.Option>
+                <Select
+                  placeholder="Chọn loại bước điều trị"
+                  loading={stepTypes.length === 0}
+                  showSearch
+                  optionFilterProp="children"
+                  defaultActiveFirstOption={1}
+                >
+                  {stepTypes.map((type) => (
+                    <Select.Option key={type.tsId} value={type.tsId}>
+                      {type.stepName}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
               <Form.Item
@@ -421,7 +500,14 @@ export default function TreatmentPlanDetailPage() {
                 label="Ngày hẹn"
                 rules={[{ required: true }]}
               >
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker
+                  style={{ width: "100%" }}
+                  disabledDate={disabledDate}
+                  onChange={handleDateChange}
+                />
+              </Form.Item>
+              <Form.Item name="dsId" style={{ display: "none" }}>
+                <Input />
               </Form.Item>
             </Form>
           </Modal>

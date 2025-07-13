@@ -1,5 +1,8 @@
 import axiosClients from "./axiosClients";
 
+const getTreatmentStepList = async () => {
+  return await axiosClients.get("/TreamentPlan/GetAllTreatmentStep");
+};
 const getTreatmentList = async () => {
   return await axiosClients.get("/TreamentPlan/GetAllTreatmentPlans");
 };
@@ -28,6 +31,7 @@ const deleteTreatment = async (id) => {
 };
 
 export {
+  getTreatmentStepList,
   getTreatmentList,
   getTreatmentDetail,
   getTreatmentListForDoctor,

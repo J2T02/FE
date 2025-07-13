@@ -19,18 +19,16 @@ const TreatmentProcessCard = ({ tpId, doctorId, serviceId, onRefresh }) => {
 
       if (response.data.success) {
         const apiData = response.data.data;
-
+        console.log(apiData);
         // Map API data to match existing UI structure
         const mappedStepDetails = apiData.map((step) => ({
           SD_ID: step.sdId,
           TS_ID: step.treatmentStepInfo?.tsId,
           Step_Name: step.stepName,
-          PlanDate: step.planDate
-            ? dayjs(step.planDate).format("DD/MM/YYYY")
+          PlanDate: step.docSchedule?.workDate
+            ? dayjs(step.docSchedule.workDate).format("DD/MM/YYYY")
             : "Chưa có lịch",
-          DoneDate: step.doneDate
-            ? dayjs(step.doneDate).format("DD/MM/YYYY")
-            : null,
+          DoneDate: null, // Không có trường doneDate trong API mới
           Status: step.status?.statusId,
           StatusName: step.status?.statusName,
           Note: step.note,
@@ -45,7 +43,7 @@ const TreatmentProcessCard = ({ tpId, doctorId, serviceId, onRefresh }) => {
           treatmentStepInfo: step.treatmentStepInfo,
         }));
 
-        // Sort by plan date (newest first)
+        // Sort by plan date (newest first, ưu tiên có lịch trước)
         mappedStepDetails.sort((a, b) => {
           if (!a.PlanDate || a.PlanDate === "Chưa có lịch") return 1;
           if (!b.PlanDate || b.PlanDate === "Chưa có lịch") return -1;

@@ -25,7 +25,7 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-
+import { getStepDetailDetail } from "../../../apis/stepDetailService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
@@ -132,17 +132,49 @@ export default function StepDetailPage() {
 
         <Title level={3}>Chi tiết bước điều trị</Title>
 
-        <Card title="Thông tin bước điều trị" bodyStyle={{ backgroundColor: "#fff0f5" }}>
+        <Card
+          title="Thông tin bước điều trị"
+          bodyStyle={{ backgroundColor: "#fff0f5" }}
+        >
           <Row gutter={[16, 16]}>
-            <Col span={12}><Text strong>Tên bước:</Text><br /><Text>{stepDetail.Step_Name}</Text></Col>
-            <Col span={12}><Text strong>Giai đoạn:</Text><br /><Text>{stepDetail.treatmentStep?.Step_Name}</Text></Col>
-            <Col span={12}><Text strong>Ngày hẹn:</Text><br /><Text>{stepDetail.PlanDate}</Text></Col>
-            <Col span={12}><Text strong>Ngày thực hiện:</Text><br /><Text>{stepDetail.DoneDate}</Text></Col>
-            <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{stepDetail.Note}</Text></Col>
-            <Col span={12}><Text strong>Thuốc:</Text><br /><Text>{stepDetail.Drug_Name}</Text></Col>
-            <Col span={12}><Text strong>Liều lượng:</Text><br /><Text>{stepDetail.Dosage}</Text></Col>
             <Col span={12}>
-              <Text strong>Trạng thái:</Text><br />
+              <Text strong>Tên bước:</Text>
+              <br />
+              <Text>{stepDetail.Step_Name}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Giai đoạn:</Text>
+              <br />
+              <Text>{stepDetail.treatmentStep?.Step_Name}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Ngày hẹn:</Text>
+              <br />
+              <Text>{stepDetail.PlanDate}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Ngày thực hiện:</Text>
+              <br />
+              <Text>{stepDetail.DoneDate}</Text>
+            </Col>
+            <Col span={24}>
+              <Text strong>Ghi chú:</Text>
+              <br />
+              <Text>{stepDetail.Note}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Thuốc:</Text>
+              <br />
+              <Text>{stepDetail.Drug_Name}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Liều lượng:</Text>
+              <br />
+              <Text>{stepDetail.Dosage}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Trạng thái:</Text>
+              <br />
               <Select
                 value={stepDetail.Status}
                 onChange={handleStatusChange}
@@ -164,18 +196,29 @@ export default function StepDetailPage() {
               <Button
                 shape="circle"
                 icon={<InfoCircleOutlined />}
-                style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-                onClick={() => navigate(`/doctordetail/${stepDetail.doctor?.docId}`)}
+                style={{
+                  backgroundColor: "#f78db3",
+                  color: "white",
+                  border: "none",
+                }}
+                onClick={() =>
+                  navigate(`/doctordetail/${stepDetail.doctor?.docId}`)
+                }
               />
             </Space>
           }
           style={{ marginTop: 24 }}
           bodyStyle={{ backgroundColor: "#fdf2f8" }}
         >
-          <Text strong>Họ tên:</Text><br />
-          <Text>{stepDetail.doctor?.acc?.fullName}</Text><br />
-          <MailOutlined style={{ marginRight: 8 }} />{stepDetail.doctor?.acc?.mail}<br />
-          <PhoneOutlined style={{ marginRight: 8 }} />{stepDetail.doctor?.acc?.phone}
+          <Text strong>Họ tên:</Text>
+          <br />
+          <Text>{stepDetail.doctor?.acc?.fullName}</Text>
+          <br />
+          <MailOutlined style={{ marginRight: 8 }} />
+          {stepDetail.doctor?.acc?.mail}
+          <br />
+          <PhoneOutlined style={{ marginRight: 8 }} />
+          {stepDetail.doctor?.acc?.phone}
         </Card>
 
         {/* Danh sách xét nghiệm */}
@@ -183,7 +226,9 @@ export default function StepDetailPage() {
           <Card
             title={
               <Row justify="space-between" align="middle">
-                <Col><Text strong>Danh sách xét nghiệm liên quan</Text></Col>
+                <Col>
+                  <Text strong>Danh sách xét nghiệm liên quan</Text>
+                </Col>
                 <Col>
                   <Button
                     type="primary"
@@ -202,15 +247,29 @@ export default function StepDetailPage() {
             <div style={{ maxHeight: 200, overflowY: "auto" }}>
               <Space direction="vertical" style={{ width: "100%" }}>
                 {tests.map((test) => (
-                  <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                  <Card
+                    key={test.Test_ID}
+                    type="inner"
+                    style={{ borderLeft: "5px solid #f78db3" }}
+                  >
                     <Row justify="space-between">
                       <Col>
-                        <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                        <Text strong>Ngày trả kết quả: </Text>{test.ResultDay || "Chưa có"}<br />
-                        <Text strong>Ghi chú: </Text>{test.Note}
+                        <Text strong>Ngày xét nghiệm: </Text>
+                        {test.TestDate}
+                        <br />
+                        <Text strong>Ngày trả kết quả: </Text>
+                        {test.ResultDay || "Chưa có"}
+                        <br />
+                        <Text strong>Ghi chú: </Text>
+                        {test.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testdetail/${test.Test_ID}`)}>
+                        <Link
+                          style={{ color: "#f78db3" }}
+                          onClick={() =>
+                            navigate(`/testdetail/${test.Test_ID}`)
+                          }
+                        >
                           Xem chi tiết
                         </Link>
                       </Col>
@@ -225,7 +284,11 @@ export default function StepDetailPage() {
             icon={<PlusOutlined />}
             type="primary"
             onClick={() => setTestModalVisible(true)}
-            style={{ marginTop: 24, backgroundColor: "#f78db3", border: "none" }}
+            style={{
+              marginTop: 24,
+              backgroundColor: "#f78db3",
+              border: "none",
+            }}
           >
             Thêm xét nghiệm liên quan
           </Button>
@@ -236,7 +299,9 @@ export default function StepDetailPage() {
           <Card
             title={
               <Row justify="space-between" align="middle">
-                <Col><Text strong>Danh sách mẫu sinh học liên quan</Text></Col>
+                <Col>
+                  <Text strong>Danh sách mẫu sinh học liên quan</Text>
+                </Col>
                 <Col>
                   <Button
                     type="primary"
@@ -255,16 +320,32 @@ export default function StepDetailPage() {
             <div style={{ maxHeight: 200, overflowY: "auto" }}>
               <Space direction="vertical" style={{ width: "100%" }}>
                 {biosamples.map((bs) => (
-                  <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                  <Card
+                    key={bs.BS_ID}
+                    type="inner"
+                    style={{ borderLeft: "5px solid #f78db3" }}
+                  >
                     <Row justify="space-between">
                       <Col>
-                        <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                        <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                        <Text strong>Vị trí lưu trữ: </Text>{bs.StorageLocation}<br />
-                        <Text strong>Ghi chú: </Text>{bs.Note}
+                        <Text strong>Tên mẫu: </Text>
+                        {bs.BS_Name}
+                        <br />
+                        <Text strong>Ngày thu thập: </Text>
+                        {bs.CollectionDate}
+                        <br />
+                        <Text strong>Vị trí lưu trữ: </Text>
+                        {bs.StorageLocation}
+                        <br />
+                        <Text strong>Ghi chú: </Text>
+                        {bs.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}>
+                        <Link
+                          style={{ color: "#f78db3" }}
+                          onClick={() =>
+                            navigate(`/biosampledetail/${bs.BS_ID}`)
+                          }
+                        >
                           Xem chi tiết
                         </Link>
                       </Col>
@@ -279,7 +360,11 @@ export default function StepDetailPage() {
             icon={<PlusOutlined />}
             type="primary"
             onClick={() => setBiosampleModalVisible(true)}
-            style={{ marginTop: 24, backgroundColor: "#f78db3", border: "none" }}
+            style={{
+              marginTop: 24,
+              backgroundColor: "#f78db3",
+              border: "none",
+            }}
           >
             Thêm mẫu sinh học liên quan
           </Button>
@@ -298,8 +383,16 @@ export default function StepDetailPage() {
             style: { color: "#f78db3", borderColor: "#f78db3" },
           }}
         >
-          <Form layout="vertical" form={form} initialValues={{ TestDate: dayjs() }}>
-            <Form.Item label="Loại xét nghiệm" name="TestType_ID" rules={[{ required: true }]}>
+          <Form
+            layout="vertical"
+            form={form}
+            initialValues={{ TestDate: dayjs() }}
+          >
+            <Form.Item
+              label="Loại xét nghiệm"
+              name="TestType_ID"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Chọn loại xét nghiệm">
                 <Option value={1}>Xét nghiệm máu</Option>
                 <Option value={2}>Nội tiết tố</Option>
@@ -327,14 +420,26 @@ export default function StepDetailPage() {
             style: { color: "#f78db3", borderColor: "#f78db3" },
           }}
         >
-          <Form layout="vertical" form={form} initialValues={{ CollectionDate: dayjs() }}>
-            <Form.Item label="Loại mẫu" name="BT_ID" rules={[{ required: true }]}>
+          <Form
+            layout="vertical"
+            form={form}
+            initialValues={{ CollectionDate: dayjs() }}
+          >
+            <Form.Item
+              label="Loại mẫu"
+              name="BT_ID"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Chọn loại mẫu">
                 <Option value={1}>Máu</Option>
                 <Option value={2}>Tinh dịch</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Tên mẫu" name="BS_Name" rules={[{ required: true }]}>
+            <Form.Item
+              label="Tên mẫu"
+              name="BS_Name"
+              rules={[{ required: true }]}
+            >
               <Input />
             </Form.Item>
             <Form.Item label="Ngày thu thập" name="CollectionDate">

@@ -23,6 +23,8 @@ import React, { useEffect, useState } from "react";
 import TreatmentProcessCard from "./components/TreatmentProcessCard"; // ✅ Import
 import TreatmentOverviewCard from "./components/TreatmentOverviewCard";
 import { getTreatmentDetail } from "../../../../apis/treatmentService";
+import { getTestByTreatmentPlanId } from "../../../../apis/testService";
+import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -84,7 +86,7 @@ export default function TreatmentPlanDetailPage() {
     try {
       setLoading(true);
       const response = await getTreatmentDetail(tpId);
-
+      console.log(response);
       if (response.data.success) {
         const apiData = response.data.data;
 
@@ -107,9 +109,9 @@ export default function TreatmentPlanDetailPage() {
             Hus_YOB: apiData.cusInfo.husYob,
             Wife_YOB: apiData.cusInfo.wifeYob,
             acc: {
-              fullName: "Nguyễn Văn A", // Keep mock data as API doesn't provide this
-              mail: "nguyenvana@example.com", // Keep mock data
-              phone: "0912345678", // Keep mock data
+              fullName: apiData?.cusInfo?.accInfo?.fullName, // Keep mock data as API doesn't provide this
+              mail: apiData?.cusInfo?.accInfo?.mail, // Keep mock data
+              phone: apiData?.cusInfo?.accInfo?.phone, // Keep mock data
             },
           },
           doctor: {
@@ -120,36 +122,15 @@ export default function TreatmentPlanDetailPage() {
               mail: apiData.doctorInfo.accountInfo.mail,
             },
           },
-          stepDetails: [
-            {
-              SD_ID: 1,
-              TS_ID: 1,
-              Step_Name: "Khám tổng quát",
-              PlanDate: "2025-07-08",
-              doc: { fullName: "BS. Nguyễn Văn X" },
-            },
-            {
-              SD_ID: 2,
-              TS_ID: 2,
-              Step_Name: "Siêu âm tử cung",
-              PlanDate: "2025-07-10",
-              doc: { fullName: "BS. Trần Thị Y" },
-            },
-            {
-              SD_ID: 3,
-              TS_ID: 3,
-              Step_Name: "Xét nghiệm nội tiết",
-              PlanDate: "2025-07-12",
-              doc: { fullName: "BS. Lê Văn C" },
-            },
-            {
-              SD_ID: 4,
-              TS_ID: 3,
-              Step_Name: "Tư vấn hướng điều trị",
-              PlanDate: "2025-07-14",
-              doc: { fullName: "BS. Nguyễn Văn X" },
-            },
-          ],
+          stepDetails: Array.isArray(apiData.stepDetails)
+            ? apiData.stepDetails.map((step, idx) => ({
+                SD_ID: step.sdId || idx + 1,
+                TS_ID: step.tsId,
+                Step_Name: step.stepName,
+                PlanDate: step.planDate,
+                doc: { fullName: step.doctorName },
+              }))
+            : [],
         };
 
         mappedTreatmentPlan.stepDetails.sort(
@@ -157,54 +138,49 @@ export default function TreatmentPlanDetailPage() {
         );
         setTreatmentPlan(mappedTreatmentPlan);
 
-        // Keep mock data for biosamples and tests as API doesn't provide these
-        const mockBiosamples =
-          tpId === 1
-            ? [
-                {
-                  BS_ID: 101,
-                  BS_Name: "Mẫu máu",
-                  CollectionDate: "2025-07-08",
-                  Status: 1,
-                  BQS_ID: 1,
-                  Note: "Mẫu ổn định",
-                },
-                {
-                  BS_ID: 102,
-                  BS_Name: "Tinh trùng",
-                  CollectionDate: "2025-07-09",
-                  Status: 2,
-                  BQS_ID: 5,
-                  Note: "Cần kiểm tra thêm",
-                },
-              ]
-            : [];
+        // Lấy danh sách mẫu sinh học từ API
+        const bioSampleRes = await getBioSampleByPlanId(tpId);
+        if (
+          bioSampleRes?.data?.success &&
+          Array.isArray(bioSampleRes.data.data)
+        ) {
+          const mappedBiosamples = bioSampleRes.data.data.map((bs) => ({
+            BS_ID: bs.bsId,
+            BS_Name: bs.bsName,
+            CollectionDate: bs.collectionDate,
+            Status: bs.bioSampleStatus?.id,
+            StatusName: bs.bioSampleStatus?.name,
+            BQS_ID: bs.qualityStatus?.id,
+            BQS_Name: bs.qualityStatus?.name,
+            BioType: bs.bioType?.name,
+            StorageLocation: bs.storageLocation,
+            Note: bs.note,
+          }));
+          setBiosamples(mappedBiosamples);
+        } else {
+          setBiosamples([]);
+        }
 
-        setBiosamples(mockBiosamples);
-
-        const mockTests =
-          tpId === 1
-            ? [
-                {
-                  Test_ID: 201,
-                  TestType_ID: 2,
-                  TestDate: "2025-07-12",
-                  Status: 3,
-                  Person: "Vợ",
-                  TQS_ID: 1,
-                },
-                {
-                  Test_ID: 202,
-                  TestType_ID: 3,
-                  TestDate: "2025-07-12",
-                  Status: 4,
-                  Person: "Chồng",
-                  TQS_ID: 3,
-                },
-              ]
-            : [];
-
-        setTests(mockTests);
+        // Lấy danh sách xét nghiệm từ API mới
+        const testRes = await getTestByTreatmentPlanId(tpId);
+        if (testRes?.data?.success && Array.isArray(testRes.data.data)) {
+          const mappedTests = testRes.data.data.map((test) => ({
+            Test_ID: test.testId,
+            TestType_ID: test.testType?.id,
+            TestType_Name: test.testType?.testName,
+            TestDate: test.testDate,
+            Person: test.testType?.person,
+            Status: test.status?.id,
+            StatusName: test.status?.name,
+            TQS_ID: test.testQualityStatus?.id,
+            TQS_Name: test.testQualityStatus?.name,
+            StepDetail: test.stepDetail,
+            Note: test.note,
+          }));
+          setTests(mappedTests);
+        } else {
+          setTests([]);
+        }
       } else {
         message.error("Không thể tải thông tin hồ sơ bệnh án");
       }
@@ -283,7 +259,7 @@ export default function TreatmentPlanDetailPage() {
               <Col span={24}>
                 <TreatmentOverviewCard
                   treatmentPlan={treatmentPlan}
-                  onUpdate={fetchData} // ✅ gọi lại fetchData sau khi cập nhật
+                  onUpdate={fetchData}
                 />
               </Col>
             </Row>
@@ -404,7 +380,7 @@ export default function TreatmentPlanDetailPage() {
                       <Row justify="space-between">
                         <Col>
                           <Text strong>Loại xét nghiệm: </Text>
-                          {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
+                          {test.TestType_Name || "Không rõ"}
                           <br />
                           <Text strong>Ngày xét nghiệm: </Text>
                           {test.TestDate}
@@ -413,10 +389,10 @@ export default function TreatmentPlanDetailPage() {
                           {test.Person}
                           <br />
                           <Text strong>Trạng thái: </Text>
-                          {TEST_STATUS[test.Status] || "Không xác định"}
+                          {test.StatusName || "Không xác định"}
                           <br />
                           <Text strong>Tình trạng kết quả: </Text>
-                          {TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
+                          {test.TQS_Name || "Chưa có"}
                         </Col>
                         <Col>
                           <Link
@@ -467,15 +443,32 @@ export default function TreatmentPlanDetailPage() {
                           <Text strong>Tên mẫu: </Text>
                           {bs.BS_Name}
                           <br />
+                          <Text strong>Loại mẫu: </Text>
+                          {bs.BioType || "Không xác định"}
+                          <br />
                           <Text strong>Ngày thu thập: </Text>
                           {bs.CollectionDate}
                           <br />
+                          <Text strong>Vị trí lưu trữ: </Text>
+                          {bs.StorageLocation || "Chưa cập nhật"}
+                          <br />
                           <Text strong>Trạng thái: </Text>
-                          {BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}
+                          {bs.StatusName ||
+                            BIO_SAMPLE_STATUS[bs.Status] ||
+                            "Không xác định"}
                           <br />
                           <Text strong>Chất lượng: </Text>
-                          {BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}
+                          {bs.BQS_Name ||
+                            BIO_QUALITY_STATUS[bs.BQS_ID] ||
+                            "Chưa đánh giá"}
                           <br />
+                          {bs.Note && (
+                            <>
+                              <Text strong>Ghi chú: </Text>
+                              {bs.Note}
+                              <br />
+                            </>
+                          )}
                         </Col>
                         <Col>
                           <Link

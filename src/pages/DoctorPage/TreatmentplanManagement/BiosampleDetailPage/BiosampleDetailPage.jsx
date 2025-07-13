@@ -16,7 +16,12 @@ import {
   message,
 } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-
+import {
+  getBioSamplesBySampleId,
+  getAllBioSampleStatus,
+  getAllBioSampleQualityStatus,
+  updateBioSample,
+} from "../../../../apis/bioSampleService";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -52,43 +57,101 @@ export default function BiosampleDetailPage() {
   const [form] = Form.useForm();
   const [biosample, setBiosample] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [bioSampleStatusList, setBioSampleStatusList] = useState([]);
+  const [bioSampleQualityStatusList, setBioSampleQualityStatusList] = useState(
+    []
+  );
 
   useEffect(() => {
-    // 🧪 Mock dữ liệu mẫu sinh học
-    const mockBiosample = {
-      BS_ID: parseInt(id),
-      TP_ID: 1,
-      BT_ID: 1,
-      BS_Name: "Phôi AB",
-      Status: 2,
-      CollectionDate: "2025-07-09",
-      StorageLocation: "Tủ số 2 - Ngăn A3",
-      BQS_ID: 5,
-      Note: "Mẫu đạt chất lượng tốt, có thể sử dụng trong lần chuyển phôi tiếp theo.",
-    };
-
-    setBiosample(mockBiosample);
-    form.setFieldsValue(mockBiosample);
+    async function fetchBiosample() {
+      try {
+        const res = await getBioSamplesBySampleId(id);
+        if (res && res.data && res.data.success) {
+          const d = res.data.data;
+          // Map API response to UI state
+          const mapped = {
+            BS_ID: d.bsId,
+            TP_ID: d.treatmentPlanInfo?.tpId,
+            BT_ID: d.bioType?.id,
+            BS_Name: d.bsName,
+            Status: d.bioSampleStatus?.id,
+            BS_Type: d?.bioType?.name,
+            CollectionDate: d.collectionDate,
+            StorageLocation: d.storageLocation,
+            BQS_ID: d.qualityStatus?.id,
+            Note: d.note,
+          };
+          setBiosample(mapped);
+          form.setFieldsValue(mapped);
+        } else {
+          setBiosample(null);
+        }
+      } catch (err) {
+        setBiosample(null);
+      }
+    }
+    fetchBiosample();
+    // Fetch bio sample status list
+    async function fetchBioSampleStatusList() {
+      try {
+        const res = await getAllBioSampleStatus();
+        if (res && res.data && res.data.success) {
+          setBioSampleStatusList(res.data.data);
+        } else {
+          setBioSampleStatusList([]);
+        }
+      } catch (err) {
+        setBioSampleStatusList([]);
+      }
+    }
+    fetchBioSampleStatusList();
+    // Fetch bio sample quality status list
+    async function fetchBioSampleQualityStatusList() {
+      try {
+        const res = await getAllBioSampleQualityStatus();
+        if (res && res.data && res.data.success) {
+          setBioSampleQualityStatusList(res.data.data);
+        } else {
+          setBioSampleQualityStatusList([]);
+        }
+      } catch (err) {
+        setBioSampleQualityStatusList([]);
+      }
+    }
+    fetchBioSampleQualityStatusList();
   }, [id, form]);
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      // 🌀 Giả lập API cập nhật
-      await new Promise((res) => setTimeout(res, 1000));
-
-      setBiosample((prev) => ({ ...prev, ...values }));
-      message.success("Cập nhật mẫu sinh học thành công!");
+      // Build payload for updateBioSample
+      const payload = {
+        note: values.Note,
+        bqsId: values.BQS_ID,
+        statusId: values.Status,
+        storageLocation: values.StorageLocation,
+      };
+      await updateBioSample(biosample.BS_ID, payload)
+        .then((res) => {
+          if (res.data.success) {
+            setBiosample((prev) => ({ ...prev, ...values }));
+            message.success("Cập nhật mẫu sinh học thành công!");
+          } else {
+            message.error(res.data.message || "Cập nhật thất bại");
+          }
+        })
+        .catch((err) => {
+          message.error("Cập nhật thất bại");
+        })
+        .finally(() => setLoading(false));
     } catch (err) {
       message.error("Vui lòng điền đầy đủ thông tin hợp lệ.");
-    } finally {
-      setLoading(false);
     }
   };
 
   if (!biosample) return null;
-
+  console.log(biosample);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
@@ -126,7 +189,8 @@ export default function BiosampleDetailPage() {
                 <Text strong>Loại mẫu:</Text>
                 <br />
                 <Tag color="purple">
-                  {BIO_TYPE_MAP[biosample.BT_ID] || "Không xác định"}
+                  {/* Use BT_ID to display name if needed, or show d.bioType?.name if you want */}
+                  {biosample.BS_Type}
                 </Tag>
               </Col>
 
@@ -137,9 +201,9 @@ export default function BiosampleDetailPage() {
                   rules={[{ required: true, message: "Chọn trạng thái" }]}
                 >
                   <Select placeholder="Chọn trạng thái">
-                    {Object.entries(BIO_SAMPLE_STATUS).map(([key, label]) => (
-                      <Option key={key} value={parseInt(key)}>
-                        {label}
+                    {bioSampleStatusList.map((status) => (
+                      <Option key={status.statusId} value={status.statusId}>
+                        {status.statusName}
                       </Option>
                     ))}
                   </Select>
@@ -153,9 +217,9 @@ export default function BiosampleDetailPage() {
                   rules={[{ required: true, message: "Chọn chất lượng" }]}
                 >
                   <Select placeholder="Chọn chất lượng mẫu">
-                    {Object.entries(BIO_QUALITY_STATUS).map(([key, label]) => (
-                      <Option key={key} value={parseInt(key)}>
-                        {label}
+                    {bioSampleQualityStatusList.map((status) => (
+                      <Option key={status.id} value={status.id}>
+                        {status.name}
                       </Option>
                     ))}
                   </Select>

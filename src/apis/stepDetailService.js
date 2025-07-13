@@ -12,6 +12,7 @@ const getStepDetailByTreatmentPlanId = async (treatmentPlanId) => {
     `/StepDetail/GetAllStepDetailByTreatmentPlanId/${treatmentPlanId}`
   );
 };
+
 const createStepDetail = async (data) => {
   return await axiosClients.post("/StepDetail/CreateStepDetail", data);
 };
