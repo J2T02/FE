@@ -14,13 +14,11 @@ import {
   LockOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
-import { FaHeartPulse } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const { Title, Text } = Typography;
 
-// ✅ Giả lập API login trả về Role_ID
 const fakeLogin = async ({ identifier, password }) => {
   const mockAccounts = [
     { identifier: "admin", password: "12345678", role: 1 },
@@ -53,7 +51,6 @@ const LoginPage = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  // ✅ Điều hướng theo vai trò
   const handleRedirectByRole = (role) => {
     switch (role) {
       case 1:
@@ -81,8 +78,6 @@ const LoginPage = () => {
 
     if (res.success) {
       message.success("Đăng nhập thành công!");
-      // Có thể lưu token vào localStorage nếu dùng thật
-      // localStorage.setItem("token", res.token);
       handleRedirectByRole(res.role);
     } else {
       message.error(res.message || "Đăng nhập thất bại");
@@ -146,8 +141,16 @@ const LoginPage = () => {
               transition={{ duration: 0.6 }}
             >
               <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Row justify="center" style={{ marginBottom: 12 }}>
-                  <FaHeartPulse size={42} color="#d63384" />
+                <Row justify="center" style={{ marginBottom: 24 }}>
+                  <img
+                    src="/Logo.png"
+                    alt="Logo bệnh viện"
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "contain",
+                    }}
+                  />
                 </Row>
                 <Title level={3} style={{ color: "#d63384" }}>
                   Chào mừng quay trở lại

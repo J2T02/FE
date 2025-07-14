@@ -128,19 +128,15 @@ const RegisterPage = () => {
           <Form.Item label="👤 Tên tài khoản" name="Full_Name" rules={[{ required: true, message: "Nhập tên tài khoản" }]}>
             <Input prefix={<UserOutlined />} size="large" placeholder="Nhập tên tài khoản của bạn" />
           </Form.Item>
-
           <Form.Item label="📞 Số điện thoại" name="Phone" rules={[{ required: true, validator: validatePhone }]}>
             <Input prefix={<PhoneOutlined />} size="large" placeholder="Nhập số điện thoại của bạn" />
           </Form.Item>
-
           <Form.Item label="📧 Email" name="Mail" rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}>
             <Input prefix={<MailOutlined />} size="large" placeholder="Nhập Email của bạn" />
           </Form.Item>
-
           <Form.Item label="🔒 Mật khẩu" name="Password" rules={[{ required: true }, { validator: validatePassword }]}>
             <Input.Password prefix={<LockOutlined />} size="large" placeholder="Mật khẩu ít nhất 8 ký tự và bao gồm cả chữ và số" />
           </Form.Item>
-
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item label="👨 Họ tên chồng" name="Hus_Name">
@@ -153,7 +149,6 @@ const RegisterPage = () => {
               </Form.Item>
             </Col>
           </Row>
-
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item label="👩 Họ tên vợ" name="Wife_Name">
@@ -166,7 +161,6 @@ const RegisterPage = () => {
               </Form.Item>
             </Col>
           </Row>
-
           <Form.Item>
             <Button type="primary" htmlType="submit" block size="large" style={{ backgroundColor: "#ff85a2", borderColor: "#ff85a2", borderRadius: 10 }}>
               Đăng ký ngay
@@ -295,9 +289,16 @@ const RegisterPage = () => {
               transition={{ duration: 0.6 }}
             >
               <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Row justify="center" style={{ marginBottom: 12 }}>
-                  <UserOutlined style={{ fontSize: 42, color: "#d63384" }} />
-                </Row>
+                <img
+                  src="/Logo.png"
+                  alt="Logo bệnh viện"
+                  style={{
+                    width: 100,
+                    height: 100,
+                    marginBottom: 16,
+                    objectFit: "contain",
+                  }}
+                />
                 <Title level={3} style={{ color: "#d63384" }}>
                   Đăng ký tài khoản
                 </Title>

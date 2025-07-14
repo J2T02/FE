@@ -159,7 +159,7 @@ const routers = [
   {
     path: "/changepassword",
     component: lazy(() =>
-      import("~pages/CustomerPage/ChangePasswordPage/ChangePasswordPage")
+      import("~pages/HomePage/ChangePasswordPage/ChangePasswordPage")
     ),
   },
   {

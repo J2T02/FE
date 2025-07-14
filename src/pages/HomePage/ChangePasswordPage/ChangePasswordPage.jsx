@@ -114,12 +114,16 @@ const ChangePasswordPage = () => {
               transition={{ duration: 0.6 }}
             >
               <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <Row justify="center" style={{ marginBottom: 12 }}>
-                  <HeartTwoTone
-                    twoToneColor="#ff6699"
-                    style={{ fontSize: 42 }}
-                  />
-                </Row>
+                <img
+                  src="/Logo.png"
+                  alt="Logo"
+                  style={{
+                    width: 100,
+                    height: 100,
+                    objectFit: "contain",
+                    marginBottom: 16,
+                  }}
+                />
                 <Title level={3} style={{ color: "#d63384", marginBottom: 8 }}>
                   Đổi mật khẩu
                 </Title>
