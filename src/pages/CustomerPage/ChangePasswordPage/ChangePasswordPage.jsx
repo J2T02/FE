@@ -1,15 +1,6 @@
 // File: src/pages/Account/ChangePasswordPage.jsx
 import React, { useState } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  message,
-  Row,
-  Col,
-} from "antd";
+import { Form, Input, Button, Card, Typography, message, Row, Col } from "antd";
 import {
   LockOutlined,
   KeyOutlined,
@@ -20,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
+import { changePassword } from "../../../apis/authService";
 const { Title, Text } = Typography;
 
 const ChangePasswordPage = () => {
@@ -38,14 +29,30 @@ const ChangePasswordPage = () => {
     return Promise.resolve();
   };
 
-  const onFinish = (values) => {
-    const { oldPassword, newPassword } = values;
-    if (oldPassword !== "123abc456") {
-      return message.error("Mật khẩu cũ không đúng!");
+  const onFinish = async (values) => {
+    const { oldPassword, newPassword, confirmPassword } = values;
+    try {
+      const payload = {
+        currentPassword: oldPassword,
+        newPassword,
+        confirmPassword,
+      };
+      const response = await changePassword(payload);
+      if (response && response.data.success) {
+        message.success(response.message || "Đổi mật khẩu thành công!");
+        form.resetFields();
+        setPasswordChanged(true);
+      } else {
+        message.error(response.message || "Đổi mật khẩu thất bại!");
+      }
+    } catch (error) {
+      message.error(
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          "Có lỗi xảy ra khi đổi mật khẩu!"
+      );
     }
-    message.success("💖 Mật khẩu đã được thay đổi thành công!");
-    form.resetFields();
-    setPasswordChanged(true);
   };
 
   return (
@@ -108,7 +115,10 @@ const ChangePasswordPage = () => {
             >
               <div style={{ textAlign: "center", marginBottom: 24 }}>
                 <Row justify="center" style={{ marginBottom: 12 }}>
-                  <HeartTwoTone twoToneColor="#ff6699" style={{ fontSize: 42 }} />
+                  <HeartTwoTone
+                    twoToneColor="#ff6699"
+                    style={{ fontSize: 42 }}
+                  />
                 </Row>
                 <Title level={3} style={{ color: "#d63384", marginBottom: 8 }}>
                   Đổi mật khẩu
@@ -120,11 +130,16 @@ const ChangePasswordPage = () => {
 
               {passwordChanged ? (
                 <div style={{ textAlign: "center", paddingTop: 12 }}>
-                  <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 60 }} />
+                  <CheckCircleTwoTone
+                    twoToneColor="#52c41a"
+                    style={{ fontSize: 60 }}
+                  />
                   <Title level={4} style={{ color: "#52c41a", marginTop: 12 }}>
                     Đổi mật khẩu thành công!
                   </Title>
-                  <Text style={{ display: "block", marginTop: 8, color: "#888" }}>
+                  <Text
+                    style={{ display: "block", marginTop: 8, color: "#888" }}
+                  >
                     Bạn có thể tiếp tục hành trình tuyệt vời của mình 💕
                   </Text>
                   <Button
@@ -147,7 +162,12 @@ const ChangePasswordPage = () => {
                     <Form.Item
                       label="🔑 Mật khẩu hiện tại"
                       name="oldPassword"
-                      rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập mật khẩu cũ",
+                        },
+                      ]}
                     >
                       <Input.Password
                         prefix={<KeyOutlined />}
@@ -160,7 +180,10 @@ const ChangePasswordPage = () => {
                       label="🔐 Mật khẩu mới"
                       name="newPassword"
                       rules={[
-                        { required: true, message: "Vui lòng nhập mật khẩu mới" },
+                        {
+                          required: true,
+                          message: "Vui lòng nhập mật khẩu mới",
+                        },
                         { validator: validatePassword },
                       ]}
                     >
@@ -182,10 +205,15 @@ const ChangePasswordPage = () => {
                         },
                         ({ getFieldValue }) => ({
                           validator(_, value) {
-                            if (!value || getFieldValue("newPassword") === value) {
+                            if (
+                              !value ||
+                              getFieldValue("newPassword") === value
+                            ) {
                               return Promise.resolve();
                             }
-                            return Promise.reject("Mật khẩu xác nhận không trùng!");
+                            return Promise.reject(
+                              "Mật khẩu xác nhận không trùng!"
+                            );
                           },
                         }),
                       ]}
