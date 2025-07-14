@@ -1,13 +1,17 @@
+// src/pages/AdminPage/AdminPanel.jsx
 import React, { useState } from "react";
-import { Layout, Menu, Typography, theme } from "antd";
+import { Layout, Menu, Avatar, Typography, theme } from "antd";
 import {
+  AppstoreOutlined,
+  BarChartOutlined,
+  UserSwitchOutlined,
+  UserOutlined,
   CalendarOutlined,
   TeamOutlined,
   FileTextOutlined,
-  AppstoreOutlined,
-  BarChartOutlined,
 } from "@ant-design/icons";
 import { FaUserDoctor } from "react-icons/fa6";
+
 import AdminHeader from "./components/AdminHeader";
 import DoctorModule from "./features/doctor/DoctorModule";
 import ServiceManagement from "./ServiceManagement/ServiceManagement";
@@ -16,13 +20,16 @@ import BookingManagement from "./BookingManagement/BookingManagement";
 import TreatmentplanManagement from "./TreatmentplanManagement/TreatmentplanManagement";
 import ManagerDashboardPage from "./ManagerDashboardPage/ManagerDashboardPage";
 import ManagerRevenueDashboardPage from "./ManagerRevenueDashboardPage/ManagerRevenueDashboardPage";
-import { useToken } from "antd/lib/theme/useToken";
-const { Sider, Content, Header } = Layout;
+import ReceptionistManagement from "./ReceptionistManagement/ReceptionistManagement";
+import ManagerList from "./ManagerList/ManagerList";
+
+const { Sider, Content } = Layout;
 const { Title } = Typography;
 
 const AdminPanel = () => {
   const [selectedKey, setSelectedKey] = useState("1");
   const { token } = theme.useToken();
+  const role = parseInt(localStorage.getItem("role"));
 
   const renderContent = () => {
     switch (selectedKey) {
@@ -31,15 +38,19 @@ const AdminPanel = () => {
       case "2":
         return <ManagerRevenueDashboardPage />;
       case "3":
-        return <DoctorModule />;
+        return <ManagerList />;
       case "4":
-        return <BookingManagement />;
+        return <DoctorModule />;
       case "5":
-        return <PatientManagement />;
+        return <ReceptionistManagement />;
       case "6":
-        return <TreatmentplanManagement />;
-      case "7":
         return <ServiceManagement />;
+      case "7":
+        return <PatientManagement />;
+      case "8":
+        return <TreatmentplanManagement />;
+      case "9":
+        return <BookingManagement />;
       default:
         return <Title level={3}>Chọn mục từ menu bên trái</Title>;
     }
@@ -50,17 +61,16 @@ const AdminPanel = () => {
       <Sider theme="light">
         <div
           style={{
-            height: 64,
-            margin: 16,
-            textAlign: "center",
-            fontWeight: "bold",
+            height: 100,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
           }}
         >
-          <img
-            style={{ width: "153px", height: "53px" }}
-            src="/Logo.png"
-            alt=""
-          />
+          <Avatar size={64} icon={<UserOutlined />} />
+          <div style={{ marginTop: 8, fontWeight: "bold" }}>Admin</div>
         </div>
         <Menu
           mode="inline"
@@ -73,20 +83,28 @@ const AdminPanel = () => {
           <Menu.Item key="2" icon={<BarChartOutlined style={{ fontSize: 20 }} />}>
             Doanh thu
           </Menu.Item>
-          <Menu.Item key="3" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
-            Quản lý bác sĩ
+          {role === 1 && (
+            <Menu.Item key="3" icon={<UserSwitchOutlined style={{ fontSize: 20 }} />}>
+              Danh sách quản lý
+            </Menu.Item>
+          )}
+          <Menu.Item key="4" icon={<FaUserDoctor style={{ fontSize: 20 }} />}>
+            Danh sách bác sĩ
           </Menu.Item>
-          <Menu.Item key="4" icon={<CalendarOutlined style={{ fontSize: 20 }} />}>
-            Quản lý booking
+          <Menu.Item key="5" icon={<UserOutlined style={{ fontSize: 20 }} />}>
+            Danh sách lễ tân
           </Menu.Item>
-          <Menu.Item key="5" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
-            Quản lý bệnh nhân
+          <Menu.Item key="6" icon={<AppstoreOutlined style={{ fontSize: 20 }} />}>
+            Danh sách dịch vụ
           </Menu.Item>
-          <Menu.Item key="6" icon={<FileTextOutlined style={{ fontSize: 20 }} />}>
-            Quản lý hồ sơ bệnh nhân
+          <Menu.Item key="7" icon={<TeamOutlined style={{ fontSize: 20 }} />}>
+            Danh sách bệnh nhân
           </Menu.Item>
-          <Menu.Item key="7" icon={<AppstoreOutlined style={{ fontSize: 20 }} />}>
-            Quản lý dịch vụ
+          <Menu.Item key="8" icon={<FileTextOutlined style={{ fontSize: 20 }} />}>
+            Danh sách bệnh án
+          </Menu.Item>
+          <Menu.Item key="9" icon={<CalendarOutlined style={{ fontSize: 20 }} />}>
+            Danh sách đặt lịch
           </Menu.Item>
         </Menu>
       </Sider>

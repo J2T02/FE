@@ -153,8 +153,8 @@ const ReceptionistHeader = () => {
           <Title level={3} style={{ margin: 0, color: "#d6336c" }}>
             Trang Lễ Tân
           </Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            Quản lý lịch trình, bệnh nhân và điều trị hiệu quả
+          <Text type="secondary" style={{ fontSize: 13, color: "#444" }}>
+            Quản lý lịch trình và bệnh án hiệu quả
           </Text>
         </div>
 

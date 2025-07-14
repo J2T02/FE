@@ -337,7 +337,7 @@ function Header() {
                       padding: isSticky ? "4px 14px" : "8px 20px",
                       color: token.colorPrimary,
                     }}
-                    onClick={() => setIsLoginModalOpen(true)}
+                    onClick={() => navigate("/login")}
                   >
                     Đăng nhập
                   </Button>
@@ -357,7 +357,7 @@ function Header() {
                       padding: isSticky ? "4px 14px" : "8px 20px",
                       color: token.colorPrimary,
                     }}
-                    onClick={() => setIsRegisterModalOpen(true)}
+                    onClick={() => navigate("/customer/register")}
                   >
                     Đăng ký
                   </Button>

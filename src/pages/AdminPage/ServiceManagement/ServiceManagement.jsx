@@ -11,48 +11,51 @@ import {
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
+import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage"; // 👈 Thêm import
 
 const { Title } = Typography;
 
 const ServiceManagement = () => {
-  const [services, setServices] = useState([{
-    ser_ID: 1,
-    ser_Name: "Khám phụ khoa tổng quát",
-    price: 300000,
-    description: "Kiểm tra tổng quát sức khỏe phụ khoa định kỳ.",
-    file_Path: "/files/phu-khoa.pdf"
-  },
-  {
-    ser_ID: 2,
-    ser_Name: "Siêu âm đầu dò",
-    price: 500000,
-    description: "Dịch vụ siêu âm đầu dò chính xác cao, an toàn.",
-    file_Path: "/files/sieu-am.pdf"
-  },
-  {
-    ser_ID: 3,
-    ser_Name: "Tư vấn hiếm muộn",
-    price: 250000,
-    description: "Tư vấn và phân tích tình trạng hiếm muộn cho các cặp vợ chồng.",
-    file_Path: "/files/hiem-muon.pdf"
-  },
-  {
-    ser_ID: 4,
-    ser_Name: "Xét nghiệm nội tiết",
-    price: 450000,
-    description: "Đánh giá chỉ số hormone liên quan đến sinh sản.",
-    file_Path: "/files/noi-tiet.pdf"
-  },
-  {
-    ser_ID: 5,
-    ser_Name: "Chụp tử cung vòi trứng (HSG)",
-    price: 800000,
-    description: "Kiểm tra thông tắc vòi trứng và tử cung bằng HSG.",
-    file_Path: "/files/hsg.pdf"
-  }
-]);
+  const [services, setServices] = useState([
+    {
+      ser_ID: 1,
+      ser_Name: "Khám phụ khoa tổng quát",
+      price: 300000,
+      description: "Kiểm tra tổng quát sức khỏe phụ khoa định kỳ.",
+      file_Path: "/files/phu-khoa.pdf",
+    },
+    {
+      ser_ID: 2,
+      ser_Name: "Siêu âm đầu dò",
+      price: 500000,
+      description: "Dịch vụ siêu âm đầu dò chính xác cao, an toàn.",
+      file_Path: "/files/sieu-am.pdf",
+    },
+    {
+      ser_ID: 3,
+      ser_Name: "Tư vấn hiếm muộn",
+      price: 250000,
+      description: "Tư vấn và phân tích tình trạng hiếm muộn cho các cặp vợ chồng.",
+      file_Path: "/files/hiem-muon.pdf",
+    },
+    {
+      ser_ID: 4,
+      ser_Name: "Xét nghiệm nội tiết",
+      price: 450000,
+      description: "Đánh giá chỉ số hormone liên quan đến sinh sản.",
+      file_Path: "/files/noi-tiet.pdf",
+    },
+    {
+      ser_ID: 5,
+      ser_Name: "Chụp tử cung vòi trứng (HSG)",
+      price: 800000,
+      description: "Kiểm tra thông tắc vòi trứng và tử cung bằng HSG.",
+      file_Path: "/files/hsg.pdf",
+    },
+  ]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState(null); // 👈 NEW
 
   useEffect(() => {
     fetchServices();
@@ -61,7 +64,7 @@ const ServiceManagement = () => {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/services"); // Đổi endpoint
+      const res = await axios.get("http://localhost:5000/api/services");
       setServices(res.data);
     } catch (error) {
       message.error("Không thể tải danh sách dịch vụ");
@@ -81,17 +84,17 @@ const ServiceManagement = () => {
       title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price) => (
-        <Tag color="green">{price.toLocaleString()} VND</Tag>
-      ),
+      render: (price) => <Tag color="green">{price.toLocaleString()} VND</Tag>,
     },
     {
-      // Không đặt title để ẩn tên cột
       title: "",
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a href={`/services/${record.ser_ID}`} style={{ color: "#1677ff" }}>
+        <a
+          onClick={() => setSelectedServiceId(record.ser_ID)} // 👈 NEW
+          style={{ color: "#1677ff" }}
+        >
           Xem chi tiết
         </a>
       ),
@@ -101,6 +104,17 @@ const ServiceManagement = () => {
   const filteredServices = services.filter((item) =>
     item.ser_Name.toLowerCase().includes(searchKeyword.toLowerCase())
   );
+
+  // 👉 Nếu đang chọn 1 dịch vụ => hiển thị trang chi tiết
+  if (selectedServiceId !== null) {
+    return (
+      <ServiceDetailPage
+        serId={selectedServiceId}
+        embedded
+        onBack={() => setSelectedServiceId(null)} // 👈 nút quay lại
+      />
+    );
+  }
 
   return (
     <Card
