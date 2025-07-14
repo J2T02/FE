@@ -21,7 +21,11 @@ import {
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
+import {
+  forgotPasswordRequest,
+  otpVerify,
+  resetPassword,
+} from "../../../apis/authService";
 const { Title, Text } = Typography;
 
 const ForgotPasswordStepPage = () => {
@@ -51,33 +55,69 @@ const ForgotPasswordStepPage = () => {
     return Promise.resolve();
   };
 
-  const handleEmailSubmit = (values) => {
-    const fakeOTP = "123456";
-    setEmail(values.email);
-    setOtpCode(fakeOTP);
-    setResendTimer(30);
-    message.success(`📨 Đã gửi mã OTP tới email ${values.email} (demo: ${fakeOTP})`);
-    setStep(1);
-  };
-
-  const handleResendOTP = () => {
-    setResendTimer(30);
-    message.info(`🔄 Gửi lại mã OTP (demo: ${otpCode})`);
-  };
-
-  const handleOTPSubmit = (values) => {
-    if (values.otp === otpCode) {
-      message.success("✅ Xác nhận mã OTP thành công!");
-      setStep(2);
-    } else {
-      message.error("❌ Mã OTP không đúng!");
+  const handleEmailSubmit = async (values) => {
+    try {
+      const res = await forgotPasswordRequest({ emailOrPhone: values.email });
+      if (res && res.data && res.data.success) {
+        setEmail(values.email);
+        setResendTimer(30);
+        message.success(res.data.message || "Đã gửi mã OTP tới email");
+        setStep(1);
+      } else {
+        message.error(res?.data?.message || "Gửi mã OTP thất bại");
+      }
+    } catch (err) {
+      message.error("Gửi mã OTP thất bại");
     }
   };
 
-  const handleResetPassword = (values) => {
-    message.success("🎉 Mật khẩu đã được đặt lại thành công!");
-    form.resetFields();
-    setPasswordResetDone(true);
+  const handleResendOTP = async () => {
+    if (!email) return;
+    try {
+      const res = await forgotPasswordRequest({ emailOrPhone: email });
+      if (res && res.data && res.data.success) {
+        setResendTimer(30);
+        message.info(res.data.message || "Đã gửi lại mã OTP");
+      } else {
+        message.error(res?.data?.message || "Gửi lại mã OTP thất bại");
+      }
+    } catch (err) {
+      message.error("Gửi lại mã OTP thất bại");
+    }
+  };
+
+  const handleOTPSubmit = async (values) => {
+    try {
+      const res = await otpVerify({ emailOrPhone: email, otpCode: values.otp });
+      if (res && res.data && res.data.success) {
+        message.success(res.data.message || "Xác nhận mã OTP thành công!");
+        setStep(2);
+      } else {
+        message.error(res?.data?.message || "Mã OTP không đúng!");
+      }
+    } catch (err) {
+      message.error("Mã OTP không đúng!");
+    }
+  };
+
+  const handleResetPassword = async (values) => {
+    try {
+      const res = await resetPassword({
+        emailOrPhone: email,
+        newPassword: values.newPassword,
+      });
+      if (res && res.data && res.data.success) {
+        message.success(
+          res.data.message || "Mật khẩu đã được đặt lại thành công!"
+        );
+        form.resetFields();
+        setPasswordResetDone(true);
+      } else {
+        message.error(res?.data?.message || "Đặt lại mật khẩu thất bại!");
+      }
+    } catch (err) {
+      message.error("Đặt lại mật khẩu thất bại!");
+    }
   };
 
   const renderStep = () => {
@@ -143,7 +183,11 @@ const ForgotPasswordStepPage = () => {
               {resendTimer > 0 ? (
                 <Text type="secondary">Gửi lại mã sau {resendTimer}s</Text>
               ) : (
-                <Button type="link" onClick={handleResendOTP} style={{ padding: 0 }}>
+                <Button
+                  type="link"
+                  onClick={handleResendOTP}
+                  style={{ padding: 0 }}
+                >
                   🔁 Gửi lại mã OTP
                 </Button>
               )}
@@ -154,7 +198,10 @@ const ForgotPasswordStepPage = () => {
         if (passwordResetDone) {
           return (
             <div style={{ textAlign: "center", paddingTop: 20 }}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 60 }} />
+              <CheckCircleTwoTone
+                twoToneColor="#52c41a"
+                style={{ fontSize: 60 }}
+              />
               <Title level={4} style={{ color: "#52c41a", marginTop: 12 }}>
                 Mật khẩu đã được đặt lại thành công!
               </Title>
@@ -164,10 +211,15 @@ const ForgotPasswordStepPage = () => {
               <Button
                 type="primary"
                 size="large"
-                style={{ marginTop: 24, backgroundColor: "#ff85a2", borderColor: "#ff85a2", borderRadius: 10 }}
-                onClick={() => navigate("/login")}
+                style={{
+                  marginTop: 24,
+                  backgroundColor: "#ff85a2",
+                  borderColor: "#ff85a2",
+                  borderRadius: 10,
+                }}
+                onClick={() => navigate("/")}
               >
-                 Quay về trang đăng nhập
+                Quay về trang đăng nhập
               </Button>
             </div>
           );
@@ -176,29 +228,46 @@ const ForgotPasswordStepPage = () => {
         return (
           <Form form={form} layout="vertical" onFinish={handleResetPassword}>
             <div style={{ textAlign: "center", marginBottom: 16 }}>
-              <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 40 }} />
+              <CheckCircleTwoTone
+                twoToneColor="#52c41a"
+                style={{ fontSize: 40 }}
+              />
             </div>
             <Form.Item
               label="🔐 Mật khẩu mới"
               name="newPassword"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }, { validator: validatePassword }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu" },
+                { validator: validatePassword },
+              ]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Tối thiểu 8 ký tự, gồm chữ và số" size="large" />
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Tối thiểu 8 ký tự, gồm chữ và số"
+                size="large"
+              />
             </Form.Item>
             <Form.Item
               label="✅ Xác nhận mật khẩu"
               name="confirmPassword"
               dependencies={["newPassword"]}
-              rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu" }, ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue("newPassword") === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject("Mật khẩu xác nhận không khớp!");
-                },
-              })]}
+              rules={[
+                { required: true, message: "Vui lòng xác nhận mật khẩu" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("newPassword") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject("Mật khẩu xác nhận không khớp!");
+                  },
+                }),
+              ]}
             >
-              <Input.Password prefix={<SafetyCertificateOutlined />} placeholder="Nhập lại mật khẩu mới" size="large" />
+              <Input.Password
+                prefix={<SafetyCertificateOutlined />}
+                placeholder="Nhập lại mật khẩu mới"
+                size="large"
+              />
             </Form.Item>
             <Form.Item>
               <Button
@@ -290,7 +359,10 @@ const ForgotPasswordStepPage = () => {
             >
               <div style={{ textAlign: "center", marginBottom: 24 }}>
                 <Row justify="center" style={{ marginBottom: 12 }}>
-                  <HeartTwoTone twoToneColor="#ff6699" style={{ fontSize: 42 }} />
+                  <HeartTwoTone
+                    twoToneColor="#ff6699"
+                    style={{ fontSize: 42 }}
+                  />
                 </Row>
                 <Title level={3} style={{ color: "#d63384", marginBottom: 8 }}>
                   Quên mật khẩu
@@ -305,12 +377,26 @@ const ForgotPasswordStepPage = () => {
                 size="small"
                 style={{ marginBottom: 24 }}
                 items={[
-                  { title: "Email", icon: <MailTwoTone twoToneColor="#eb2f96" /> },
-                  { title: "Xác nhận OTP", icon: <SafetyCertificateOutlined /> },
+                  {
+                    title: "Email",
+                    icon: <MailTwoTone twoToneColor="#eb2f96" />,
+                  },
+                  {
+                    title: "Xác nhận OTP",
+                    icon: <SafetyCertificateOutlined />,
+                  },
                   { title: "Đặt lại mật khẩu", icon: <LockOutlined /> },
                 ]}
               />
-              <Text style={{ display: "block", textAlign: "center", color: "#ff6699", fontSize: 15, marginBottom: 16 }}>
+              <Text
+                style={{
+                  display: "block",
+                  textAlign: "center",
+                  color: "#ff6699",
+                  fontSize: 15,
+                  marginBottom: 16,
+                }}
+              >
                 {step === 0 && "📩 Vui lòng nhập email để đặt lại mật khẩu"}
                 {step === 1 && "📨 Mã xác thực đã được gửi đến email của bạn"}
                 {step === 2 && "🔐 Vui lòng đặt lại mật khẩu mới"}

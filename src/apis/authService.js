@@ -11,5 +11,20 @@ const signIn = async (body) => {
 const getInfo = async () => {
   return await axiosClients.get(`/Account`);
 };
-
-export { register, signIn, getInfo };
+const forgotPasswordRequest = async (body) => {
+  return await axiosClients.post("/Account/Otp/request", body);
+};
+const otpVerify = async (body) => {
+  return await axiosClients.post("/Account/Otp/verify", body);
+};
+const resetPassword = async (body) => {
+  return await axiosClients.post("/Account/forgot-password/reset", body);
+};
+export {
+  register,
+  signIn,
+  getInfo,
+  forgotPasswordRequest,
+  otpVerify,
+  resetPassword,
+};

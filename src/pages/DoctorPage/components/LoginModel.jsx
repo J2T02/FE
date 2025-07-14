@@ -110,7 +110,7 @@ const LoginModel = () => {
           </Form.Item>
 
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Link href="#">Quên mật khẩu</Link>
+            <Link href="/forgotpassword">Quên mật khẩu</Link>
             <Link href="#">Contact IT</Link>
           </div>
         </Form>

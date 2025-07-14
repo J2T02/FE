@@ -24,6 +24,7 @@ import {
   InfoCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
+import DoctorHeader from "../../components/DoctorHeader";
 import dayjs from "dayjs";
 import {
   getStepDetailDetail,
@@ -238,9 +239,10 @@ export default function StepDetailPage() {
   };
 
   if (!stepDetail) return null;
-
+  console.log(stepDetail);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
+      <DoctorHeader />
       <Content style={{ padding: 24 }}>
         <Button
           icon={<ArrowLeftOutlined />}
@@ -290,12 +292,12 @@ export default function StepDetailPage() {
             <Col span={12}>
               <Text strong>Thuốc:</Text>
               <br />
-              <Text>{stepDetail?.drugName}</Text>
+              <Text>{stepDetail?.Drug_Name}</Text>
             </Col>
             <Col span={12}>
               <Text strong>Liều lượng:</Text>
               <br />
-              <Text>{stepDetail?.dosage}</Text>
+              <Text>{stepDetail?.Dosage}</Text>
             </Col>
             <Col span={12}>
               <Text strong>Trạng thái:</Text>
