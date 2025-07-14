@@ -16,9 +16,9 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
 
   const getSlotText = () => {
     if (data.slotStart && data.slotEnd) {
-      return `${formatTime(data.slotStart)} - ${formatTime(data.slotEnd)}`;
+      return `${formatTime(data.slotStart)}`;
     }
-    return data.slot === 1 ? "08:00 - 12:00" : "13:00 - 17:00";
+    return data.slot === 1 ? "08:00" : "13:00";
   };
 
   const getDoctorName = () => {

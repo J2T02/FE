@@ -36,7 +36,7 @@ import styles from "./DoctorScheduleSelection.module.css";
 // Constants
 const SLOT_CONFIG = {
   sang: {
-    start: "08:00:00",
+    start: "07:00:00",
     // end: "12:00:00",
     id: 1,
     label: "Ca sáng (08:00 - 12:00)",
@@ -790,6 +790,16 @@ const DoctorScheduleSelection = ({
                                             ? "sáng"
                                             : "chiều"}
                                         </Text>
+                                        <br />
+                                        <Text
+                                            style={{ 
+                                              fontSize: 14, 
+                                              color: "#52c41a",
+                                              fontWeight: "bold"
+                                            }}
+                                          >
+                                            200,000 VND
+                                          </Text>
                                       </div>
                                     </Radio.Button>
                                   ))
@@ -812,13 +822,23 @@ const DoctorScheduleSelection = ({
                                             color: "#1890ff",
                                           }}
                                         />
-                                        <Text strong>08:00</Text>
+                                        <Text strong>07:00</Text>
                                         <br />
                                         <Text
                                           type="secondary"
                                           style={{ fontSize: 12 }}
                                         >
                                           Ca sáng
+                                        </Text>
+                                        <br />
+                                        <Text
+                                          style={{ 
+                                            fontSize: 14, 
+                                            color: "#52c41a",
+                                            fontWeight: "bold"
+                                          }}
+                                        >
+                                          200,000 VND
                                         </Text>
                                       </div>
                                     </Radio.Button>,
@@ -847,6 +867,16 @@ const DoctorScheduleSelection = ({
                                         >
                                           Ca chiều
                                         </Text>
+                                        <br />
+                                        <Text
+                                           style={{ 
+                                             fontSize: 14, 
+                                             color: "#52c41a",
+                                             fontWeight: "bold"
+                                           }}
+                                         >
+                                           200,000 VND
+                                         </Text>
                                       </div>
                                     </Radio.Button>,
                                   ]}
