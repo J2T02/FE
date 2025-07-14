@@ -3,6 +3,18 @@ import { lazy } from "react";
 const routers = [
   // Cus and Guest
   {
+    path: "/customer/register",
+    component: lazy(() =>
+      import("~pages/CustomerPage/RegisterPage/RegisterPage")
+    ),
+  },
+  {
+    path: "/login",
+    component: lazy(() =>
+      import("~pages/HomePage/LoginPage/LoginPage")
+    ),
+  },
+  {
     path: "/",
     component: lazy(() => import("~pages/HomePage/HomePage")),
   },
@@ -141,7 +153,7 @@ const routers = [
   {
     path: "/customer/customerinfoform",
     component: lazy(() =>
-      import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")
+      import("~pages/HomePage/CustomerInfo/CustomerInfoForm")
     ),
   },
   {
@@ -153,7 +165,7 @@ const routers = [
   {
     path: "/forgotpassword",
     component: lazy(() =>
-      import("~pages/CustomerPage/ForgotPasswordPage/ForgotPasswordPage")
+      import("~pages/HomePage/ForgotPasswordPage/ForgotPasswordPage")
     ),
   },
   //Receptionist
