@@ -29,6 +29,7 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import { getRevenue } from "../../../apis/revenueService";
 dayjs.extend(isBetween);
 
 const { Title, Text } = Typography;
@@ -40,13 +41,55 @@ const GREEN = "#52c41a";
 const YELLOW = "#faad14";
 
 const mockPayments = [
-  { Payment_ID: 1, PaymentDate: "2025-07-01", Amount: 5000000, PaymentType_ID: 2, Status_ID: 2 },
-  { Payment_ID: 2, PaymentDate: "2025-07-03", Amount: 4800000, PaymentType_ID: 2, Status_ID: 2 },
-  { Payment_ID: 3, PaymentDate: "2025-07-04", Amount: 3000000, PaymentType_ID: 2, Status_ID: 2 },
-  { Payment_ID: 4, PaymentDate: "2025-07-05", Amount: 4500000, PaymentType_ID: 2, Status_ID: 2 },
-  { Payment_ID: 5, PaymentDate: "2025-07-06", Amount: 3200000, PaymentType_ID: 2, Status_ID: 2 },
-  { Payment_ID: 6, PaymentDate: "2025-07-08", Amount: 3100000, PaymentType_ID: 2, Status_ID: 1 },
-  { Payment_ID: 7, PaymentDate: "2025-07-09", Amount: 4600000, PaymentType_ID: 2, Status_ID: 2 },
+  {
+    Payment_ID: 1,
+    PaymentDate: "2025-07-01",
+    Amount: 5000000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
+  {
+    Payment_ID: 2,
+    PaymentDate: "2025-07-03",
+    Amount: 4800000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
+  {
+    Payment_ID: 3,
+    PaymentDate: "2025-07-04",
+    Amount: 3000000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
+  {
+    Payment_ID: 4,
+    PaymentDate: "2025-07-05",
+    Amount: 4500000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
+  {
+    Payment_ID: 5,
+    PaymentDate: "2025-07-06",
+    Amount: 3200000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
+  {
+    Payment_ID: 6,
+    PaymentDate: "2025-07-08",
+    Amount: 3100000,
+    PaymentType_ID: 2,
+    Status_ID: 1,
+  },
+  {
+    Payment_ID: 7,
+    PaymentDate: "2025-07-09",
+    Amount: 4600000,
+    PaymentType_ID: 2,
+    Status_ID: 2,
+  },
 ];
 
 const mockTreatmentPlans = [
@@ -150,14 +193,18 @@ export default function ManagerRevenueDashboardPage() {
     }
   });
 
-  const topService = Object.entries(serviceStats).sort((a, b) => b[1] - a[1])[0];
+  const topService = Object.entries(serviceStats).sort(
+    (a, b) => b[1] - a[1]
+  )[0];
 
   const doctorStats = {};
   filteredBookings.forEach((b) => {
     doctorStats[b.Doc_ID] = (doctorStats[b.Doc_ID] || 0) + 1;
   });
 
-  const topDoctorEntry = Object.entries(doctorStats).sort((a, b) => b[1] - a[1])[0];
+  const topDoctorEntry = Object.entries(doctorStats).sort(
+    (a, b) => b[1] - a[1]
+  )[0];
   const topDoctor = topDoctorEntry
     ? mockDoctors.find((d) => d.Doc_ID === parseInt(topDoctorEntry[0]))
     : null;
@@ -167,22 +214,36 @@ export default function ManagerRevenueDashboardPage() {
 
   return (
     <Layout style={{ padding: 24, background: LIGHT_PINK, minHeight: "100vh" }}>
-      <Title level={3} style={{ color: PINK }}>💰 Dashboard Doanh thu</Title>
+      <Title level={3} style={{ color: PINK }}>
+        💰 Dashboard Doanh thu
+      </Title>
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
           <Card bordered={false}>
-            <Statistic title="Tổng doanh thu" value={totalRevenue.toLocaleString("vi-VN") + " VNĐ"} prefix={<DollarCircleOutlined style={{ color: GREEN }} />} />
+            <Statistic
+              title="Tổng doanh thu"
+              value={totalRevenue.toLocaleString("vi-VN") + " VNĐ"}
+              prefix={<DollarCircleOutlined style={{ color: GREEN }} />}
+            />
           </Card>
         </Col>
         <Col span={6}>
           <Card bordered={false}>
-            <Statistic title="Số lượng booking" value={totalBookings} prefix={<CalendarOutlined style={{ color: PINK }} />} />
+            <Statistic
+              title="Số lượng booking"
+              value={totalBookings}
+              prefix={<CalendarOutlined style={{ color: PINK }} />}
+            />
           </Card>
         </Col>
         <Col span={6}>
           <Card bordered={false}>
-            <Statistic title="Số lượng hồ sơ đang điều trị" value={totalTreatmentPlans} prefix={<FileTextOutlined style={{ color: YELLOW }} />} />
+            <Statistic
+              title="Số lượng hồ sơ đang điều trị"
+              value={totalTreatmentPlans}
+              prefix={<FileTextOutlined style={{ color: YELLOW }} />}
+            />
           </Card>
         </Col>
       </Row>

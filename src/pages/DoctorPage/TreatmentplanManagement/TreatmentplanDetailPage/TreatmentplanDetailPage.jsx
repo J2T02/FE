@@ -98,8 +98,7 @@ export default function TreatmentPlanDetailPage() {
           EndDate: apiData.endDate,
           Status: apiData.status.statusId,
           StatusName: apiData.status.statusName,
-          Result:
-            "Đáp ứng tốt với phác đồ điều trị đầu tiên, theo dõi thêm trong các bước tiếp theo.", // Keep mock data
+          Result: apiData?.result || "",
           service: {
             Ser_ID: apiData.serviceInfo.serId,
             Ser_Name: apiData.serviceInfo.serName,

@@ -120,9 +120,11 @@ const BookingPage = () => {
       const bookingId = res.data.data.booking.bookingId;
       const paymentUrl = res.data.data.paymentUrl;
 
-      message.success("Đặt lịch thành công! ");
+      // message.success("Đặt lịch thành công! ");
 
-      window.open(paymentUrl);
+      window.location.href = paymentUrl;
+
+      // window.open(paymentUrl);
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       const errorMessage = error.response?.data?.message || "Lỗi khi đặt lịch.";

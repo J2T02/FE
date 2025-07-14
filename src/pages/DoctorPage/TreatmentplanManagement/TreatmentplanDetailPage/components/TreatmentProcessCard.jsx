@@ -94,11 +94,9 @@ const TreatmentProcessCard = ({ tpId, doctorId, serviceId, onRefresh }) => {
       case 1:
         return <Text type="secondary">Chờ thực hiện</Text>;
       case 2:
-        return <Text type="warning">Đang thực hiện</Text>;
+        return <Text type="warning">Đã hoàn thành</Text>;
       case 3:
-        return <Text type="success">Đã hoàn thành</Text>;
-      case 4:
-        return <Text type="danger">Đã hủy</Text>;
+        return <Text type="success">Đã hủy</Text>;
       default:
         return <Text type="secondary">Không xác định</Text>;
     }

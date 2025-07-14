@@ -19,6 +19,12 @@ const createStepDetail = async (data) => {
 const updateStepDetail = async (id, data) => {
   return await axiosClients.put(`/StepDetail/UpdateStepDetail/${id}`, data);
 };
+const updateStepDetailStatus = async (id, data) => {
+  return await axiosClients.put(
+    `/StepDetail/UpdateStepDetailStatus${id}`,
+    data
+  );
+};
 const deleteStepDetail = async (id) => {
   return await axiosClients.delete(`/StepDetail/DeleteStepDetail/${id}`);
 };
@@ -29,5 +35,6 @@ export {
   getStepDetailByTreatmentPlanId,
   createStepDetail,
   updateStepDetail,
+  updateStepDetailStatus,
   deleteStepDetail,
 };

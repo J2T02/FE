@@ -25,7 +25,10 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getStepDetailDetail } from "../../../../apis/stepDetailService";
+import {
+  getStepDetailDetail,
+  updateStepDetailStatus,
+} from "../../../../apis/stepDetailService";
 import {
   getTestTypeList,
   createTest,
@@ -159,12 +162,15 @@ export default function StepDetailPage() {
   const handleStatusChange = async (val) => {
     setStatusUpdating(true);
     try {
-      // Giả lập gọi API - thay thế bằng API thật nếu cần
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Giả lập thành công
-      setStepDetail((prev) => ({ ...prev, Status: val }));
-      message.success("Cập nhật trạng thái thành công!");
+      const res = await updateStepDetailStatus(stepDetail.SD_ID, {
+        statusId: val,
+      });
+      if (res && res.data && res.data.success) {
+        setStepDetail((prev) => ({ ...prev, Status: val }));
+        message.success("Cập nhật trạng thái thành công!");
+      } else {
+        message.error(res?.data?.message || "Cập nhật trạng thái thất bại!");
+      }
     } catch (error) {
       message.error("Cập nhật trạng thái thất bại!");
     } finally {

@@ -327,7 +327,7 @@ const ScheduleManagement = () => {
 
       {/* Stats Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={8} lg={4} xl={4}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
             title="Hôm nay"
             value={statsData.today}
@@ -335,7 +335,7 @@ const ScheduleManagement = () => {
             color="#1890ff"
           />
         </Col>
-        <Col xs={24} sm={12} md={8} lg={4} xl={4}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
             title="Tuần này"
             value={statsData.thisWeek}
@@ -343,28 +343,12 @@ const ScheduleManagement = () => {
             color="#52c41a"
           />
         </Col>
-        <Col xs={24} sm={12} md={8} lg={5} xl={5}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
-            title="Chờ xác nhận"
+            title="Chờ thực hiện"
             value={statsData.pending}
             icon={<UserOutlined />}
             color="#fa8c16"
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={5} xl={5}>
-          <StatCard
-            title="Hoàn thành"
-            value={statsData.completed}
-            icon={<ScheduleOutlined />}
-            color="#722ed1"
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6} xl={6}>
-          <StatCard
-            title="Slot trống"
-            value={statsData.availableSlots}
-            icon={<ScheduleOutlined />}
-            color="#13c2c2"
           />
         </Col>
       </Row>

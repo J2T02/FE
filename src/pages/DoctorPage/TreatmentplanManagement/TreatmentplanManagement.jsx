@@ -19,10 +19,13 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const TreatmentplanManagement = () => {
+  let docId;
   const context = useContext(DoctorStoreContext);
   const { doctorInfo } = context;
-  const docId = doctorInfo.docId;
-  console.log(docId);
+  if (doctorInfo) {
+    docId = doctorInfo.docId;
+  }
+
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -34,30 +37,32 @@ const TreatmentplanManagement = () => {
   }, []);
 
   const fetchTreatmentPlans = async () => {
-    setLoading(true);
-    try {
-      const res = await getTreatmentListForDoctor(docId);
-      if (res && res.data && Array.isArray(res.data.data)) {
-        // Map API data to UI format
-        const mappedPlans = res.data.data.map((item) => ({
-          tp_ID: item.tpId,
-          service_Name: item.serviceInfo?.serName || "",
-          status:
-            item.status?.statusId === 1
-              ? 0
-              : item.status?.statusId === 2
-              ? 1
-              : 2, // Map statusId to UI status
-          // You can add more fields if needed
-        }));
-        setPlans(mappedPlans);
-      } else {
+    if (docId) {
+      setLoading(true);
+      try {
+        const res = await getTreatmentListForDoctor(docId);
+        if (res && res.data && Array.isArray(res.data.data)) {
+          // Map API data to UI format
+          const mappedPlans = res.data.data.map((item) => ({
+            tp_ID: item.tpId,
+            service_Name: item.serviceInfo?.serName || "",
+            status:
+              item.status?.statusId === 1
+                ? 0
+                : item.status?.statusId === 2
+                ? 1
+                : 2, // Map statusId to UI status
+            // You can add more fields if needed
+          }));
+          setPlans(mappedPlans);
+        } else {
+          setPlans([]);
+        }
+      } catch (error) {
         setPlans([]);
       }
-    } catch (error) {
-      setPlans([]);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getStatusTag = (status) => {

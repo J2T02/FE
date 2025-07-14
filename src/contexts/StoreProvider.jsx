@@ -4,9 +4,11 @@ import Cookies from "js-cookie";
 
 import { message } from "antd";
 import { GetCustomerInfo } from "../apis/bookingService";
+import { useNavigate } from "react-router-dom";
 export const StoreContext = createContext();
 
 export const StoreProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [accId, setAccId] = useState(Cookies.get("accId"));
   const [customerInfo, setCustomerInfo] = useState(null);
@@ -16,7 +18,7 @@ export const StoreProvider = ({ children }) => {
     Cookies.remove("accId");
     setUserInfo(null);
     setCustomerInfo(null);
-    window.location.reload();
+    navigate("/");
   };
   useEffect(() => {
     if (accId) {

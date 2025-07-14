@@ -49,7 +49,8 @@ function Header() {
   const { Search } = Input;
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const { userInfo, setAccId, handleLogout } = useContext(StoreContext);
+  const { userInfo, setAccId, handleLogout, customerInfo } =
+    useContext(StoreContext);
   const [isSticky, setIsSticky] = useState(false);
 
   // Scroll effect for sticky header
@@ -221,7 +222,7 @@ function Header() {
               flex: "none",
             }}
           >
-            {userInfo ? (
+            {customerInfo ? (
               <>
                 <Button
                   type="primary"
