@@ -115,7 +115,7 @@ const BookingPage = () => {
         doctorId: bookingData.doctorId || null,
         note: bookingData.notes || "",
       };
-
+      console.log(payload, "payload nek");
       const res = await Booking(payload);
       const bookingId = res.data.data.booking.bookingId;
       const paymentUrl = res.data.data.paymentUrl;

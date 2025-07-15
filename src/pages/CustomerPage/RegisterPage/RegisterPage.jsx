@@ -22,7 +22,7 @@ import {
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-
+import { otpRequest, otpVerify, register } from "../../../apis/authService";
 const registerAccount = async (values) => {
   console.log("Register payload", values);
   return { success: true };
@@ -42,6 +42,7 @@ const RegisterPage = () => {
   const [resendCount, setResendCount] = useState(0);
   const [timer, setTimer] = useState(30);
   const [resendDisabled, setResendDisabled] = useState(true);
+  const [registerPayload, setRegisterPayload] = useState(null); // Lưu thông tin đăng ký để dùng sau khi xác thực OTP
 
   useEffect(() => {
     let interval;
@@ -54,7 +55,12 @@ const RegisterPage = () => {
   }, [resendDisabled, timer, step]);
 
   const validatePassword = (_, value) => {
-    if (!value || value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+    if (
+      !value ||
+      value.length < 8 ||
+      !/[A-Za-z]/.test(value) ||
+      !/\d/.test(value)
+    ) {
       return Promise.reject("Mật khẩu phải ≥ 8 ký tự và bao gồm chữ + số");
     }
     return Promise.resolve();
@@ -62,7 +68,8 @@ const RegisterPage = () => {
 
   const validatePhone = (_, value) => {
     const phoneRegex = /^0\d{9}$/;
-    if (!phoneRegex.test(value)) return Promise.reject("SĐT không hợp lệ (10 số)");
+    if (!phoneRegex.test(value))
+      return Promise.reject("SĐT không hợp lệ (10 số)");
     return Promise.resolve();
   };
 
@@ -75,48 +82,88 @@ const RegisterPage = () => {
     return Promise.resolve();
   };
 
+  // Bước 1: Gửi OTP
   const onFinish = async (values) => {
-    const payload = {
-      ...values,
-      Hus_YOB: values.Hus_YOB ? dayjs(values.Hus_YOB).format("YYYY-MM-DD") : null,
-      Wife_YOB: values.Wife_YOB ? dayjs(values.Wife_YOB).format("YYYY-MM-DD") : null,
-    };
-    const res = await registerAccount(payload);
-    if (res.success) {
-      setEmail(values.Mail);
-      setStep(2);
-      form.resetFields();
-      message.success("Chúng tôi đã gửi mã xác nhận đến email của bạn");
-      setTimer(30);
-      setResendDisabled(true);
-      setResendCount(0);
-    } else {
-      message.error("Đăng ký thất bại, vui lòng thử lại");
+    const emailValue = values.Mail;
+    setEmail(emailValue);
+    // Lưu lại thông tin đăng ký để dùng sau khi xác thực OTP
+    setRegisterPayload({
+      mail: values.Mail,
+      password: values.Password,
+      fullName: values.Full_Name,
+      phone: values.Phone,
+      husName: values.Hus_Name,
+      wifeName: values.Wife_Name,
+      husYob: values.Hus_YOB
+        ? dayjs(values.Hus_YOB).format("YYYY-MM-DD")
+        : null,
+      wifeYob: values.Wife_YOB
+        ? dayjs(values.Wife_YOB).format("YYYY-MM-DD")
+        : null,
+    });
+    try {
+      const res = await otpRequest({ emailOrPhone: emailValue });
+      if (res?.data?.success) {
+        setStep(2);
+        form.resetFields();
+        message.success("Chúng tôi đã gửi mã xác nhận đến email của bạn");
+        setTimer(30);
+        setResendDisabled(true);
+        setResendCount(0);
+      } else {
+        message.error(res?.data?.message || "Gửi mã xác nhận thất bại");
+      }
+    } catch (err) {
+      message.error("Gửi mã xác nhận thất bại");
     }
   };
 
+  // Bước 2: Xác thực OTP
   const handleVerifyOtp = async () => {
-    const isValid = await verifyOtp(otp);
-    if (isValid) {
-      message.success("Xác nhận OTP thành công!");
-      setStep(3);
-    } else {
+    try {
+      const res = await otpVerify({ emailOrPhone: email, otpCode: otp });
+      if (res?.data?.success) {
+        // Sau khi xác thực OTP thành công, gọi API đăng ký
+        try {
+          const regRes = await register(registerPayload);
+          if (regRes?.data?.success) {
+            message.success("Đăng ký thành công!");
+            setStep(3);
+          } else {
+            message.error(regRes?.data?.message || "Đăng ký thất bại");
+          }
+        } catch (err) {
+          message.error("Đăng ký thất bại");
+        }
+      } else {
+        message.error(
+          res?.data?.message || "Mã OTP không chính xác. Vui lòng thử lại."
+        );
+      }
+    } catch (err) {
       message.error("Mã OTP không chính xác. Vui lòng thử lại.");
     }
   };
 
+  // Bước 2: Gửi lại OTP
   const handleResendOtp = async () => {
     if (resendCount >= 10) {
       message.error("Bạn đã gửi lại mã quá 10 lần. Vui lòng thử lại sau.");
       return;
     }
-    const res = await registerAccount({ Mail: email });
-    if (res.success) {
-      message.success("Đã gửi lại mã xác nhận đến email");
-      setResendCount((prev) => prev + 1);
-      setTimer(30);
-      setResendDisabled(true);
-    } else {
+    try {
+      const res = await otpRequest({ emailOrPhone: email });
+      if (res?.data?.success) {
+        message.success("Đã gửi lại mã xác nhận đến email");
+        setResendCount((prev) => prev + 1);
+        setTimer(30);
+        setResendDisabled(true);
+      } else {
+        message.error(
+          res?.data?.message || "Không thể gửi lại mã. Hãy thử lại sau."
+        );
+      }
+    } catch (err) {
       message.error("Không thể gửi lại mã. Hãy thử lại sau.");
     }
   };
@@ -125,17 +172,51 @@ const RegisterPage = () => {
     if (step === 1) {
       return (
         <Form layout="vertical" form={form} onFinish={onFinish}>
-          <Form.Item label="👤 Tên tài khoản" name="Full_Name" rules={[{ required: true, message: "Nhập tên tài khoản" }]}>
-            <Input prefix={<UserOutlined />} size="large" placeholder="Nhập tên tài khoản của bạn" />
+          <Form.Item
+            label="👤 Tên tài khoản"
+            name="Full_Name"
+            rules={[{ required: true, message: "Nhập tên tài khoản" }]}
+          >
+            <Input
+              prefix={<UserOutlined />}
+              size="large"
+              placeholder="Nhập tên tài khoản của bạn"
+            />
           </Form.Item>
-          <Form.Item label="📞 Số điện thoại" name="Phone" rules={[{ required: true, validator: validatePhone }]}>
-            <Input prefix={<PhoneOutlined />} size="large" placeholder="Nhập số điện thoại của bạn" />
+          <Form.Item
+            label="📞 Số điện thoại"
+            name="Phone"
+            rules={[{ required: true, validator: validatePhone }]}
+          >
+            <Input
+              prefix={<PhoneOutlined />}
+              size="large"
+              placeholder="Nhập số điện thoại của bạn"
+            />
           </Form.Item>
-          <Form.Item label="📧 Email" name="Mail" rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}>
-            <Input prefix={<MailOutlined />} size="large" placeholder="Nhập Email của bạn" />
+          <Form.Item
+            label="📧 Email"
+            name="Mail"
+            rules={[
+              { required: true, type: "email", message: "Email không hợp lệ" },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined />}
+              size="large"
+              placeholder="Nhập Email của bạn"
+            />
           </Form.Item>
-          <Form.Item label="🔒 Mật khẩu" name="Password" rules={[{ required: true }, { validator: validatePassword }]}>
-            <Input.Password prefix={<LockOutlined />} size="large" placeholder="Mật khẩu ít nhất 8 ký tự và bao gồm cả chữ và số" />
+          <Form.Item
+            label="🔒 Mật khẩu"
+            name="Password"
+            rules={[{ required: true }, { validator: validatePassword }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              size="large"
+              placeholder="Mật khẩu ít nhất 8 ký tự và bao gồm cả chữ và số"
+            />
           </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
@@ -144,8 +225,16 @@ const RegisterPage = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="📅 Ngày sinh chồng" name="Hus_YOB" rules={[{ validator: validateAge }]}>
-                <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="Chọn ngày sinh của chồng" />
+              <Form.Item
+                label="📅 Ngày sinh chồng"
+                name="Hus_YOB"
+                rules={[{ validator: validateAge }]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
+                  placeholder="Chọn ngày sinh của chồng"
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -156,13 +245,31 @@ const RegisterPage = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="📅 Ngày sinh vợ" name="Wife_YOB" rules={[{ validator: validateAge }]}>
-                <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="Chọn ngày sinh của vợ"/>
+              <Form.Item
+                label="📅 Ngày sinh vợ"
+                name="Wife_YOB"
+                rules={[{ validator: validateAge }]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
+                  placeholder="Chọn ngày sinh của vợ"
+                />
               </Form.Item>
             </Col>
           </Row>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block size="large" style={{ backgroundColor: "#ff85a2", borderColor: "#ff85a2", borderRadius: 10 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              size="large"
+              style={{
+                backgroundColor: "#ff85a2",
+                borderColor: "#ff85a2",
+                borderRadius: 10,
+              }}
+            >
               Đăng ký ngay
             </Button>
           </Form.Item>
@@ -177,7 +284,8 @@ const RegisterPage = () => {
             Vui lòng nhập mã xác nhận đã gửi đến <Text strong>{email}</Text>
           </Title>
           <Text type="secondary" style={{ display: "block", marginBottom: 12 }}>
-            Nếu không thấy email, hãy kiểm tra hộp thư rác hoặc thử lại sau vài phút.
+            Nếu không thấy email, hãy kiểm tra hộp thư rác hoặc thử lại sau vài
+            phút.
           </Text>
           <Input
             placeholder="Nhập mã OTP gồm 6 chữ số"
@@ -193,7 +301,11 @@ const RegisterPage = () => {
             size="large"
             block
             onClick={handleVerifyOtp}
-            style={{ borderRadius: 10, backgroundColor: "#ff85a2", borderColor: "#ff85a2" }}
+            style={{
+              borderRadius: 10,
+              backgroundColor: "#ff85a2",
+              borderColor: "#ff85a2",
+            }}
           >
             ✅ Xác nhận mã OTP
           </Button>
@@ -204,7 +316,9 @@ const RegisterPage = () => {
               onClick={handleResendOtp}
               style={{ padding: 0 }}
             >
-              {resendDisabled ? `Gửi lại mã sau ${timer}s` : `📨 Gửi lại mã xác nhận`}
+              {resendDisabled
+                ? `Gửi lại mã sau ${timer}s`
+                : `📨 Gửi lại mã xác nhận`}
             </Button>
           </div>
         </>
@@ -218,12 +332,20 @@ const RegisterPage = () => {
           <Title level={3} style={{ marginTop: 16, color: "#52c41a" }}>
             Đăng ký thành công!
           </Title>
-          <Text type="secondary">Bạn đã sẵn sàng bắt đầu hành trình điều trị, Con Yêu luôn sẵn sàng bên cạnh bạn, nâng niu mọi giấc mơ làm cha mẹ. 💕</Text>
+          <Text type="secondary">
+            Bạn đã sẵn sàng bắt đầu hành trình điều trị, Con Yêu luôn sẵn sàng
+            bên cạnh bạn, nâng niu mọi giấc mơ làm cha mẹ. 💕
+          </Text>
           <Button
             type="primary"
             size="large"
             onClick={() => navigate("/login")}
-            style={{ marginTop: 24, borderRadius: 10, backgroundColor: "#ff85a2", borderColor: "#ff85a2" }}
+            style={{
+              marginTop: 24,
+              borderRadius: 10,
+              backgroundColor: "#ff85a2",
+              borderColor: "#ff85a2",
+            }}
           >
             Đến trang đăng nhập
           </Button>

@@ -10,9 +10,7 @@ export const ReceptionistStoreContext = createContext();
 
 const ReceptionistStoreProvider = ({ children }) => {
   const [receptionistInfo, setReceptionistInfo] = useState(null);
-  const [receptionistId, setReceptionistId] = useState(
-    Cookies.get("accReceptionistId")
-  );
+  const [receptionistId, setAccRecepId] = useState(Cookies.get("accRecepId"));
   const [treatmentList, setTreatmentList] = useState([]);
   const [treatmentListLoading, setTreatmentListLoading] = useState(false);
   const [doctorList, setDoctorList] = useState([]);
@@ -23,9 +21,9 @@ const ReceptionistStoreProvider = ({ children }) => {
 
   const handleLogout = () => {
     Cookies.remove("token");
-    Cookies.remove("accReceptionistId");
+    Cookies.remove("accRecepId");
     setReceptionistInfo(null);
-    navigate("/receptionistSignin");
+    navigate("/");
   };
 
   const fetchTreatmentList = async () => {
@@ -85,9 +83,9 @@ const ReceptionistStoreProvider = ({ children }) => {
           } else {
             message.error(res.data.message);
             Cookies.remove("token");
-            Cookies.remove("accReceptionistId");
+            Cookies.remove("accRecepId");
             setReceptionistInfo(null);
-            navigate("/receptionistSignin");
+            navigate("/");
           }
         })
         .catch((err) => {
@@ -105,7 +103,7 @@ const ReceptionistStoreProvider = ({ children }) => {
         receptionistInfo,
         setReceptionistInfo,
         receptionistId,
-        setReceptionistId,
+        setAccRecepId,
         handleLogout,
         treatmentList,
         treatmentListLoading,

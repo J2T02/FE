@@ -1,5 +1,7 @@
 import axiosClients from "./axiosClients";
-
+const getAllSlotBooking = async () => {
+  return await axiosClients.get("/Booking/GetAllSchedule");
+};
 const GetAllBooking = async () => {
   return await axiosClients.get("/Booking/GetAllBooking");
 };
@@ -56,6 +58,7 @@ const GetCustomerInfo = async (id) => {
 };
 
 export {
+  getAllSlotBooking,
   GetAllDoctor,
   GetSchedule,
   getAllDoctorScheduleByDoctorId,

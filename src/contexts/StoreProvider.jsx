@@ -10,18 +10,18 @@ export const StoreContext = createContext();
 export const StoreProvider = ({ children }) => {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
-  const [accId, setAccId] = useState(Cookies.get("accId"));
+  const [accCusId, setAccCusId] = useState(Cookies.get("accCusId"));
   const [customerInfo, setCustomerInfo] = useState(null);
 
   const handleLogout = () => {
     Cookies.remove("token");
-    Cookies.remove("accId");
+    Cookies.remove("accCusId");
     setUserInfo(null);
     setCustomerInfo(null);
-    navigate("/");
+    window.location.href = "/";
   };
   useEffect(() => {
-    if (accId) {
+    if (accCusId) {
       getInfo()
         .then((res) => {
           setUserInfo(res.data.data);
@@ -30,7 +30,7 @@ export const StoreProvider = ({ children }) => {
           message.error(err);
         });
       // Fetch customer info
-      GetCustomerInfo(accId)
+      GetCustomerInfo(accCusId)
         .then((res) => {
           if (res.data.success) {
             setCustomerInfo(res.data.data);
@@ -42,13 +42,14 @@ export const StoreProvider = ({ children }) => {
           setCustomerInfo(null);
         });
     }
-  }, [accId]);
+  }, [accCusId]);
   return (
     <StoreContext.Provider
       value={{
         userInfo,
+        accCusId,
         setUserInfo,
-        setAccId,
+        setAccCusId,
         handleLogout,
         customerInfo,
         setCustomerInfo,

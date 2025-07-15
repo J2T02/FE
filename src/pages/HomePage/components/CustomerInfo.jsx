@@ -30,7 +30,6 @@ const CustomerInfo = ({ onNext, onUpdate, data }) => {
   };
 
   const handleFinish = async (values) => {
-    console.log(values);
     const { husName, wifeName, wifeYob, husYob } = values;
     if (!isOver18(wifeYob) || !isOver18(husYob)) {
       message.error("Cả hai đối tác phải đủ 18 tuổi trở lên.");

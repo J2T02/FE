@@ -1,11 +1,32 @@
 import React from "react";
-import { Card, Typography, Button, Space, Descriptions, Divider, Spin } from "antd";
-import { UserOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Typography,
+  Button,
+  Space,
+  Descriptions,
+  Divider,
+  Spin,
+} from "antd";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  FileTextOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 
 const { Title, Text, Paragraph } = Typography;
 
-const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loading }) => {
+const ConfirmBooking = ({
+  data,
+  onSubmit,
+  onRestart,
+  onPrev,
+  disablePrev,
+  loading,
+}) => {
   const formatDate = (dateStr) => {
     return dayjs(dateStr).format("DD/MM/YYYY");
   };
@@ -13,7 +34,7 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
   const formatTime = (timeStr) => {
     return timeStr?.substring(0, 5) || "";
   };
-
+  console.log(data);
   const getSlotText = () => {
     if (data.slotStart && data.slotEnd) {
       return `${formatTime(data.slotStart)}`;
@@ -28,9 +49,9 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
   return (
     <Card>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: "center" }}>
           <Title level={3}>
-            <FileTextOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+            <FileTextOutlined style={{ marginRight: 8, color: "#1890ff" }} />
             Xác nhận lịch hẹn
           </Title>
           <Text type="secondary">
@@ -40,13 +61,13 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
 
         <Divider />
 
-        <Descriptions 
-          title="Thông tin lịch hẹn" 
-          bordered 
+        <Descriptions
+          title="Thông tin lịch hẹn"
+          bordered
           column={1}
           size="middle"
         >
-          <Descriptions.Item 
+          <Descriptions.Item
             label={
               <Space>
                 <CalendarOutlined />
@@ -57,7 +78,7 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
             <Text>{formatDate(data.date)}</Text>
           </Descriptions.Item>
 
-          <Descriptions.Item 
+          <Descriptions.Item
             label={
               <Space>
                 <ClockCircleOutlined />
@@ -68,7 +89,7 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
             <Text>{getSlotText()}</Text>
           </Descriptions.Item>
 
-          <Descriptions.Item 
+          <Descriptions.Item
             label={
               <Space>
                 <UserOutlined />
@@ -83,9 +104,9 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
         {(data.wifeName || data.husName) && (
           <>
             <Divider />
-            <Descriptions 
-              title="Thông tin bệnh nhân" 
-              bordered 
+            <Descriptions
+              title="Thông tin bệnh nhân"
+              bordered
               column={1}
               size="middle"
             >
@@ -118,9 +139,7 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
           <>
             <Divider />
             <Card size="small" title="Ghi chú">
-              <Paragraph style={{ margin: 0 }}>
-                {data.notes}
-              </Paragraph>
+              <Paragraph style={{ margin: 0 }}>{data.notes}</Paragraph>
             </Card>
           </>
         )}
@@ -129,8 +148,8 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
 
         <div style={{ textAlign: "center" }}>
           <Space size="large">
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               onClick={onSubmit}
               size="large"
               loading={loading}
@@ -138,28 +157,24 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
             >
               {loading ? "Đang xử lý..." : "Xác nhận đặt lịch"}
             </Button>
-            
-            <Button 
-              type="default" 
+
+            <Button
+              type="default"
               onClick={onRestart}
               size="large"
               icon={<EditOutlined />}
-              style={{ 
+              style={{
                 minWidth: 120,
-                borderColor: '#1890ff',
-                color: '#1890ff',
-                fontWeight: 500
+                borderColor: "#1890ff",
+                color: "#1890ff",
+                fontWeight: 500,
               }}
             >
               Chỉnh sửa
             </Button>
-            
+
             {!disablePrev && (
-              <Button 
-                type="text" 
-                onClick={onPrev}
-                size="large"
-              >
+              <Button type="text" onClick={onPrev} size="large">
                 Quay lại
               </Button>
             )}
@@ -167,7 +182,7 @@ const ConfirmBooking = ({ data, onSubmit, onRestart, onPrev, disablePrev, loadin
         </div>
 
         {loading && (
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
             <Spin size="small" />
             <Text type="secondary" style={{ marginLeft: 8 }}>
               Đang tạo lịch hẹn...

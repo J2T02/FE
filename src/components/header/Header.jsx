@@ -10,6 +10,7 @@ import {
   Space,
   Typography,
   Divider,
+  message,
 } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { MdEditCalendar } from "react-icons/md";
@@ -49,11 +50,19 @@ function Header() {
   const { Search } = Input;
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const { userInfo, setAccId, handleLogout, customerInfo } =
+  const { accCusId, userInfo, setAccId, handleLogout, customerInfo } =
     useContext(StoreContext);
+
   const [isSticky, setIsSticky] = useState(false);
 
   // Scroll effect for sticky header
+  const handleBooking = () => {
+    if (accCusId) {
+      navigate("/booking");
+    } else {
+      message.warning("Vui lòng đăng nhập để đặt lịch");
+    }
+  };
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -247,7 +256,7 @@ function Header() {
                     justifyContent: "center",
                     transition: "all 0.4s cubic-bezier(.4,0,.2,1)",
                   }}
-                  onClick={() => navigate("/booking")}
+                  onClick={handleBooking}
                 />
                 <Dropdown
                   placement="bottomRight"
@@ -288,14 +297,14 @@ function Header() {
                     }}
                   >
                     <Avatar
-                      src={userInfo.img || null}
-                      icon={!userInfo.img && <UserOutlined />}
+                      src={userInfo?.img || null}
+                      icon={!userInfo?.img && <UserOutlined />}
                       style={{ backgroundColor: token.colorPrimary }}
                     />
                     <span
                       style={{ fontWeight: 600, color: token.colorPrimary }}
                     >
-                      {userInfo.fullName || "Tài khoản"}
+                      {userInfo?.fullName || "Tài khoản"}
                     </span>
                   </div>
                 </Dropdown>
@@ -325,7 +334,7 @@ function Header() {
                     justifyContent: "center",
                     transition: "all 0.4s cubic-bezier(.4,0,.2,1)",
                   }}
-                  onClick={() => navigate("/booking")}
+                  onClick={handleBooking}
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <Button

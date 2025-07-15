@@ -13,7 +13,7 @@ const DoctorStoreProvider = ({ children }) => {
     Cookies.remove("token");
     Cookies.remove("accDocId");
     setDoctorInfo(null);
-    navigate("/doctorSignin");
+    navigate("/");
   };
 
   useEffect(() => {

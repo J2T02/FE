@@ -32,7 +32,7 @@ import FeedbackSection from "~/components/feedback/FeedbackSection";
 import { getFeedbacksByDoctorId } from "~/apis/mockData";
 import { GetSchedule } from "../../../apis/bookingService";
 import styles from "./DoctorScheduleSelection.module.css";
-
+import { getAllSlotBooking } from "../../../apis/bookingService";
 // Constants
 const SLOT_CONFIG = {
   sang: {
@@ -82,6 +82,7 @@ const DoctorScheduleSelection = ({
   // Schedule states
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [slotBooking, setSlotBooking] = useState([]);
   const [availableSchedules, setAvailableSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
@@ -91,6 +92,21 @@ const DoctorScheduleSelection = ({
   const [activeTab, setActiveTab] = useState("info");
 
   // Initialize data from props
+  useEffect(() => {
+    const fetchSlots = async () => {
+      try {
+        const res = await getAllSlotBooking();
+
+        const slots = Array.isArray(res?.data?.data) ? res.data.data : [];
+        setSlotBooking(slots);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách slot:", error);
+        setSlotBooking([]); // fallback để tránh crash nếu slot không có
+      }
+    };
+
+    fetchSlots();
+  }, []);
   useEffect(() => {
     if (data?.date) {
       setSelectedDate(dayjs(data.date));
@@ -137,7 +153,7 @@ const DoctorScheduleSelection = ({
 
         const schedules = Array.isArray(res?.data?.data) ? res.data.data : [];
         setAvailableSchedules(schedules);
-
+        console.log(schedules);
         if (schedules.length === 0) {
           setScheduleError(MESSAGES.NO_SCHEDULE);
         }
@@ -162,6 +178,7 @@ const DoctorScheduleSelection = ({
     fetchSchedule();
 
     // Cleanup function to prevent memory leaks
+    console.log(slotBooking);
     return () => {
       isCancelled = true;
     };
@@ -173,15 +190,26 @@ const DoctorScheduleSelection = ({
       const dateStr = selectedDate.format("YYYY-MM-DD");
 
       if (!selectedDoctor) {
-        // No doctor selected - use fixed slots
-        const slotConfig = SLOT_CONFIG[selectedSlot];
-        if (slotConfig) {
+        // No doctor selected - use slotBooking thay vì SLOT_CONFIG
+        const slotObj = slotBooking.find((s) => s.slotId === selectedSlot);
+        if (slotObj) {
           onUpdate({
             date: dateStr,
-            slot: slotConfig.id,
-            slotStart: slotConfig.start,
-            slotEnd: slotConfig.end,
+            slot: slotObj.slotId,
+            slotStart: slotObj.slotStart,
+            slotEnd: slotObj.slotEnd,
           });
+        } else {
+          // fallback về SLOT_CONFIG nếu không tìm thấy
+          const slotConfig = SLOT_CONFIG[selectedSlot];
+          if (slotConfig) {
+            onUpdate({
+              date: dateStr,
+              slot: slotConfig.id,
+              slotStart: slotConfig.start,
+              slotEnd: slotConfig.end,
+            });
+          }
         }
       } else {
         // Doctor selected - use specific schedule
@@ -199,7 +227,7 @@ const DoctorScheduleSelection = ({
         }
       }
     }
-  }, [selectedDate, selectedSlot, selectedDoctor, onUpdate]);
+  }, [selectedDate, selectedSlot, selectedDoctor, onUpdate, slotBooking]);
 
   // Memoized functions for better performance
   const getSlotsForSelectedDate = useCallback(() => {
@@ -393,7 +421,6 @@ const DoctorScheduleSelection = ({
       </div>
     );
   }
-
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       <Modal
@@ -717,44 +744,103 @@ const DoctorScheduleSelection = ({
                 />
 
                 <Card title="Khung giờ" size="small" style={{ marginTop: 16 }}>
-                      {scheduleLoading ? (
-                        <div style={{ textAlign: "center", padding: "20px" }}>
-                          <Spin size="small" tip="Đang tải..." />
-                        </div>
-                      ) : scheduleError ? (
-                        <Alert
-                          message="Lỗi"
-                          description={scheduleError}
-                          type="warning"
-                          showIcon
-                          size="small"
-                        />
-                      ) : selectedDate ? (
-                        <div>
-                          <Text
-                            style={{
-                              display: "block",
-                              marginBottom: 12,
-                              fontSize: 12,
-                            }}
-                          >
-                            Ngày:{" "}
-                            <Text strong>
-                              {selectedDate.format("DD/MM/YYYY")}
-                            </Text>
-                          </Text>
+                  {scheduleLoading ? (
+                    <div style={{ textAlign: "center", padding: "20px" }}>
+                      <Spin size="small" tip="Đang tải..." />
+                    </div>
+                  ) : scheduleError ? (
+                    <Alert
+                      message="Lỗi"
+                      description={scheduleError}
+                      type="warning"
+                      showIcon
+                      size="small"
+                    />
+                  ) : selectedDate ? (
+                    <div>
+                      <Text
+                        style={{
+                          display: "block",
+                          marginBottom: 12,
+                          fontSize: 12,
+                        }}
+                      >
+                        Ngày:{" "}
+                        <Text strong>{selectedDate.format("DD/MM/YYYY")}</Text>
+                      </Text>
 
-                          <Radio.Group
-                            onChange={(e) => handleSlotSelect(e.target.value)}
-                            value={selectedSlot}
-                            style={{ width: "100%" }}
-                          >
-                            <Row gutter={[12, 12]}>
-                              {selectedDoctor
-                                ? getSlotsForSelectedDate().map((item) => (
-                                    <Col xs={24} sm={12} md={8} lg={6} key={item.dsId}>
+                      <Radio.Group
+                        onChange={(e) => handleSlotSelect(e.target.value)}
+                        value={selectedSlot}
+                        style={{ width: "100%" }}
+                      >
+                        <Row gutter={[12, 12]}>
+                          {selectedDoctor
+                            ? getSlotsForSelectedDate().map((item) => (
+                                <Col
+                                  xs={24}
+                                  sm={12}
+                                  md={8}
+                                  lg={6}
+                                  key={item.dsId}
+                                >
+                                  <Radio.Button
+                                    value={item.slot.slotId}
+                                    style={{
+                                      width: "100%",
+                                      textAlign: "center",
+                                      height: "auto",
+                                      padding: "8px 6px",
+                                      borderRadius: "6px",
+                                    }}
+                                  >
+                                    <div>
+                                      <ClockCircleOutlined
+                                        style={{
+                                          marginRight: 4,
+                                          color: "#1890ff",
+                                          fontSize: "12px",
+                                        }}
+                                      />
+                                      <Text strong style={{ fontSize: "13px" }}>
+                                        {item.slot.slotStart}
+                                      </Text>
+                                      <br />
+                                      <Text
+                                        type="secondary"
+                                        style={{ fontSize: 10 }}
+                                      >
+                                        Ca{" "}
+                                        {item.slot.slotId === 1
+                                          ? "sáng"
+                                          : "chiều"}
+                                      </Text>
+                                      <br />
+                                      <Text
+                                        style={{
+                                          fontSize: 12,
+                                          color: "#52c41a",
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        200K
+                                      </Text>
+                                    </div>
+                                  </Radio.Button>
+                                </Col>
+                              ))
+                            : [
+                                <Row gutter={[16, 16]}>
+                                  {slotBooking.map((slot) => (
+                                    <Col
+                                      xs={24}
+                                      sm={12}
+                                      md={8}
+                                      lg={6}
+                                      key={slot.slotId}
+                                    >
                                       <Radio.Button
-                                        value={item.slot.slotId}
+                                        value={slot.slotId}
                                         style={{
                                           width: "100%",
                                           textAlign: "center",
@@ -771,123 +857,48 @@ const DoctorScheduleSelection = ({
                                               fontSize: "12px",
                                             }}
                                           />
-                                          <Text strong style={{ fontSize: "13px" }}>
-                                            {item.slot.slotStart}
+                                          <Text
+                                            strong
+                                            style={{ fontSize: "13px" }}
+                                          >
+                                            {slot.slotStart.slice(0, 5)}{" "}
+                                            {/* ví dụ: 07:00 */}
                                           </Text>
                                           <br />
                                           <Text
                                             type="secondary"
                                             style={{ fontSize: 10 }}
                                           >
-                                            Ca{" "}
-                                            {item.slot.slotId === 1
-                                              ? "sáng"
-                                              : "chiều"}
+                                            {slot.slotId === 1
+                                              ? "Ca sáng"
+                                              : slot.slotId === 2
+                                              ? "Ca chiều"
+                                              : "Ca khác"}
                                           </Text>
                                           <br />
                                           <Text
-                                              style={{ 
-                                                fontSize: 12, 
-                                                color: "#52c41a",
-                                                fontWeight: "bold"
-                                              }}
-                                            >
-                                              200K
-                                            </Text>
-                                        </div>
-                                      </Radio.Button>
-                                    </Col>
-                                  ))
-                                : [
-                                    <Col xs={24} sm={12} md={8} lg={6} key="sang">
-                                      <Radio.Button
-                                        value="sang"
-                                        style={{
-                                          width: "100%",
-                                          textAlign: "center",
-                                          height: "auto",
-                                          padding: "8px 6px",
-                                          borderRadius: "6px",
-                                        }}
-                                      >
-                                        <div>
-                                          <ClockCircleOutlined
                                             style={{
-                                              marginRight: 4,
-                                              color: "#1890ff",
-                                              fontSize: "12px",
-                                            }}
-                                          />
-                                          <Text strong style={{ fontSize: "13px" }}>07:00</Text>
-                                          <br />
-                                          <Text
-                                            type="secondary"
-                                            style={{ fontSize: 10 }}
-                                          >
-                                            Ca sáng
-                                          </Text>
-                                          <br />
-                                          <Text
-                                            style={{ 
-                                              fontSize: 12, 
+                                              fontSize: 12,
                                               color: "#52c41a",
-                                              fontWeight: "bold"
+                                              fontWeight: "bold",
                                             }}
                                           >
                                             200K
                                           </Text>
                                         </div>
                                       </Radio.Button>
-                                    </Col>,
-                                    <Col xs={24} sm={12} md={8} lg={6} key="chieu">
-                                      <Radio.Button
-                                        value="chieu"
-                                        style={{
-                                          width: "100%",
-                                          textAlign: "center",
-                                          height: "auto",
-                                          padding: "8px 6px",
-                                          borderRadius: "6px",
-                                        }}
-                                      >
-                                        <div>
-                                          <ClockCircleOutlined
-                                            style={{
-                                              marginRight: 4,
-                                              color: "#1890ff",
-                                              fontSize: "12px",
-                                            }}
-                                          />
-                                          <Text strong style={{ fontSize: "13px" }}>13:00</Text>
-                                          <br />
-                                          <Text
-                                            type="secondary"
-                                            style={{ fontSize: 10 }}
-                                          >
-                                            Ca chiều
-                                          </Text>
-                                          <br />
-                                          <Text
-                                             style={{ 
-                                               fontSize: 12, 
-                                               color: "#52c41a",
-                                               fontWeight: "bold"
-                                             }}
-                                           >
-                                             200K
-                                           </Text>
-                                        </div>
-                                      </Radio.Button>
-                                    </Col>,
-                                  ]}
-                            </Row>
-                          </Radio.Group>
-                        </div>
-                      ) : (
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Vui lòng chọn ngày khám trước
-                        </Text>
-                      )}
+                                    </Col>
+                                  ))}
+                                </Row>,
+                              ]}
+                        </Row>
+                      </Radio.Group>
+                    </div>
+                  ) : (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Vui lòng chọn ngày khám trước
+                    </Text>
+                  )}
                 </Card>
               </Space>
             </Card>

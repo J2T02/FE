@@ -1,14 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Typography,
-  Card,
-  Row,
-  Col,
-  message,
-} from "antd";
+import { Form, Input, Button, Typography, Card, Row, Col, message } from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -22,11 +13,8 @@ import Cookies from "js-cookie";
 
 const { Title, Text } = Typography;
 
-
-
 const LoginPage = () => {
-  const { userInfo, setAccId, handleLogout, customerInfo } =
-    useContext(StoreContext);
+  const { setAccCusId } = useContext(StoreContext);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -58,15 +46,44 @@ const LoginPage = () => {
       mailOrPhone: identifier,
       password: password,
     };
-    
+
     await signIn(body)
       .then((res) => {
         if (res.data.success) {
-          const { token, accId } = res.data.data;
-          Cookies.set("accId", accId);
-          Cookies.set("token", token);
+          const { token, accId, roleId } = res.data.data;
+          console.log(res.data.data);
+          switch (roleId) {
+            case 1:
+              Cookies.set("accAdId", accId);
+              Cookies.set("token", token);
+
+              break;
+            case 2:
+              Cookies.set("accManaId", accId);
+              Cookies.set("token", token);
+
+              break;
+            case 3:
+              Cookies.set("accRecepId", accId);
+              Cookies.set("token", token);
+              // setAccRecepId(accId);
+              break;
+            case 4:
+              Cookies.set("accCusId", accId);
+              Cookies.set("token", token);
+              setAccCusId(accId);
+              break;
+            case 5:
+              Cookies.set("accDocId", accId);
+              Cookies.set("token", token);
+
+              break;
+            default:
+              break;
+          }
+
           message.success("Đăng nhập thành công!");
-          setAccId(accId);
+
           // Redirect based on role if available in response
           if (res.data.data.roleId) {
             handleRedirectByRole(res.data.data.roleId);
