@@ -36,14 +36,6 @@ const ActionSection = ({ bookingId }) => {
           </Button>
 
           <Button
-            icon={<EditOutlined />}
-            onClick={handleEdit}
-            style={{ width: "100%" }}
-          >
-            Chỉnh sửa thông tin
-          </Button>
-
-          <Button
             danger
             icon={<CloseOutlined />}
             onClick={handleCancel}

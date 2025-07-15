@@ -11,7 +11,7 @@ import {
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
-import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage"; // 👈 Thêm import
+import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage";
 
 const { Title } = Typography;
 
@@ -55,7 +55,7 @@ const ServiceManagement = () => {
   ]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedServiceId, setSelectedServiceId] = useState(null); // 👈 NEW
+  const [selectedServiceId, setSelectedServiceId] = useState(null); // ✅ THÊM
 
   useEffect(() => {
     fetchServices();
@@ -91,12 +91,13 @@ const ServiceManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a
-          onClick={() => setSelectedServiceId(record.ser_ID)} // 👈 NEW
+        <Button
+          type="link"
           style={{ color: "#1677ff" }}
+          onClick={() => setSelectedServiceId(record.ser_ID)} // ✅ THÊM
         >
           Xem chi tiết
-        </a>
+        </Button>
       ),
     },
   ];
@@ -105,17 +106,17 @@ const ServiceManagement = () => {
     item.ser_Name.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
-  // 👉 Nếu đang chọn 1 dịch vụ => hiển thị trang chi tiết
+  // ✅ Nếu đang xem chi tiết dịch vụ => hiện ServiceDetailPage
   if (selectedServiceId !== null) {
     return (
       <ServiceDetailPage
         serId={selectedServiceId}
-        embedded
-        onBack={() => setSelectedServiceId(null)} // 👈 nút quay lại
+        onBack={() => setSelectedServiceId(null)} // ✅ Nút quay lại
       />
     );
   }
 
+  // ✅ Trang danh sách dịch vụ (không đổi logic gì cả)
   return (
     <Card
       title={<Title level={3}>Quản lý dịch vụ</Title>}

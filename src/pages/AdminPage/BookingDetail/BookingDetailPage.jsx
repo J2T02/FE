@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Layout, Row, Col, Space, Spin, message, theme } from "antd";
+import {
+  Layout,
+  Row,
+  Col,
+  Space,
+  Spin,
+  message,
+  theme,
+  Button,
+  Typography,
+} from "antd";
+import {
+  ArrowLeftOutlined
+} from "@ant-design/icons";
+
 import AdminHeader from "../components/AdminHeader";
 import BackButton from "./components/BackButton";
 import BookingHeader from "./components/BookingHeader";
@@ -12,10 +26,11 @@ import AppointmentInfoCard from "./components/AppointmentInfoCard";
 import { BookingDetail } from "../../../apis/bookingService";
 
 const { Content } = Layout;
+const { Title } = Typography;
 
-export default function BookingDetailPage() {
-  const { id } = useParams();
-  const bookingId = parseInt(id);
+export default function BookingDetailPage({ id, embedded = false, onBack }) {
+  const routeParams = useParams();
+  const bookingId = parseInt(id || routeParams?.id);
   const { token } = theme.useToken();
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
@@ -27,8 +42,41 @@ export default function BookingDetailPage() {
         setBookingData(res.data.data);
         setLoading(false);
       } catch (error) {
-        console.log(error);
-        message.error("Không thể tải thông tin booking");
+        console.error(error);
+        message.warning("Dùng dữ liệu mock vì không gọi được API");
+
+        // Dữ liệu mock
+        const mockData = {
+          bookingId: bookingId,
+          status: 1,
+          createdAt: "2025-07-15T08:00:00Z",
+          note: "Khám hiếm muộn lần đầu",
+          cus: {
+            fullName: "Nguyễn Văn A",
+            gender: "Nam",
+            dob: "1990-01-01",
+            phone: "0901234567",
+            email: "nguyenvana@example.com",
+          },
+          doc: {
+            docId: 2,
+            accDoc: {
+              fullName: "BS. Trần Thị B",
+              email: "bs.b@example.com",
+              phone: "0912345678",
+              gender: "Nữ",
+            },
+          },
+          schedule: {
+            scheduleId: 5,
+            date: "2025-07-20",
+            timeStart: "08:00",
+            timeEnd: "09:00",
+          },
+          slot: "08:00 - 09:00",
+        };
+
+        setBookingData(mockData);
         setLoading(false);
       }
     };
@@ -42,10 +90,40 @@ export default function BookingDetailPage() {
     <Layout
       style={{ minHeight: "100vh", backgroundColor: token.colorBgContainer }}
     >
-      <AdminHeader />
-      <Content style={{ padding: 24, backgroundColor: token.colorBgLayout }}>
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <BackButton />
+      {!embedded && <AdminHeader />}
+      <Content
+        style={{
+          padding: embedded ? 0 : 24,
+          backgroundColor: token.colorBgLayout,
+        }}
+      >
+        <Space
+          direction="vertical"
+          size="large"
+          style={{
+            width: "100%",
+            padding: embedded ? 24 : 0,
+            backgroundColor: "#fff0f6", // màu nền cho tab
+            borderRadius: 12,
+          }}
+        >
+          {embedded ? (
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={onBack}
+              style={{
+                backgroundColor: "#f78db3",
+                color: "white",
+                border: "none",
+                width: "fit-content",
+              }}
+            >
+              Quay lại danh sách lịch hẹn
+            </Button>
+          ) : (
+            <BackButton />
+          )}
+
           <BookingHeader data={bookingData} />
           <BookingOverviewCard data={bookingData} />
 

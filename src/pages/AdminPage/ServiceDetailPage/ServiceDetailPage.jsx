@@ -38,18 +38,21 @@ const mockServiceDetail = {
   ],
 };
 
-const ServiceDetailPage = () => {
+const ServiceDetailPage = ({ serId, onBack }) => {
   const [form] = Form.useForm();
   const [service, setService] = useState(null);
   const [editingStep, setEditingStep] = useState(null);
   const [stepModalOpen, setStepModalOpen] = useState(false);
   const [stepList, setStepList] = useState([]);
   const navigate = useNavigate();
-  const { id } = useParams();
+  const params = useParams();
+
+  // 👇 Nếu không có serId props thì lấy từ URL
+  const id = serId ?? params.id;
 
   useEffect(() => {
-    // Gọi API lấy thông tin chi tiết dịch vụ
-    setService(mockServiceDetail); // Thay bằng gọi API sau
+    // 👇 Giả lập fetch dữ liệu theo id
+    setService(mockServiceDetail); // Sau này thay bằng API gọi theo `id`
     setStepList(mockServiceDetail.TreatmentSteps);
     form.setFieldsValue({
       Ser_Name: mockServiceDetail.Ser_Name,
@@ -94,7 +97,10 @@ const ServiceDetailPage = () => {
         <Col>
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (onBack) onBack(); // 👈 Nếu được gọi từ tab, gọi hàm back
+              else navigate(-1); // 👈 Nếu từ URL trực tiếp thì quay lại
+            }}
             style={{
               backgroundColor: "#f78db3",
               color: "white",

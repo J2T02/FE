@@ -16,6 +16,7 @@ import {
   PhoneOutlined,
   UserOutlined,
   ArrowLeftOutlined,
+  PoweroffOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -67,12 +68,36 @@ const AccountDetailPage = ({ accId, onBack }) => {
     }
   };
 
-  const renderStatusTag = (isActive) =>
-    isActive ? (
-      <Tag color="green">Đang hoạt động</Tag>
-    ) : (
-      <Tag color="red">Ngưng hoạt động</Tag>
+  const toggleActiveStatus = () => {
+    if (!account) return;
+    const newStatus = !account.isActive;
+    setAccount({ ...account, isActive: newStatus });
+    message.success(
+      `Tài khoản đã được ${newStatus ? "kích hoạt" : "ngưng hoạt động"} thành công`
     );
+  };
+
+  const renderStatusTagWithButton = (isActive) => (
+    <Space>
+      {isActive ? <Tag color="green">Đang hoạt động</Tag> : <Tag color="red">Ngưng hoạt động</Tag>}
+      <Button
+        icon={<PoweroffOutlined />}
+        size="small"
+        danger={!isActive}
+        onClick={toggleActiveStatus}
+        style={{
+          borderRadius: 6,
+          fontSize: 12,
+          padding: "0 8px",
+          height: 24,
+          backgroundColor: "white",
+                color: "#f78db3",
+        }}
+      >
+        {isActive ? "Tắt" : "Bật"}
+      </Button>
+    </Space>
+  );
 
   if (!account) return null;
 
@@ -140,7 +165,7 @@ const AccountDetailPage = ({ accId, onBack }) => {
                 <PhoneOutlined style={{ marginRight: 8 }} />
                 {account.phone}
               </Text>
-              {renderStatusTag(account.isActive)}
+              {renderStatusTagWithButton(account.isActive)}
             </Space>
           </Col>
         </Row>

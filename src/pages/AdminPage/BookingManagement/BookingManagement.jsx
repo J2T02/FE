@@ -11,13 +11,14 @@ import {
   Card,
   Space,
   Input,
+  message,
 } from "antd";
-import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { GetAllBooking } from "../../../apis/bookingService";
+import BookingDetailPage from "../BookingDetail/BookingDetailPage"; // embedded
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -27,20 +28,19 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const BookingManagement = () => {
-  const navigate = useNavigate();
   const today = dayjs();
   const [dateRange, setDateRange] = useState([today, today]);
   const [selectedShift, setSelectedShift] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
         if (res?.data?.success && Array.isArray(res.data.data)) {
-          // Map API data to table data
           const mapped = res.data.data.map((item) => ({
             bookingId: item.bookingId,
             workDate: item.schedule?.workDate || "",
@@ -49,7 +49,6 @@ const BookingManagement = () => {
             status: item.status?.statusName || "",
           }));
           setBookings(mapped);
-          console.log(bookings);
         } else {
           setBookings([]);
         }
@@ -79,6 +78,31 @@ const BookingManagement = () => {
     }
   };
 
+  const handleConfirmSingle = (bookingId) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.bookingId === bookingId ? { ...b, status: "Đã xác nhận" } : b
+      )
+    );
+    message.success(`Đã xác nhận booking #${bookingId}`);
+  };
+
+  const handleConfirmAllVisible = () => {
+    const count = filteredBookings.filter((b) => b.status === "Chờ xác nhận").length;
+    if (count === 0) {
+      message.info("Không có booking nào cần xác nhận");
+      return;
+    }
+    setBookings((prev) =>
+      prev.map((b) =>
+        filteredBookings.some((fb) => fb.bookingId === b.bookingId && fb.status === "Chờ xác nhận")
+          ? { ...b, status: "Đã xác nhận" }
+          : b
+      )
+    );
+    message.success(`Đã xác nhận ${count} booking`);
+  };
+
   const columns = [
     {
       title: "Mã Booking",
@@ -96,16 +120,26 @@ const BookingManagement = () => {
     {
       title: "Trạng thái",
       dataIndex: "status",
-      render: (status) => <Tag color={getStatusColor(status)}>{status}</Tag>,
+      render: (status, record) => (
+        <Space>
+          <Tag color={getStatusColor(status)}>{status}</Tag>
+          {status === "Chờ xác nhận" && (
+            <Button
+              size="small"
+              type="link"
+              onClick={() => handleConfirmSingle(record.bookingId)}
+            >
+              Xác nhận
+            </Button>
+          )}
+        </Space>
+      ),
     },
     {
       title: "",
       align: "right",
       render: (_, record) => (
-        <Button
-          type="link"
-          onClick={() => navigate(`/admin/bookingdetail/${record.bookingId}`)}
-        >
+        <Button type="link" onClick={() => setSelectedBookingId(record.bookingId)}>
           Xem chi tiết
         </Button>
       ),
@@ -115,7 +149,6 @@ const BookingManagement = () => {
   const handleFilter = () => {
     let filtered = [...bookings];
 
-    // Lọc theo khoảng ngày workDate
     if (dateRange && dateRange[0] && dateRange[1]) {
       const [start, end] = dateRange;
       filtered = filtered.filter((b) => {
@@ -128,26 +161,18 @@ const BookingManagement = () => {
       });
     }
 
-    // Lọc theo ca làm việc (slotStart)
     if (selectedShift) {
       filtered = filtered.filter((b) => {
         const time = dayjs(b.slotStart, "HH:mm");
         if (selectedShift === "sang") {
-          return (
-            time.isSameOrAfter(dayjs("08:00", "HH:mm")) &&
-            time.isBefore(dayjs("12:00", "HH:mm"))
-          );
+          return time.isSameOrAfter(dayjs("08:00", "HH:mm")) && time.isBefore(dayjs("12:00", "HH:mm"));
         } else if (selectedShift === "chieu") {
-          return (
-            time.isSameOrAfter(dayjs("13:00", "HH:mm")) &&
-            time.isBefore(dayjs("17:00", "HH:mm"))
-          );
+          return time.isSameOrAfter(dayjs("13:00", "HH:mm")) && time.isBefore(dayjs("17:00", "HH:mm"));
         }
         return true;
       });
     }
 
-    // Lọc theo bookingId (searchKeyword)
     if (searchKeyword.trim() !== "") {
       filtered = filtered.filter((b) =>
         b.bookingId?.toString().includes(searchKeyword.trim())
@@ -159,7 +184,17 @@ const BookingManagement = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [dateRange, selectedShift, searchKeyword]);
+  }, [dateRange, selectedShift, searchKeyword, bookings]);
+
+  if (selectedBookingId !== null) {
+    return (
+      <BookingDetailPage
+        id={selectedBookingId.toString()}
+        embedded
+        onBack={() => setSelectedBookingId(null)}
+      />
+    );
+  }
 
   return (
     <Card
