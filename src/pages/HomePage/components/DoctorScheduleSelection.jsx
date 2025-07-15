@@ -709,18 +709,14 @@ const DoctorScheduleSelection = ({
                   </div>
                 </div>
 
-                <Row gutter={16}>
-                  <Col span={14}>
-                    <Calendar
-                      fullscreen={false}
-                      value={selectedDate || dayjs()}
-                      onSelect={handleDateSelect}
-                      disabledDate={disabledDate}
-                    />
-                  </Col>
+                <Calendar
+                  fullscreen={false}
+                  value={selectedDate || dayjs()}
+                  onSelect={handleDateSelect}
+                  disabledDate={disabledDate}
+                />
 
-                  <Col span={10}>
-                    <Card title="Khung giờ" size="small">
+                <Card title="Khung giờ" size="small" style={{ marginTop: 16 }}>
                       {scheduleLoading ? (
                         <div style={{ textAlign: "center", padding: "20px" }}>
                           <Spin size="small" tip="Đang tải..." />
@@ -753,134 +749,138 @@ const DoctorScheduleSelection = ({
                             value={selectedSlot}
                             style={{ width: "100%" }}
                           >
-                            <Space
-                              direction="vertical"
-                              style={{ width: "100%" }}
-                            >
+                            <Row gutter={[12, 12]}>
                               {selectedDoctor
                                 ? getSlotsForSelectedDate().map((item) => (
-                                    <Radio.Button
-                                      key={item.dsId}
-                                      value={item.slot.slotId}
-                                      style={{
-                                        width: "100%",
-                                        textAlign: "left",
-                                        marginBottom: 8,
-                                        height: "auto",
-                                        padding: "8px 12px",
-                                      }}
-                                    >
-                                      <div>
-                                        <ClockCircleOutlined
-                                          style={{
-                                            marginRight: 8,
-                                            color: "#1890ff",
-                                          }}
-                                        />
-                                        <Text strong>
-                                          {item.slot.slotStart}
-                                        </Text>
-                                        <br />
-                                        <Text
-                                          type="secondary"
-                                          style={{ fontSize: 12 }}
-                                        >
-                                          Ca{" "}
-                                          {item.slot.slotId === 1
-                                            ? "sáng"
-                                            : "chiều"}
-                                        </Text>
-                                        <br />
-                                        <Text
+                                    <Col xs={24} sm={12} md={8} lg={6} key={item.dsId}>
+                                      <Radio.Button
+                                        value={item.slot.slotId}
+                                        style={{
+                                          width: "100%",
+                                          textAlign: "center",
+                                          height: "auto",
+                                          padding: "8px 6px",
+                                          borderRadius: "6px",
+                                        }}
+                                      >
+                                        <div>
+                                          <ClockCircleOutlined
+                                            style={{
+                                              marginRight: 4,
+                                              color: "#1890ff",
+                                              fontSize: "12px",
+                                            }}
+                                          />
+                                          <Text strong style={{ fontSize: "13px" }}>
+                                            {item.slot.slotStart}
+                                          </Text>
+                                          <br />
+                                          <Text
+                                            type="secondary"
+                                            style={{ fontSize: 10 }}
+                                          >
+                                            Ca{" "}
+                                            {item.slot.slotId === 1
+                                              ? "sáng"
+                                              : "chiều"}
+                                          </Text>
+                                          <br />
+                                          <Text
+                                              style={{ 
+                                                fontSize: 12, 
+                                                color: "#52c41a",
+                                                fontWeight: "bold"
+                                              }}
+                                            >
+                                              200K
+                                            </Text>
+                                        </div>
+                                      </Radio.Button>
+                                    </Col>
+                                  ))
+                                : [
+                                    <Col xs={24} sm={12} md={8} lg={6} key="sang">
+                                      <Radio.Button
+                                        value="sang"
+                                        style={{
+                                          width: "100%",
+                                          textAlign: "center",
+                                          height: "auto",
+                                          padding: "8px 6px",
+                                          borderRadius: "6px",
+                                        }}
+                                      >
+                                        <div>
+                                          <ClockCircleOutlined
+                                            style={{
+                                              marginRight: 4,
+                                              color: "#1890ff",
+                                              fontSize: "12px",
+                                            }}
+                                          />
+                                          <Text strong style={{ fontSize: "13px" }}>07:00</Text>
+                                          <br />
+                                          <Text
+                                            type="secondary"
+                                            style={{ fontSize: 10 }}
+                                          >
+                                            Ca sáng
+                                          </Text>
+                                          <br />
+                                          <Text
                                             style={{ 
-                                              fontSize: 14, 
+                                              fontSize: 12, 
                                               color: "#52c41a",
                                               fontWeight: "bold"
                                             }}
                                           >
-                                            200,000 VND
+                                            200K
                                           </Text>
-                                      </div>
-                                    </Radio.Button>
-                                  ))
-                                : [
-                                    <Radio.Button
-                                      key="sang"
-                                      value="sang"
-                                      style={{
-                                        width: "100%",
-                                        textAlign: "left",
-                                        marginBottom: 8,
-                                        height: "auto",
-                                        padding: "8px 12px",
-                                      }}
-                                    >
-                                      <div>
-                                        <ClockCircleOutlined
-                                          style={{
-                                            marginRight: 8,
-                                            color: "#1890ff",
-                                          }}
-                                        />
-                                        <Text strong>07:00</Text>
-                                        <br />
-                                        <Text
-                                          type="secondary"
-                                          style={{ fontSize: 12 }}
-                                        >
-                                          Ca sáng
-                                        </Text>
-                                        <br />
-                                        <Text
-                                          style={{ 
-                                            fontSize: 14, 
-                                            color: "#52c41a",
-                                            fontWeight: "bold"
-                                          }}
-                                        >
-                                          200,000 VND
-                                        </Text>
-                                      </div>
-                                    </Radio.Button>,
-                                    <Radio.Button
-                                      key="chieu"
-                                      value="chieu"
-                                      style={{
-                                        width: "100%",
-                                        textAlign: "left",
-                                        height: "auto",
-                                        padding: "8px 12px",
-                                      }}
-                                    >
-                                      <div>
-                                        <ClockCircleOutlined
-                                          style={{
-                                            marginRight: 8,
-                                            color: "#1890ff",
-                                          }}
-                                        />
-                                        <Text strong>13:00</Text>
-                                        <br />
-                                        <Text
-                                          type="secondary"
-                                          style={{ fontSize: 12 }}
-                                        >
-                                          Ca chiều
-                                        </Text>
-                                        <br />
-                                        <Text
-                                           style={{ 
-                                             fontSize: 14, 
-                                             color: "#52c41a",
-                                             fontWeight: "bold"
-                                           }}
-                                         >
-                                           200,000 VND
-                                         </Text>
-                                      </div>
-                                    </Radio.Button>,
+                                        </div>
+                                      </Radio.Button>
+                                    </Col>,
+                                    <Col xs={24} sm={12} md={8} lg={6} key="chieu">
+                                      <Radio.Button
+                                        value="chieu"
+                                        style={{
+                                          width: "100%",
+                                          textAlign: "center",
+                                          height: "auto",
+                                          padding: "8px 6px",
+                                          borderRadius: "6px",
+                                        }}
+                                      >
+                                        <div>
+                                          <ClockCircleOutlined
+                                            style={{
+                                              marginRight: 4,
+                                              color: "#1890ff",
+                                              fontSize: "12px",
+                                            }}
+                                          />
+                                          <Text strong style={{ fontSize: "13px" }}>13:00</Text>
+                                          <br />
+                                          <Text
+                                            type="secondary"
+                                            style={{ fontSize: 10 }}
+                                          >
+                                            Ca chiều
+                                          </Text>
+                                          <br />
+                                          <Text
+                                             style={{ 
+                                               fontSize: 12, 
+                                               color: "#52c41a",
+                                               fontWeight: "bold"
+                                             }}
+                                           >
+                                             200K
+                                           </Text>
+                                        </div>
+                                      </Radio.Button>
+                                    </Col>,
                                   ]}
-                            </Space>
+                            </Row>
                           </Radio.Group>
                         </div>
                       ) : (
@@ -888,9 +888,7 @@ const DoctorScheduleSelection = ({
                           Vui lòng chọn ngày khám trước
                         </Text>
                       )}
-                    </Card>
-                  </Col>
-                </Row>
+                </Card>
               </Space>
             </Card>
           </Col>
