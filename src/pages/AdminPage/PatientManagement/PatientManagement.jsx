@@ -8,7 +8,6 @@ import {
   message,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { GetAllAccount } from "../../../apis/adminService";
 
 const { Title } = Typography;
 
@@ -24,9 +23,28 @@ const PatientManagement = () => {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = await GetAllAccount();
-      console.log("API Response:", res);
-      setPatients(res.data.data); // lấy danh sách từ API
+      const res = {
+        data: {
+          data: [
+            {
+              fullName: "Nguyễn Văn A",
+              phone: "0901234567",
+              mail: "vana@example.com",
+            },
+            {
+              fullName: "Trần Thị B",
+              phone: "0912345678",
+              mail: "thib@example.com",
+            },
+            {
+              fullName: "Lê Văn C",
+              phone: "0987654321",
+              mail: "vanc@example.com",
+            },
+          ],
+        },
+      };
+      setPatients(res.data.data);
     } catch (error) {
       message.error("Không thể tải danh sách bệnh nhân");
     } finally {
@@ -37,7 +55,7 @@ const PatientManagement = () => {
   const columns = [
     {
       title: "Bệnh nhân",
-      dataIndex: "fullName", // ✅ đúng tên theo JSON
+      dataIndex: "fullName",
       key: "fullName",
       render: (text) => <b>{text}</b>,
     },
@@ -62,17 +80,20 @@ const PatientManagement = () => {
     },
   ];
 
-  const filteredPatients = patients.filter(
-    (item) =>
-      typeof item.fullName === "string" &&
-      item.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
-  );
+  const filteredPatients = patients.filter((item) => {
+    const keyword = searchKeyword.toLowerCase();
+    return (
+      (item.fullName && item.fullName.toLowerCase().includes(keyword)) ||
+      (item.phone && item.phone.includes(keyword)) ||
+      (item.mail && item.mail.toLowerCase().includes(keyword))
+    );
+  });
 
   return (
     <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
       <Space style={{ marginBottom: 16 }}>
         <Input
-          placeholder="Tìm theo tên bệnh nhân"
+          placeholder="Tìm theo tên, số điện thoại hoặc email"
           prefix={<SearchOutlined />}
           onChange={(e) => setSearchKeyword(e.target.value)}
         />
@@ -80,7 +101,7 @@ const PatientManagement = () => {
       <Table
         columns={columns}
         dataSource={filteredPatients}
-        rowKey={(record, index) => index} // ✅ nếu không có acc_ID
+        rowKey={(record, index) => index}
         loading={loading}
         pagination={{ pageSize: 5 }}
       />
