@@ -274,7 +274,7 @@ export default function TreatmentPlanDetailPage() {
                     <UserOutlined /> Thông tin khách hàng
                   </Text>
                 }
-                bodyStyle={{ backgroundColor: "#fde7ef" }}
+                bodyStyle={{ backgroundColor: "#fde7ef", minHeight: "280px" }}
               >
                 <Row>
                   <Col span={12}>
@@ -326,7 +326,7 @@ export default function TreatmentPlanDetailPage() {
                     }
                   />
                 }
-                bodyStyle={{ backgroundColor: "#fce6ec" }}
+                bodyStyle={{ backgroundColor: "#fce6ec", minHeight: "280px" }}
               >
                 <Text strong>Họ tên:</Text>
                 <br />

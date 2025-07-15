@@ -68,8 +68,8 @@ const LoginPage = () => {
           message.success("Đăng nhập thành công!");
           setAccId(accId);
           // Redirect based on role if available in response
-          if (res.data.data.role) {
-            handleRedirectByRole(res.data.data.role);
+          if (res.data.data.roleId) {
+            handleRedirectByRole(res.data.data.roleId);
           } else {
             // Default redirect to customer page if no role specified
             navigate("/");
