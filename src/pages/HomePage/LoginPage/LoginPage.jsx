@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Form,
   Input,
@@ -15,38 +15,18 @@ import {
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { StoreContext } from "../../../contexts/StoreProvider";
 import { motion } from "framer-motion";
+import { signIn } from "../../../apis/authService";
+import Cookies from "js-cookie";
 
 const { Title, Text } = Typography;
 
-const fakeLogin = async ({ identifier, password }) => {
-  const mockAccounts = [
-    { identifier: "admin", password: "12345678", role: 1 },
-    { identifier: "manager", password: "12345678", role: 2 },
-    { identifier: "reception", password: "12345678", role: 3 },
-    { identifier: "customer", password: "12345678", role: 4 },
-    { identifier: "doctor", password: "12345678", role: 5 },
-  ];
 
-  const matched = mockAccounts.find(
-    (acc) =>
-      acc.identifier.toLowerCase() === identifier.toLowerCase() &&
-      acc.password === password
-  );
-
-  if (matched) {
-    return {
-      success: true,
-      token: "fake-token",
-      name: matched.identifier,
-      role: matched.role,
-    };
-  } else {
-    return { success: false, message: "Tài khoản hoặc mật khẩu không đúng" };
-  }
-};
 
 const LoginPage = () => {
+  const { userInfo, setAccId, handleLogout, customerInfo } =
+    useContext(StoreContext);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -61,7 +41,7 @@ const LoginPage = () => {
         navigate("/receptionist");
         break;
       case 4:
-        navigate("/customerpage");
+        navigate("/");
         break;
       case 5:
         navigate("/doctorpage");
@@ -74,15 +54,36 @@ const LoginPage = () => {
   const onFinish = async (values) => {
     setLoading(true);
     const { identifier, password } = values;
-    const res = await fakeLogin({ identifier, password });
-
-    if (res.success) {
-      message.success("Đăng nhập thành công!");
-      handleRedirectByRole(res.role);
-    } else {
-      message.error(res.message || "Đăng nhập thất bại");
-    }
-    setLoading(false);
+    const body = {
+      mailOrPhone: identifier,
+      password: password,
+    };
+    
+    await signIn(body)
+      .then((res) => {
+        if (res.data.success) {
+          const { token, accId } = res.data.data;
+          Cookies.set("accId", accId);
+          Cookies.set("token", token);
+          message.success("Đăng nhập thành công!");
+          setAccId(accId);
+          // Redirect based on role if available in response
+          if (res.data.data.role) {
+            handleRedirectByRole(res.data.data.role);
+          } else {
+            // Default redirect to customer page if no role specified
+            navigate("/");
+          }
+        } else {
+          message.error(res.data.message);
+        }
+      })
+      .catch((err) => {
+        message.error(err.message || "Đăng nhập thất bại");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
