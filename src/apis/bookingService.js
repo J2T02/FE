@@ -6,7 +6,7 @@ const GetAllBooking = async () => {
   return await axiosClients.get("/Booking/GetAllBooking");
 };
 const checkBooking = async (bookingId, statusId) => {
-  return await axiosClients.put(`/Booking/${bookingId}/status`, {
+  return await axiosClients.put(`/Booking/UpdateBookingStatus/${bookingId}`, {
     status: statusId,
   });
 };

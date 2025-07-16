@@ -29,7 +29,7 @@ const BookingPage = () => {
       setError(null);
       try {
         const [customerRes, doctorsRes] = await Promise.all([
-          GetCustomerInfo(Cookies.get("accId")),
+          GetCustomerInfo(Cookies.get("accCusId")),
           GetAllDoctor(),
         ]);
 

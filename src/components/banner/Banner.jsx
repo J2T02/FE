@@ -10,7 +10,7 @@ const Banner = () => {
 
   const images = ["/eventbanner.jpg", "/anhcuongbanner.jpg", "/banner.jpg"];
   const handleBooking = () => {
-    if (!Cookies.get("accId")) {
+    if (!Cookies.get("accCusId")) {
       message.warning("Vui lòng đăng nhập để đặt lịch!");
     } else {
       navigate("/booking");
