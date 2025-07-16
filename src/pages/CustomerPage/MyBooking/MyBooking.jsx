@@ -39,7 +39,7 @@ export default function MyBooking() {
   useEffect(() => {
     (async () => {
       try {
-        const id = Cookies.get("accId");
+        const id = Cookies.get("accCusId");
         const res = await BookingHistory(id);
         const data = res.data.data || [];
 

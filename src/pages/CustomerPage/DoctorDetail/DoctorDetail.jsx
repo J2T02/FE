@@ -27,7 +27,28 @@ const DoctorDetail = ({ doctorId }) => {
   const docId = parseInt(id);
   const { token } = theme.useToken();
   const [doctor, setDoctor] = useState(null);
-  const [feedbacks, setFeedbacks] = useState([]); // Keep feedbacks logic as is
+  const [feedbacks, setFeedbacks] = useState([
+    {
+      feedbackId: 1,
+      doctorId: 1,
+      hus_Name: "Minh",
+      wife_Name: "Lan",
+      star: 5,
+      content:
+        "Bác sĩ rất tận tâm và chuyên nghiệp. Quá trình điều trị rất hiệu quả, chúng tôi rất hài lòng với dịch vụ.",
+      createAt: "2024-12-15T10:30:00Z",
+    },
+    {
+      feedbackId: 2,
+      doctorId: 1,
+      hus_Name: "Tuấn",
+      wife_Name: "Hoa",
+      star: 4,
+      content:
+        "Bác sĩ giải thích rất kỹ về quy trình. Nhân viên y tế hỗ trợ nhiệt tình. Cảm ơn đội ngũ bác sĩ.",
+      createAt: "2024-12-10T14:20:00Z",
+    },
+  ]); // Keep feedbacks logic as is
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
