@@ -17,53 +17,52 @@ import Footer from "~components/footer/Footer";
 import dayjs from "dayjs";
 import WorkSchedule from "./WorkSchedule";
 import FeedbackCard from "./FeedbackCard";
-
+import { getDoctorInfo } from "../../../apis/doctorService";
+import { useParams } from "react-router-dom";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const DoctorDetail = ({ doctorId }) => {
+  const { id } = useParams();
+  const docId = parseInt(id);
   const { token } = theme.useToken();
-  const [doctor, setDoctor] = useState({
-    gender: "Nam",
-    yob: "1980-03-01",
-    experience: 12,
-    edu_LevelName: "Tiến sĩ",
-    statusText: "Đang làm việc",
-    full_Name: "BS. Lê Văn Hùng",
-    mail: "bshung@vinmec.vn",
-    phone: "0912123456",
-    img: "/doctor-male.jpg",
-    avgStar: 4.7,
-    certificates: [
-      "Chứng chỉ IVF nâng cao",
-      "Chứng chỉ Nội tiết sinh sản",
-      "Chứng chỉ Hỗ trợ sinh sản cấp quốc tế",
-    ],
-  });
-
-  const [feedbacks, setFeedbacks] = useState([
-    {
-      fb_ID: 1,
-      star: 5,
-      content: "Bác sĩ rất tận tâm và chuyên nghiệp!",
-      createAt: "2025-06-27",
-      hus_Name: "Nguyễn Văn An",
-      wife_Name: "Trần Thị Hoa",
-    },
-    {
-      fb_ID: 2,
-      star: 4,
-      content: "Khám kỹ lưỡng và tư vấn dễ hiểu.",
-      createAt: "2025-06-26",
-      hus_Name: "Trần Hữu Tài",
-      wife_Name: "Lê Thị Thảo",
-    },
-  ]);
-
+  const [doctor, setDoctor] = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]); // Keep feedbacks logic as is
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const res = await getDoctorInfo(docId);
+        if (res?.data?.success && res.data.data) {
+          const d = res.data.data;
+          setDoctor({
+            gender: d.gender,
+            yob: d.yob,
+            experience: d.experience,
+            edu_LevelName: d.eduInfo?.eduName,
+            statusText: d.status?.statusName,
+            full_Name: d.accountInfo?.fullName,
+            mail: d.accountInfo?.mail,
+            phone: d.accountInfo?.phone,
+            img: d.img || d.accountInfo?.img || "/doctor-male.jpg",
+            avgStar: 5, // Placeholder, replace with real if available
+            certificates: Array.isArray(d.certificateInfo)
+              ? d.certificateInfo.map((c) => c.cerName)
+              : [],
+          });
+        } else {
+          setDoctor(null);
+        }
+      } catch (err) {
+        setDoctor(null);
+      }
+    };
+    fetchDoctor();
+  }, [docId]);
 
   useEffect(() => {
     filterFeedbacks(selectedStar);
@@ -83,6 +82,8 @@ const DoctorDetail = ({ doctorId }) => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  if (!doctor) return null;
 
   const {
     gender,
@@ -151,7 +152,7 @@ const DoctorDetail = ({ doctorId }) => {
 
         <Divider />
         <Title level={4}>Lịch làm việc trong tuần</Title>
-        <WorkSchedule doctorId={doctorId} />
+        <WorkSchedule doctorId={docId} />
 
         <Divider />
         <div style={{ display: "flex", justifyContent: "space-between" }}>

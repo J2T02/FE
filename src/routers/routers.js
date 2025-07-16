@@ -10,9 +10,7 @@ const routers = [
   },
   {
     path: "/login",
-    component: lazy(() =>
-      import("~pages/HomePage/LoginPage/LoginPage")
-    ),
+    component: lazy(() => import("~pages/HomePage/LoginPage/LoginPage")),
   },
   {
     path: "/",
@@ -35,7 +33,7 @@ const routers = [
     component: lazy(() => import("~pages/Doctor/DoctorList")),
   },
   {
-    path: "/doctordetail",
+    path: "/doctordetail/:id",
     component: lazy(() =>
       import("~pages/CustomerPage/DoctorDetail/DoctorDetail")
     ),

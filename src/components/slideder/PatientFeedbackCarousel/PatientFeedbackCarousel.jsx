@@ -22,7 +22,7 @@ const FeedbackCarousel = ({
       name: "Trần Thị Ng.",
       role: "Tiếp viên hàng không",
       rating: 4,
-      avatar: "/anhket.jpg",
+      avatar: "/anhthinh.jpg",
     },
     {
       content: "Dịch vụ nhanh, chi phí hợp lý, sẽ quay lại.",

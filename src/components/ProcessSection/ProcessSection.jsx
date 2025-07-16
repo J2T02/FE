@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "antd";
 import { CheckOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const processSteps = [
   {
@@ -42,6 +43,7 @@ const processSteps = [
 ];
 
 const ProcessSection = () => {
+  const navigate = useNavigate();
   return (
     <div
       style={{
@@ -129,6 +131,7 @@ const ProcessSection = () => {
               </ul>
               <Button
                 type="primary"
+                onClick={() => navigate("/blog")}
                 icon={<ArrowRightOutlined />}
                 style={{
                   background: step.buttonColor,

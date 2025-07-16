@@ -5,10 +5,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const DoctorCarousel = ({ doctors = [] }) => {
+  const navigate = useNavigate();
   const { token } = theme.useToken();
   return (
     <div
@@ -86,11 +88,12 @@ const DoctorCarousel = ({ doctors = [] }) => {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
+                onClick={() => navigate(`/doctordetail/${doc.docId}`)}
               >
                 <Avatar src={doc.img} size={200} style={{ marginBottom: 12 }} />
                 <Title level={5}>Bs.{doc.accountInfo.fullName}</Title>
                 <div>
-                  <Rate disabled defaultValue={doc?.star ? doc.star : 0} />
+                  <Rate disabled defaultValue={doc?.star ? doc.star : 5} />
                 </div>
                 <Text type="secondary">{doc.eduInfo.eduName}</Text>
               </Card>
