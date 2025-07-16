@@ -154,19 +154,32 @@ const ScheduleManagement = () => {
   const { doctorInfo } = useContext(DoctorStoreContext);
   const [appointmentData, setAppointmentData] = useState({});
   const [slots, setSlots] = useState([]);
+  const [stepDetails, setStepDetails] = useState([]);
 
+  // Fetch slots
+  useEffect(() => {
+    const fetchSlots = async () => {
+      const res = await getAllSlotBooking();
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        // Sắp xếp theo slotStart
+        const sorted = [...res.data.data].sort((a, b) =>
+          a.slotStart.localeCompare(b.slotStart)
+        );
+        setSlots(sorted);
+      }
+    };
+    fetchSlots();
+  }, []);
+
+  // Fetch bookings & step details, then merge
   useEffect(() => {
     const fetchAppointments = async () => {
       if (!doctorInfo || !doctorInfo.docId) return;
-      const res = await getBookingByDoctorId(doctorInfo.docId);
-      if (res?.data?.data && Array.isArray(res.data.data)) {
-        // Group by workDate
-        const grouped = {};
-        res.data.data.forEach((item) => {
-          const date = item.schedule?.workDate;
-          if (!date) return;
-          if (!grouped[date]) grouped[date] = [];
-          // Tính duration
+      // 1. Fetch bookings
+      const bookingRes = await getBookingByDoctorId(doctorInfo.docId);
+      let bookings = [];
+      if (bookingRes?.data?.data && Array.isArray(bookingRes.data.data)) {
+        bookings = bookingRes.data.data.map((item) => {
           let duration = "60 phút";
           if (item.slot?.slotStart && item.slot?.slotEnd) {
             const start = item.slot.slotStart.split(":");
@@ -175,24 +188,82 @@ const ScheduleManagement = () => {
             const endMins = parseInt(end[0]) * 60 + parseInt(end[1]);
             duration = `${endMins - startMins} phút`;
           }
-          // Map status
           let status = "default";
           if (item.status?.statusId === 1) status = "confirmed";
           else if (item.status?.statusId === 2) status = "completed";
           else if (item.status?.statusId === 3) status = "checkin";
-          grouped[date].push({
-            id: item.bookingId,
+          return {
+            id: `booking-${item.bookingId}`,
+            type: "booking",
             time: item.slot?.slotStart?.slice(0, 5) || "??:??",
             slotId: item.slot?.slotId,
             duration,
             patient: `${item.cus?.husName || ""} & ${item.cus?.wifeName || ""}`,
             service: item.note || "Chưa rõ",
             status,
+            statusName: item.status?.statusName || "",
             avatar: item.cus?.accCus?.img || null,
-          });
+          };
         });
-        setAppointmentData(grouped);
       }
+      // 2. Fetch step details
+      const stepRes = await getStepDetailListByDoctorIdStatus1(
+        doctorInfo.docId
+      );
+      let steps = [];
+      if (stepRes?.data?.data && Array.isArray(stepRes.data.data)) {
+        steps = stepRes.data.data.map((item) => {
+          let duration = "60 phút";
+          if (item.docSchedule?.slotStart && item.docSchedule?.slotEnd) {
+            const start = item.docSchedule.slotStart.split(":");
+            const end = item.docSchedule.slotEnd.split(":");
+            const startMins = parseInt(start[0]) * 60 + parseInt(start[1]);
+            const endMins = parseInt(end[0]) * 60 + parseInt(end[1]);
+            duration = `${endMins - startMins} phút`;
+          }
+          return {
+            id: `step-${item.sdId}`,
+            type: "step",
+            time: item.docSchedule?.slotStart?.slice(0, 5) || "??:??",
+            slotId: item.docSchedule?.slotId,
+            duration,
+            patient: `${item.treatmentPlanInfo?.cusInfo?.husName || ""} & ${
+              item.treatmentPlanInfo?.cusInfo?.wifeName || ""
+            }`,
+            service: item.stepName || "Bước điều trị",
+            status: "stepdetail",
+            statusName: item.status?.statusName || "",
+            avatar: item.treatmentPlanInfo?.cusInfo?.accInfo?.img || null,
+          };
+        });
+      }
+      setStepDetails(steps);
+      // 3. Merge bookings & steps by date & slot
+      const allAppointments = [...bookings, ...steps];
+      // Group by date, then by slot
+      const grouped = {};
+      allAppointments.forEach((apt) => {
+        // Lấy ngày từ booking hoặc step detail
+        let date = null;
+        if (apt.type === "booking") {
+          // booking: lấy từ booking.schedule.workDate
+          const found = bookingRes.data.data.find(
+            (b) => `booking-${b.bookingId}` === apt.id
+          );
+          date = found?.schedule?.workDate;
+        } else if (apt.type === "step") {
+          // step: lấy từ docSchedule.workDate
+          const found = stepRes.data.data.find(
+            (s) => `step-${s.sdId}` === apt.id
+          );
+          date = found?.docSchedule?.workDate;
+        }
+        if (!date) return;
+        if (!grouped[date]) grouped[date] = {};
+        if (!grouped[date][apt.slotId]) grouped[date][apt.slotId] = [];
+        grouped[date][apt.slotId].push(apt);
+      });
+      setAppointmentData(grouped);
     };
     fetchAppointments();
   }, [doctorInfo]);
@@ -234,17 +305,23 @@ const ScheduleManagement = () => {
 
   const weekDates = getWeekDates(selectedWeekStart);
   const selectedDateStr = selectedDate.format("YYYY-MM-DD");
-  const todayAppointments = appointmentData[selectedDateStr] || [];
+  // Flatten all appointments in all slots for the selected date
+  const slotMap = appointmentData[selectedDateStr] || {};
+  const todayAppointments = Object.values(slotMap).flat();
 
   // Calendar cell render function
   const dateCellRender = (value) => {
     const dateStr = value.format("YYYY-MM-DD");
-    const appointments = appointmentData[dateStr] || [];
-
-    if (appointments.length > 0) {
+    const slotMap = appointmentData[dateStr] || {};
+    // Đếm tổng số appointment trong ngày
+    const total = Object.values(slotMap).reduce(
+      (sum, arr) => sum + arr.length,
+      0
+    );
+    if (total > 0) {
       return (
         <div style={{ textAlign: "center" }}>
-          <Badge count={appointments.length} size="small" />
+          <Badge count={total} size="small" />
         </div>
       );
     }
@@ -345,15 +422,13 @@ const ScheduleManagement = () => {
 
   // Timeline data for selected date - Custom layout with time on left, content on right
   const getTimelineSlots = () => {
-    const appointments = appointmentData[selectedDateStr] || [];
+    const slotMap = appointmentData[selectedDateStr] || {};
     return slots.map((slot) => {
-      // Tìm lịch hẹn có slotId trùng
-      const appointment = appointments.find(
-        (apt) => apt.slotId === slot.slotId
-      );
+      // Lấy tất cả appointment của slot này (có thể nhiều booking/step detail)
+      const appointments = slotMap[slot.slotId] || [];
       return {
         slot,
-        appointment: appointment || null,
+        appointments,
       };
     });
   };
@@ -581,7 +656,7 @@ const ScheduleManagement = () => {
                 width: "100%",
               }}
             >
-              {getTimelineSlots().map(({ slot, appointment }, index) => (
+              {getTimelineSlots().map(({ slot, appointments }, index) => (
                 <div
                   key={slot.slotId}
                   style={{
@@ -617,75 +692,76 @@ const ScheduleManagement = () => {
                       flex: 1,
                       paddingLeft: "16px",
                       borderLeft: `3px solid ${
-                        appointment
-                          ? appointment.status === "confirmed"
+                        appointments.length > 0
+                          ? appointments[0].status === "confirmed"
                             ? "#52c41a"
-                            : appointment.status === "completed"
+                            : appointments[0].status === "completed"
                             ? "#1890ff"
                             : "#d9d9d9"
                           : "#f0f0f0"
                       }`,
                     }}
                   >
-                    {appointment ? (
-                      <div style={{ paddingLeft: "16px" }}>
+                    {appointments.length > 0 ? (
+                      appointments.map((appointment, idx) => (
                         <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            marginBottom: 8,
-                          }}
-                        >
-                          <Avatar
-                            size={40}
-                            src={appointment.avatar}
-                            icon={<UserOutlined />}
-                            style={{ marginRight: 12 }}
-                          />
-                          <div>
-                            <Text strong style={{ fontSize: 16 }}>
-                              {appointment.patient}
-                            </Text>
-                            <br />
-                            <Text type="secondary" style={{ fontSize: 14 }}>
-                              {appointment.service}
-                            </Text>
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            paddingLeft: "52px",
-                          }}
+                          key={appointment.id}
+                          style={{ paddingLeft: "16px", marginBottom: 8 }}
                         >
                           <div
-                            style={{ display: "flex", alignItems: "center" }}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              marginBottom: 8,
+                            }}
                           >
-                            <ClockCircleOutlined
-                              style={{ color: "#1890ff", marginRight: 4 }}
+                            <Avatar
+                              size={40}
+                              src={appointment.avatar}
+                              icon={<UserOutlined />}
+                              style={{ marginRight: 12 }}
                             />
-                            <Text>{appointment.duration}</Text>
+                            <div>
+                              <Text strong style={{ fontSize: 16 }}>
+                                {appointment.patient}
+                              </Text>
+                              <br />
+                              <Text type="secondary" style={{ fontSize: 14 }}>
+                                {appointment.service}
+                              </Text>
+                            </div>
                           </div>
-                          <Tag
-                            color={
-                              appointment.status === "confirmed"
-                                ? "green"
-                                : appointment.status === "completed"
-                                ? "blue"
-                                : "default"
-                            }
-                            size="small"
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              paddingLeft: "52px",
+                            }}
                           >
-                            {appointment.status === "confirmed"
-                              ? "Đã xác nhận"
-                              : appointment.status === "completed"
-                              ? "Hoàn thành"
-                              : "Đã hủy"}
-                          </Tag>
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <ClockCircleOutlined
+                                style={{ color: "#1890ff", marginRight: 4 }}
+                              />
+                              <Text>{appointment.duration}</Text>
+                            </div>
+                            <Tag
+                              color={
+                                appointment.status === "confirmed"
+                                  ? "green"
+                                  : appointment.status === "completed"
+                                  ? "blue"
+                                  : "default"
+                              }
+                              size="small"
+                            >
+                              {appointment.statusName}
+                            </Tag>
+                          </div>
                         </div>
-                      </div>
+                      ))
                     ) : (
                       <div style={{ paddingLeft: "16px", paddingTop: "8px" }}>
                         <Text type="secondary" style={{ fontStyle: "italic" }}>
