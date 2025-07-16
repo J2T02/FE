@@ -207,6 +207,21 @@ export default function TreatmentPlanDetailPage() {
         if (res.data.success) {
           message.success("Tạo bước điều trị thành công!");
           setIsModalOpen(false);
+          form.resetFields();
+          // Map API response to stepDetails format and update state
+          if (res.data.data) {
+            const step = res.data.data;
+            const mappedStep = {
+              SD_ID: step.sdId,
+              Step_Name: step.stepName,
+              PlanDate: step?.docSchedule?.workDate,
+              doc: step?.doctorInfo?.accountInfo?.fullName || "chưa rõ",
+            };
+            setTreatmentPlan((prev) => ({
+              ...prev,
+              stepDetails: [mappedStep, ...(prev.stepDetails || [])],
+            }));
+          }
         }
       })
       .catch((err) => {
@@ -397,7 +412,7 @@ export default function TreatmentPlanDetailPage() {
                             Ngày hẹn: {step.PlanDate}
                           </Text>
                           <br />
-                          <Text>Bác sĩ: {step.doc?.fullName}</Text>
+                          <Text>Bác sĩ: {step?.doc}</Text>
                         </Col>
                         <Col>
                           <Link

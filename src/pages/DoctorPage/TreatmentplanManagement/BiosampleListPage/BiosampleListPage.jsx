@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Layout,
-  Typography,
-  Card,
-  Row,
-  Col,
-  Button,
-  Space,
-} from "antd";
-import {
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
-
+import { Layout, Typography, Card, Row, Col, Button, Space } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -41,37 +31,33 @@ export default function BiosampleListPage() {
   const [biosamples, setBiosamples] = useState([]);
 
   useEffect(() => {
-    // Giả lập dữ liệu
-    const mockBiosamples = tpId === 1
-      ? [
-          {
-            BS_ID: 101,
-            BS_Name: "Mẫu máu",
-            CollectionDate: "2025-07-08",
-            Status: 1,
-            BQS_ID: 1,
-            Note: "Mẫu ổn định",
-          },
-          {
-            BS_ID: 102,
-            BS_Name: "Tinh trùng",
-            CollectionDate: "2025-07-09",
-            Status: 2,
-            BQS_ID: 5,
-            Note: "Cần kiểm tra thêm",
-          },
-          {
-            BS_ID: 103,
-            BS_Name: "Nội mạc tử cung",
-            CollectionDate: "2025-07-10",
-            Status: 3,
-            BQS_ID: 2,
-            Note: "Chất lượng ổn",
-          },
-        ]
-      : [];
-
-    setBiosamples(mockBiosamples);
+    const fetchBiosamples = async () => {
+      try {
+        const res = await getBioSampleByPlanId(tpId);
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          const mapped = res.data.data.map((bs) => ({
+            BS_ID: bs.bsId,
+            BS_Name: bs.bsName,
+            CollectionDate: bs.collectionDate,
+            Status: bs.bioSampleStatus?.id,
+            StatusName: bs.bioSampleStatus?.name,
+            BQS_ID: bs.qualityStatus?.id,
+            BQS_Name: bs.qualityStatus?.name,
+            StorageLocation: bs.storageLocation,
+            Note: bs.note,
+            BioType: bs.bioType?.name,
+            Step_Name: bs.stepDetail?.stepName,
+            Doctor: bs.stepDetail?.docInfo?.accountInfo?.fullName || "Chưa rõ",
+          }));
+          setBiosamples(mapped);
+        } else {
+          setBiosamples([]);
+        }
+      } catch (err) {
+        setBiosamples([]);
+      }
+    };
+    fetchBiosamples();
   }, [tpId]);
 
   return (
@@ -97,7 +83,11 @@ export default function BiosampleListPage() {
           Mã hồ sơ: #{tpId}
         </Text>
 
-        <Space direction="vertical" size="middle" style={{ width: "100%", marginTop: 24 }}>
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ width: "100%", marginTop: 24 }}
+        >
           {biosamples.map((bs) => (
             <Card
               key={bs.BS_ID}
@@ -109,7 +99,9 @@ export default function BiosampleListPage() {
                   <Col>
                     <Link
                       style={{ color: "#f78db3" }}
-                      onClick={() => navigate(`/doctorpage/biosampledetail/${bs.BS_ID}`)}
+                      onClick={() =>
+                        navigate(`/doctorpage/biosampledetail/${bs.BS_ID}`)
+                      }
                     >
                       Xem chi tiết
                     </Link>
@@ -124,13 +116,28 @@ export default function BiosampleListPage() {
                   <Text strong>Ngày thu thập:</Text> {bs.CollectionDate}
                 </Col>
                 <Col span={12}>
-                  <Text strong>Trạng thái:</Text> {BIO_SAMPLE_STATUS[bs.Status]}
+                  <Text strong>Trạng thái:</Text>{" "}
+                  {bs.StatusName || BIO_SAMPLE_STATUS[bs.Status]}
                 </Col>
                 <Col span={12}>
-                  <Text strong>Chất lượng:</Text> {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                  <Text strong>Chất lượng:</Text>{" "}
+                  {bs.BQS_Name || BIO_QUALITY_STATUS[bs.BQS_ID]}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Vị trí lưu trữ:</Text>{" "}
+                  {bs.StorageLocation || "-"}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Loại mẫu:</Text> {bs.BioType || "-"}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Bước điều trị:</Text> {bs.Step_Name || "-"}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Bác sĩ:</Text> {bs.Doctor || "-"}
                 </Col>
                 <Col span={24}>
-                  <Text strong>Ghi chú:</Text> {bs.Note}
+                  <Text strong>Ghi chú:</Text> {bs.Note || "-"}
                 </Col>
               </Row>
             </Card>

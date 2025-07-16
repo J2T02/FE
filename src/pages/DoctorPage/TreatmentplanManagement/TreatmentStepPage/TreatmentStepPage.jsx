@@ -19,12 +19,9 @@ import {
   Divider,
   Radio,
 } from "antd";
-import {
-  ArrowLeftOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-
+import { getStepDetailByTreatmentPlanId } from "../../../../apis/stepDetailService";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Step } = Steps;
@@ -54,73 +51,71 @@ export default function TreatmentStepsPage() {
   };
 
   useEffect(() => {
-    const mockStepDetails = [
-      {
-        SD_ID: 1,
-        Step_Name: "Khám tổng quát",
-        PlanDate: "2025-07-08",
-        doc: { fullName: "BS. Nguyễn Văn X" },
-        TS_ID: 1,
-        TS_Name: "Khám tổng quát",
-      },
-      {
-        SD_ID: 2,
-        Step_Name: "Siêu âm tử cung",
-        PlanDate: "2025-07-10",
-        doc: { fullName: "BS. Trần Thị Y" },
-        TS_ID: 2,
-        TS_Name: "Kích trứng",
-      },
-      {
-        SD_ID: 3,
-        Step_Name: "Xét nghiệm nội tiết",
-        PlanDate: "2025-07-12",
-        doc: { fullName: "BS. Lê Văn C" },
-        TS_ID: 2,
-        TS_Name: "Kích trứng",
-      },
-      {
-        SD_ID: 4,
-        Step_Name: "Lấy noãn",
-        PlanDate: "2025-07-14",
-        doc: { fullName: "BS. Nguyễn Văn X" },
-        TS_ID: 3,
-        TS_Name: "Lấy noãn",
-      },
-    ];
-
-    const grouped = mockStepDetails.reduce((acc, step) => {
-      const existing = acc.find((g) => g.TS_ID === step.TS_ID);
-      if (existing) {
-        existing.details.push(step);
-      } else {
-        acc.push({
-          TS_ID: step.TS_ID,
-          TS_Name: step.TS_Name,
-          details: [step],
-        });
+    const fetchStepDetails = async () => {
+      try {
+        const res = await getStepDetailByTreatmentPlanId(tpId);
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          // Group by treatmentStepInfo (TS_ID)
+          const grouped = res.data.data.reduce((acc, step) => {
+            const tsId = step.treatmentStepInfo?.tsId;
+            const tsName = step.treatmentStepInfo?.stepName;
+            let group = acc.find((g) => g.TS_ID === tsId);
+            const mappedStep = {
+              SD_ID: step.sdId,
+              Step_Name: step.stepName,
+              PlanDate: step.docSchedule?.workDate,
+              doc: step.doctorInfo?.accountInfo?.fullName || "Chưa rõ",
+              TS_ID: tsId,
+              TS_Name: tsName,
+              note: step.note,
+              status: step.status,
+              slotId: step.docSchedule?.slotId,
+              drugName: step.drugName,
+              dosage: step.dosage,
+            };
+            if (group) {
+              group.details.push(mappedStep);
+            } else {
+              acc.push({
+                TS_ID: tsId,
+                TS_Name: tsName,
+                details: [mappedStep],
+              });
+            }
+            return acc;
+          }, []);
+          // Sort groups by earliest PlanDate in each group
+          grouped.sort((a, b) => {
+            const earliestA = new Date(
+              Math.min(...a.details.map((d) => new Date(d.PlanDate)))
+            );
+            const earliestB = new Date(
+              Math.min(...b.details.map((d) => new Date(d.PlanDate)))
+            );
+            return earliestA - earliestB;
+          });
+          setStepGroups(grouped);
+          // Set currentStepIndex to latest group (by latest PlanDate)
+          let latestGroupIndex = 0;
+          let latestDate = new Date(0);
+          grouped.forEach((group, index) => {
+            const groupLatest = new Date(
+              Math.max(...group.details.map((d) => new Date(d.PlanDate)))
+            );
+            if (groupLatest > latestDate) {
+              latestDate = groupLatest;
+              latestGroupIndex = index;
+            }
+          });
+          setCurrentStepIndex(latestGroupIndex);
+        } else {
+          setStepGroups([]);
+        }
+      } catch (err) {
+        setStepGroups([]);
       }
-      return acc;
-    }, []);
-
-    grouped.sort((a, b) => {
-      const earliestA = new Date(Math.min(...a.details.map((d) => new Date(d.PlanDate))));
-      const earliestB = new Date(Math.min(...b.details.map((d) => new Date(d.PlanDate))));
-      return earliestA - earliestB;
-    });
-
-    setStepGroups(grouped);
-
-    let latestGroupIndex = 0;
-    let latestDate = new Date(0);
-    grouped.forEach((group, index) => {
-      const groupLatest = new Date(Math.max(...group.details.map((d) => new Date(d.PlanDate))));
-      if (groupLatest > latestDate) {
-        latestDate = groupLatest;
-        latestGroupIndex = index;
-      }
-    });
-    setCurrentStepIndex(latestGroupIndex);
+    };
+    fetchStepDetails();
   }, [tpId]);
 
   const latestTS_ID = stepGroups[stepGroups.length - 1]?.TS_ID;
@@ -144,13 +139,22 @@ export default function TreatmentStepsPage() {
           <Col>
             <Button
               icon={<ArrowLeftOutlined />}
-              style={{ backgroundColor: "#f78db3", color: "white", border: "none", marginBottom: 8 }}
+              style={{
+                backgroundColor: "#f78db3",
+                color: "white",
+                border: "none",
+                marginBottom: 8,
+              }}
               onClick={() => navigate(-1)}
             >
               Quay lại
             </Button>
-            <Title level={3} style={{ margin: 0 }}>Quá trình điều trị</Title>
-            <Text style={{ color: "#f78db3", fontWeight: 500 }}>Mã hồ sơ: {tpId}</Text>
+            <Title level={3} style={{ margin: 0 }}>
+              Quá trình điều trị
+            </Title>
+            <Text style={{ color: "#f78db3", fontWeight: 500 }}>
+              Mã hồ sơ: {tpId}
+            </Text>
           </Col>
           <Col>
             <Button
@@ -177,20 +181,36 @@ export default function TreatmentStepsPage() {
 
         {stepGroups[currentStepIndex] && (
           <Card
-            title={<Text strong>Giai đoạn: {stepGroups[currentStepIndex].TS_Name}</Text>}
+            title={
+              <Text strong>
+                Giai đoạn: {stepGroups[currentStepIndex].TS_Name}
+              </Text>
+            }
             bodyStyle={{ backgroundColor: "#fff0f5" }}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
               {stepGroups[currentStepIndex].details.map((step) => (
-                <Card key={step.SD_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                <Card
+                  key={step.SD_ID}
+                  type="inner"
+                  style={{ borderLeft: "5px solid #f78db3" }}
+                >
                   <Row justify="space-between">
                     <Col>
-                      <Text strong>{step.Step_Name}</Text><br />
-                      <Text type="secondary">Ngày hẹn: {step.PlanDate}</Text><br />
-                      <Text>Bác sĩ: {step.doc?.fullName}</Text>
+                      <Text strong>{step.Step_Name}</Text>
+                      <br />
+                      <Text type="secondary">Ngày hẹn: {step.PlanDate}</Text>
+                      <br />
+                      <Text>Bác sĩ: {step.doc}</Text>
                     </Col>
                     <Col>
-                      <Button type="link" style={{ color: "#f78db3" }} onClick={() => navigate(`/doctorpage/stepdetail/${step.SD_ID}`)}>
+                      <Button
+                        type="link"
+                        style={{ color: "#f78db3" }}
+                        onClick={() =>
+                          navigate(`/doctorpage/stepdetail/${step.SD_ID}`)
+                        }
+                      >
                         Xem chi tiết
                       </Button>
                     </Col>
@@ -209,31 +229,52 @@ export default function TreatmentStepsPage() {
           okText="Thêm"
           cancelText="Hủy"
           width={700}
-          cancelButtonProps={{ style: { color: "#f78db3", borderColor: "#f78db3" } }}
-          okButtonProps={{ style: { backgroundColor: "#f78db3", borderColor: "#f78db3", color: "#fff" } }}
+          cancelButtonProps={{
+            style: { color: "#f78db3", borderColor: "#f78db3" },
+          }}
+          okButtonProps={{
+            style: {
+              backgroundColor: "#f78db3",
+              borderColor: "#f78db3",
+              color: "#fff",
+            },
+          }}
         >
           <Form layout="vertical" form={form}>
-            <Form.Item label="Giai đoạn (TS_ID)" name="TS_ID" initialValue={latestTS_ID}>
+            <Form.Item
+              label="Giai đoạn (TS_ID)"
+              name="TS_ID"
+              initialValue={latestTS_ID}
+            >
               <Select>
                 <Option value={1}>Khám tổng quát</Option>
                 <Option value={2}>Kích trứng</Option>
                 <Option value={3}>Lấy noãn</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Tên bước điều trị" name="Step_Name" rules={[{ required: true, message: "Không được để trống" }]}>              
+            <Form.Item
+              label="Tên bước điều trị"
+              name="Step_Name"
+              rules={[{ required: true, message: "Không được để trống" }]}
+            >
               <Input placeholder="Nhập tên bước" />
             </Form.Item>
             <Form.Item label="Ghi chú" name="Note">
               <Input.TextArea placeholder="Ghi chú thêm (nếu có)" />
             </Form.Item>
             <Form.Item label="Ngày hẹn" name="PlanDate">
-              <DatePicker style={{ width: "100%" }} onChange={handleDateChange} />
+              <DatePicker
+                style={{ width: "100%" }}
+                onChange={handleDateChange}
+              />
             </Form.Item>
             {availableSlots.length > 0 && (
               <Form.Item label="Khung giờ">
                 <Radio.Group>
-                  {availableSlots.map(slot => (
-                    <Radio key={slot.slotId} value={slot.slotId}>{slot.label}</Radio>
+                  {availableSlots.map((slot) => (
+                    <Radio key={slot.slotId} value={slot.slotId}>
+                      {slot.label}
+                    </Radio>
                   ))}
                 </Radio.Group>
               </Form.Item>
@@ -262,7 +303,9 @@ export default function TreatmentStepsPage() {
                   <Input placeholder="Liều lượng" />
                 </Col>
                 <Col span={2}>
-                  <Button danger onClick={() => handleRemoveDrugField(index)}>X</Button>
+                  <Button danger onClick={() => handleRemoveDrugField(index)}>
+                    X
+                  </Button>
                 </Col>
               </Row>
             ))}

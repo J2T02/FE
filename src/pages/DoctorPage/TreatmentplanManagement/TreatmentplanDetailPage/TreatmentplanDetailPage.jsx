@@ -186,7 +186,7 @@ export default function TreatmentPlanDetailPage() {
       }
     } catch (error) {
       console.error("Error fetching treatment plan:", error);
-      message.error("Có lỗi xảy ra khi tải thông tin hồ sơ bệnh án");
+      // message.error("Có lỗi xảy ra khi tải thông tin hồ sơ bệnh án");
     } finally {
       setLoading(false);
     }

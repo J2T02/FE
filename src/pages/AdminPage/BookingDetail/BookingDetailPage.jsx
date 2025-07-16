@@ -11,9 +11,7 @@ import {
   Button,
   Typography,
 } from "antd";
-import {
-  ArrowLeftOutlined
-} from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 import AdminHeader from "../components/AdminHeader";
 import BackButton from "./components/BackButton";
@@ -23,7 +21,7 @@ import CustomerInfoCard from "./components/CustomerInfoCard";
 import DoctorInfoCard from "./components/DoctorInfoCard";
 import ActionSection from "./components/ActionSection";
 import AppointmentInfoCard from "./components/AppointmentInfoCard";
-import { BookingDetail } from "../../../apis/bookingService";
+import { BookingDetail, checkBooking } from "../../../apis/bookingService";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -150,7 +148,47 @@ export default function BookingDetailPage({ id, embedded = false, onBack }) {
               />
             </Col>
             <Col xs={24} md={12}>
-              <ActionSection bookingId={bookingId} />
+              <ActionSection
+                statusId={
+                  bookingData?.status?.statusId || bookingData?.status || 1
+                }
+                onConfirm={async () => {
+                  try {
+                    const res = await checkBooking(bookingId, 2);
+                    if (res?.data?.success) {
+                      message.success("Đã xác nhận lịch hẹn!");
+                      setBookingData((prev) => ({
+                        ...prev,
+                        status: { statusId: 2, statusName: "Đã xác nhận" },
+                      }));
+                    } else {
+                      message.error(
+                        res?.data?.message || "Xác nhận lịch hẹn thất bại!"
+                      );
+                    }
+                  } catch (err) {
+                    message.error("Xác nhận lịch hẹn thất bại!");
+                  }
+                }}
+                onCancel={async () => {
+                  try {
+                    const res = await checkBooking(bookingId, 6);
+                    if (res?.data?.success) {
+                      message.success("Đã hủy lịch hẹn!");
+                      setBookingData((prev) => ({
+                        ...prev,
+                        status: { statusId: 6, statusName: "Đã hủy" },
+                      }));
+                    } else {
+                      message.error(
+                        res?.data?.message || "Hủy lịch hẹn thất bại!"
+                      );
+                    }
+                  } catch (err) {
+                    message.error("Hủy lịch hẹn thất bại!");
+                  }
+                }}
+              />
             </Col>
           </Row>
         </Space>

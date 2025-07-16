@@ -1,18 +1,9 @@
 // File: pages/ReceptionistPage/TestListPage.jsx
 import React, { useEffect, useState } from "react";
-import {
-  Layout,
-  Typography,
-  Card,
-  Row,
-  Col,
-  Space,
-  Button,
-  Tag,
-} from "antd";
+import { Layout, Typography, Card, Row, Col, Space, Button, Tag } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { getTestByTreatmentPlanId } from "../../../../apis/testService";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
@@ -51,35 +42,41 @@ export default function TestListPage() {
   const [tests, setTests] = useState([]);
 
   useEffect(() => {
-    const mockStepDetails = [
-      { SD_ID: 1, TP_ID: tpId },
-      { SD_ID: 2, TP_ID: tpId },
-    ];
-
-    const mockTests = [
-      {
-        Test_ID: 201,
-        TestType_ID: 2,
-        TestDate: "2025-07-12",
-        Status: 3,
-        Person: "Vợ",
-        TQS_ID: 1,
-        SD_ID: 1,
-      },
-      {
-        Test_ID: 202,
-        TestType_ID: 3,
-        TestDate: "2025-07-12",
-        Status: 4,
-        Person: "Chồng",
-        TQS_ID: 3,
-        SD_ID: 2,
-      },
-    ];
-
-    const validSDIDs = mockStepDetails.map((sd) => sd.SD_ID);
-    const filtered = mockTests.filter((t) => validSDIDs.includes(t.SD_ID));
-    setTests(filtered);
+    const fetchTests = async () => {
+      try {
+        const res = await getTestByTreatmentPlanId(tpId);
+        if (res?.data?.success && Array.isArray(res.data.data)) {
+          // Map API data to UI format
+          const mapped = res.data.data.map((test) => ({
+            Test_ID: test.testId,
+            TestType_ID: test.testType?.id,
+            TestType_Name: test.testType?.testName,
+            TestDate: test.testDate,
+            Status: test.status?.id,
+            StatusName: test.status?.name,
+            Person:
+              test.testType?.person === "wife"
+                ? "Vợ"
+                : test.testType?.person === "husband"
+                ? "Chồng"
+                : test.testType?.person,
+            TQS_ID: test.testQualityStatus?.id,
+            TQS_Name: test.testQualityStatus?.name,
+            SD_ID: test.stepDetail?.sdId,
+            Step_Name: test.stepDetail?.stepName,
+            Doctor:
+              test.stepDetail?.docInfo?.accountInfo?.fullName || "Chưa rõ",
+            Note: test.note,
+          }));
+          setTests(mapped);
+        } else {
+          setTests([]);
+        }
+      } catch (err) {
+        setTests([]);
+      }
+    };
+    fetchTests();
   }, [tpId]);
 
   return (
@@ -87,31 +84,73 @@ export default function TestListPage() {
       <Content style={{ padding: 24 }}>
         <Button
           icon={<ArrowLeftOutlined />}
-          style={{ backgroundColor: "#f78db3", color: "white", border: "none", marginBottom: 24 }}
+          style={{
+            backgroundColor: "#f78db3",
+            color: "white",
+            border: "none",
+            marginBottom: 24,
+          }}
           onClick={() => navigate(-1)}
         >
           Quay lại
         </Button>
 
         <Title level={3}>Danh sách các xét nghiệm</Title>
-        <Text style={{ color: "#f78db3", fontWeight: 500 }}>Mã hồ sơ: {tpId}</Text>
+        <Text style={{ color: "#f78db3", fontWeight: 500 }}>
+          Mã hồ sơ: {tpId}
+        </Text>
 
         <Space direction="vertical" style={{ width: "100%", marginTop: 24 }}>
           {tests.map((test) => (
-            <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+            <Card
+              key={test.Test_ID}
+              type="inner"
+              style={{ borderLeft: "5px solid #f78db3" }}
+            >
               <Row justify="space-between">
                 <Col>
-                  <Text strong>Loại xét nghiệm: </Text>{TEST_TYPE_MAP[test.TestType_ID]}<br />
-                  <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                  <Text strong>Người xét nghiệm: </Text>{test.Person}<br />
-                  <Text strong>Trạng thái: </Text>{TEST_STATUS[test.Status]}<br />
-                  <Text strong>Tình trạng kết quả: </Text>{TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
+                  <Text strong>Loại xét nghiệm: </Text>
+                  {test.TestType_Name ||
+                    TEST_TYPE_MAP[test.TestType_ID] ||
+                    "Không rõ"}
+                  <br />
+                  <Text strong>Ngày xét nghiệm: </Text>
+                  {test.TestDate}
+                  <br />
+                  <Text strong>Người xét nghiệm: </Text>
+                  {test.Person || "-"}
+                  <br />
+                  <Text strong>Trạng thái: </Text>
+                  {test.StatusName ||
+                    TEST_STATUS[test.Status] ||
+                    "Không xác định"}
+                  <br />
+                  <Text strong>Tình trạng kết quả: </Text>
+                  {test.TQS_Name ||
+                    TEST_QUALITY_RESULT_STATUS[test.TQS_ID] ||
+                    "Chưa có"}
+                  <br />
+                  <Text strong>Bước điều trị: </Text>
+                  {test.Step_Name || "-"}
+                  <br />
+                  <Text strong>Bác sĩ: </Text>
+                  {test.Doctor || "-"}
+                  <br />
+                  {test.Note && (
+                    <>
+                      <Text strong>Ghi chú: </Text>
+                      {test.Note}
+                      <br />
+                    </>
+                  )}
                 </Col>
                 <Col>
                   <Button
                     type="link"
                     style={{ color: "#f78db3" }}
-                    onClick={() => navigate(`/doctorpage/testdetail/${test.Test_ID}`)}
+                    onClick={() =>
+                      navigate(`/doctorpage/testdetail/${test.Test_ID}`)
+                    }
                   >
                     Xem chi tiết
                   </Button>
