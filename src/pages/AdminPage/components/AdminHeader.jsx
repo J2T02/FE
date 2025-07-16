@@ -2,12 +2,14 @@
 import { Layout, Typography, Badge, Avatar, theme, Dropdown } from "antd";
 import { BellOutlined, UserOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
 
 const AdminHeader = () => {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([
     { id: 1, content: "Có đơn hàng mới!" },
@@ -91,7 +93,10 @@ const AdminHeader = () => {
             marginLeft: 32,
           }}
         >
-          <Title level={4} style={{ margin: 0, fontWeight: 700, color: "#d6336c" }}>
+          <Title
+            level={4}
+            style={{ margin: 0, fontWeight: 700, color: "#d6336c" }}
+          >
             Trang quản lý bệnh viện
           </Title>
           <Text style={{ fontSize: 12, color: "#444" }}>
@@ -115,7 +120,13 @@ const AdminHeader = () => {
         {/* Phải: Hỗ trợ, thông báo, avatar */}
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           {/* Hỗ trợ */}
-          <div style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              textAlign: "right",
+            }}
+          >
             <Text strong style={{ fontSize: 13, color: "#000" }}>
               📞 Hỗ trợ: 1900 6750
             </Text>
@@ -134,12 +145,24 @@ const AdminHeader = () => {
             }}
           >
             <Badge count={unreadCount} size="small" offset={[0, 4]}>
-              <BellOutlined style={{ fontSize: 20, color: "#000", cursor: "pointer" }} />
+              <BellOutlined
+                style={{ fontSize: 20, color: "#000", cursor: "pointer" }}
+              />
             </Badge>
           </Dropdown>
 
           {/* Avatar */}
-          <Dropdown menu={{ items: avatarItems }} trigger={["click"]}>
+          <Dropdown
+            menu={{
+              items: avatarItems,
+              onClick: ({ key }) => {
+                if (key === "logout") {
+                  navigate("/");
+                }
+              },
+            }}
+            trigger={["click"]}
+          >
             <div
               style={{
                 display: "flex",
@@ -156,7 +179,11 @@ const AdminHeader = () => {
                 }}
               />
               <div style={{ lineHeight: 1.2 }}>
-                <div style={{ fontWeight: "bold", fontSize: 13, color: "#000" }}>Admin</div>
+                <div
+                  style={{ fontWeight: "bold", fontSize: 13, color: "#000" }}
+                >
+                  Admin
+                </div>
                 <div style={{ fontSize: 12, color: "#000" }}>Nguyễn Văn A</div>
               </div>
             </div>
