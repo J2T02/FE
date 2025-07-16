@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Layout,
-  Typography,
-  Card,
-  Button,
-  Row,
-  Col,
-  Space,
-  Tag,
-} from "antd";
+import { Layout, Typography, Card, Button, Row, Col, Space, Tag } from "antd";
 import {
   ArrowLeftOutlined,
   MailOutlined,
@@ -135,25 +126,54 @@ export default function StepDetailPage() {
 
         <Title level={3}>Chi tiết bước điều trị</Title>
 
-        <Card title="Thông tin bước điều trị" bodyStyle={{ backgroundColor: "#fff0f5" }}>
+        <Card
+          title="Thông tin bước điều trị"
+          bodyStyle={{ backgroundColor: "#fff0f5" }}
+        >
           <Row gutter={[16, 16]}>
-            <Col span={12}><Text strong>Tên bước:</Text><br /><Text>{stepDetail.Step_Name}</Text></Col>
-            <Col span={12}><Text strong>Giai đoạn:</Text><br /><Text>{stepDetail.treatmentStep?.Step_Name}</Text></Col>
+            <Col span={12}>
+              <Text strong>Tên bước:</Text>
+              <br />
+              <Text>{stepDetail.Step_Name}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Giai đoạn:</Text>
+              <br />
+              <Text>{stepDetail.treatmentStep?.Step_Name}</Text>
+            </Col>
 
             <Col span={12}>
-              <Text strong>Ngày hẹn:</Text><br />
+              <Text strong>Ngày hẹn:</Text>
+              <br />
               <Text>{doctorSlot?.WorkDate}</Text>
             </Col>
 
             <Col span={12}>
-              <Text strong>Thời gian:</Text><br />
+              <Text strong>Thời gian:</Text>
+              <br />
               <Text>{doctorSlot?.Slot.Slot_Start}</Text>
             </Col>
 
-            <Col span={24}><Text strong>Ghi chú:</Text><br /><Text>{stepDetail.Note}</Text></Col>
-            <Col span={12}><Text strong>Thuốc:</Text><br /><Text>{stepDetail.Drug_Name}</Text></Col>
-            <Col span={12}><Text strong>Liều lượng:</Text><br /><Text>{stepDetail.Dosage}</Text></Col>
-            <Col span={12}><Text strong>Trạng thái:</Text><br />{getStatusTag(stepDetail.Status)}</Col>
+            <Col span={24}>
+              <Text strong>Ghi chú:</Text>
+              <br />
+              <Text>{stepDetail.Note}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Thuốc:</Text>
+              <br />
+              <Text>{stepDetail.Drug_Name}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Liều lượng:</Text>
+              <br />
+              <Text>{stepDetail.Dosage}</Text>
+            </Col>
+            <Col span={12}>
+              <Text strong>Trạng thái:</Text>
+              <br />
+              {getStatusTag(stepDetail.Status)}
+            </Col>
           </Row>
         </Card>
 
@@ -164,34 +184,63 @@ export default function StepDetailPage() {
               <Button
                 shape="circle"
                 icon={<InfoCircleOutlined />}
-                style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-                onClick={() => navigate(`/doctordetail/${stepDetail.doctor?.docId}`)}
+                style={{
+                  backgroundColor: "#f78db3",
+                  color: "white",
+                  border: "none",
+                }}
+                onClick={() =>
+                  navigate(`/doctordetail/${stepDetail.doctor?.docId}`)
+                }
               />
             </Space>
           }
           style={{ marginTop: 24 }}
           bodyStyle={{ backgroundColor: "#fdf2f8" }}
         >
-          <Text strong>Họ tên:</Text><br />
-          <Text>{stepDetail.doctor?.acc?.fullName}</Text><br />
-          <MailOutlined style={{ marginRight: 8 }} />{stepDetail.doctor?.acc?.mail}<br />
-          <PhoneOutlined style={{ marginRight: 8 }} />{stepDetail.doctor?.acc?.phone}
+          <Text strong>Họ tên:</Text>
+          <br />
+          <Text>{stepDetail.doctor?.acc?.fullName}</Text>
+          <br />
+          <MailOutlined style={{ marginRight: 8 }} />
+          {stepDetail.doctor?.acc?.mail}
+          <br />
+          <PhoneOutlined style={{ marginRight: 8 }} />
+          {stepDetail.doctor?.acc?.phone}
         </Card>
 
         {tests.length > 0 && (
-          <Card title="Danh sách xét nghiệm liên quan" style={{ marginTop: 24 }} bodyStyle={{ backgroundColor: "#fff0f5" }}>
+          <Card
+            title="Danh sách xét nghiệm liên quan"
+            style={{ marginTop: 24 }}
+            bodyStyle={{ backgroundColor: "#fff0f5" }}
+          >
             <div style={{ maxHeight: 200, overflowY: "auto" }}>
               <Space direction="vertical" style={{ width: "100%" }}>
                 {tests.map((test) => (
-                  <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                  <Card
+                    key={test.Test_ID}
+                    type="inner"
+                    style={{ borderLeft: "5px solid #f78db3" }}
+                  >
                     <Row justify="space-between">
                       <Col>
-                        <Text strong>Ngày xét nghiệm: </Text>{test.TestDate}<br />
-                        <Text strong>Ngày trả kết quả: </Text>{test.ResultDay}<br />
-                        <Text strong>Ghi chú: </Text>{test.Note}
+                        <Text strong>Ngày xét nghiệm: </Text>
+                        {test.TestDate}
+                        <br />
+                        <Text strong>Ngày trả kết quả: </Text>
+                        {test.ResultDay}
+                        <br />
+                        <Text strong>Ghi chú: </Text>
+                        {test.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/testdetail/${test.Test_ID}`)}>
+                        <Link
+                          style={{ color: "#f78db3" }}
+                          onClick={() =>
+                            navigate(`/testdetail/${test.Test_ID}`)
+                          }
+                        >
                           Xem chi tiết
                         </Link>
                       </Col>
@@ -216,16 +265,32 @@ export default function StepDetailPage() {
             <div style={{ maxHeight: 200, overflowY: "auto" }}>
               <Space direction="vertical" style={{ width: "100%" }}>
                 {biosamples.map((bs) => (
-                  <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+                  <Card
+                    key={bs.BS_ID}
+                    type="inner"
+                    style={{ borderLeft: "5px solid #f78db3" }}
+                  >
                     <Row justify="space-between">
                       <Col>
-                        <Text strong>Tên mẫu: </Text>{bs.BS_Name}<br />
-                        <Text strong>Ngày thu thập: </Text>{bs.CollectionDate}<br />
-                        <Text strong>Vị trí lưu trữ: </Text>{bs.StorageLocation}<br />
-                        <Text strong>Ghi chú: </Text>{bs.Note}
+                        <Text strong>Tên mẫu: </Text>
+                        {bs.BS_Name}
+                        <br />
+                        <Text strong>Ngày thu thập: </Text>
+                        {bs.CollectionDate}
+                        <br />
+                        <Text strong>Vị trí lưu trữ: </Text>
+                        {bs.StorageLocation}
+                        <br />
+                        <Text strong>Ghi chú: </Text>
+                        {bs.Note}
                       </Col>
                       <Col>
-                        <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}>
+                        <Link
+                          style={{ color: "#f78db3" }}
+                          onClick={() =>
+                            navigate(`/biosampledetail/${bs.BS_ID}`)
+                          }
+                        >
                           Xem chi tiết
                         </Link>
                       </Col>
