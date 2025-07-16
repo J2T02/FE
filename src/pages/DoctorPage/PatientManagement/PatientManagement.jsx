@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Input,
-  Typography,
-  Space,
-  Card,
-  message,
-} from "antd";
+import React, { useContext, useEffect, useState } from "react";
+import { Table, Input, Typography, Space, Card, message } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-
+import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
+import { getTreatmentListForDoctor } from "../../../apis/treatmentService";
 const { Title } = Typography;
 
 const PatientManagement = () => {
+  const { doctorInfo } = useContext(DoctorStoreContext);
+
+  if (doctorInfo) {
+    const { docId } = doctorInfo;
+    console.log(docId);
+  }
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -23,30 +23,30 @@ const PatientManagement = () => {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = {
-        data: {
-          data: [
-            {
-              fullName: "Nguyễn Văn A",
-              phone: "0901234567",
-              mail: "vana@example.com",
-            },
-            {
-              fullName: "Trần Thị B",
-              phone: "0912345678",
-              mail: "thib@example.com",
-            },
-            {
-              fullName: "Lê Văn C",
-              phone: "0987654321",
-              mail: "vanc@example.com",
-            },
-          ],
-        },
-      };
-      setPatients(res.data.data);
+      if (!doctorInfo || !doctorInfo.docId) {
+        setPatients([]);
+        setLoading(false);
+        return;
+      }
+      const res = await getTreatmentListForDoctor(doctorInfo.docId);
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        // Lấy thông tin accInfo từ cusInfo
+        const mappedPatients = res.data.data.map((item) => {
+          const acc = item.cusInfo?.accInfo || {};
+          return {
+            fullName: acc.fullName || "",
+            phone: acc.phone || "",
+            mail: acc.mail || "",
+            tpId: item.tpId, // Có thể dùng cho key hoặc link chi tiết
+          };
+        });
+        setPatients(mappedPatients);
+      } else {
+        setPatients([]);
+      }
     } catch (error) {
       message.error("Không thể tải danh sách bệnh nhân");
+      setPatients([]);
     } finally {
       setLoading(false);
     }
@@ -72,8 +72,11 @@ const PatientManagement = () => {
       title: "",
       key: "actions",
       align: "right",
-      render: (_, record, index) => (
-        <a href={`/patients/${index}`} style={{ color: "#1677ff" }}>
+      render: (_, record) => (
+        <a
+          href={`/doctorpage/treatmentplandetail/${record.tpId || ""}`}
+          style={{ color: "#1677ff" }}
+        >
           Xem chi tiết
         </a>
       ),
@@ -101,7 +104,7 @@ const PatientManagement = () => {
       <Table
         columns={columns}
         dataSource={filteredPatients}
-        rowKey={(record, index) => index}
+        rowKey={(record) => record.tpId || record.fullName}
         loading={loading}
         pagination={{ pageSize: 5 }}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useContext } from "react";
 import {
   Card,
   Select,
@@ -22,6 +22,12 @@ import {
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/vi";
+import { getStepDetailListByDoctorIdStatus1 } from "../../../apis/stepDetailService";
+import {
+  getBookingByDoctorId,
+  getAllSlotBooking,
+} from "../../../apis/bookingService";
+import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
 dayjs.extend(isoWeek);
 dayjs.locale("vi");
 
@@ -145,6 +151,70 @@ const formatVNDate = (date) =>
     .padStart(2, "0")}`;
 
 const ScheduleManagement = () => {
+  const { doctorInfo } = useContext(DoctorStoreContext);
+  const [appointmentData, setAppointmentData] = useState({});
+  const [slots, setSlots] = useState([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (!doctorInfo || !doctorInfo.docId) return;
+      const res = await getBookingByDoctorId(doctorInfo.docId);
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        // Group by workDate
+        const grouped = {};
+        res.data.data.forEach((item) => {
+          const date = item.schedule?.workDate;
+          if (!date) return;
+          if (!grouped[date]) grouped[date] = [];
+          // Tính duration
+          let duration = "60 phút";
+          if (item.slot?.slotStart && item.slot?.slotEnd) {
+            const start = item.slot.slotStart.split(":");
+            const end = item.slot.slotEnd.split(":");
+            const startMins = parseInt(start[0]) * 60 + parseInt(start[1]);
+            const endMins = parseInt(end[0]) * 60 + parseInt(end[1]);
+            duration = `${endMins - startMins} phút`;
+          }
+          // Map status
+          let status = "default";
+          if (item.status?.statusId === 1) status = "confirmed";
+          else if (item.status?.statusId === 2) status = "completed";
+          else if (item.status?.statusId === 3) status = "checkin";
+          grouped[date].push({
+            id: item.bookingId,
+            time: item.slot?.slotStart?.slice(0, 5) || "??:??",
+            slotId: item.slot?.slotId,
+            duration,
+            patient: `${item.cus?.husName || ""} & ${item.cus?.wifeName || ""}`,
+            service: item.note || "Chưa rõ",
+            status,
+            avatar: item.cus?.accCus?.img || null,
+          });
+        });
+        setAppointmentData(grouped);
+      }
+    };
+    fetchAppointments();
+  }, [doctorInfo]);
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      const res = await getAllSlotBooking();
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        // Sắp xếp theo slotStart
+        const sorted = [...res.data.data].sort((a, b) =>
+          a.slotStart.localeCompare(b.slotStart)
+        );
+        setSlots(sorted);
+      }
+    };
+    fetchSlots();
+  }, []);
+  console.log(appointmentData);
+  if (doctorInfo) {
+    const { docId } = doctorInfo;
+    console.log(docId);
+  }
   const currentYear = dayjs().year().toString();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [viewMode, setViewMode] = useState("timeline");
@@ -275,33 +345,14 @@ const ScheduleManagement = () => {
 
   // Timeline data for selected date - Custom layout with time on left, content on right
   const getTimelineSlots = () => {
-    const selectedDateStr = selectedDate.format("YYYY-MM-DD");
     const appointments = appointmentData[selectedDateStr] || [];
-    const timeSlots = [
-      "08:00",
-      "08:30",
-      "09:00",
-      "09:30",
-      "10:00",
-      "10:30",
-      "11:00",
-      "11:30",
-      "12:00",
-      "12:30",
-      "13:00",
-      "13:30",
-      "14:00",
-      "14:30",
-      "15:00",
-      "15:30",
-      "16:00",
-      "16:30",
-    ];
-
-    return timeSlots.map((timeSlot) => {
-      const appointment = appointments.find((apt) => apt.time === timeSlot);
+    return slots.map((slot) => {
+      // Tìm lịch hẹn có slotId trùng
+      const appointment = appointments.find(
+        (apt) => apt.slotId === slot.slotId
+      );
       return {
-        time: timeSlot,
+        slot,
         appointment: appointment || null,
       };
     });
@@ -530,9 +581,9 @@ const ScheduleManagement = () => {
                 width: "100%",
               }}
             >
-              {getTimelineSlots().map((slot, index) => (
+              {getTimelineSlots().map(({ slot, appointment }, index) => (
                 <div
-                  key={slot.time}
+                  key={slot.slotId}
                   style={{
                     display: "flex",
                     alignItems: "flex-start",
@@ -556,7 +607,7 @@ const ScheduleManagement = () => {
                     }}
                   >
                     <Text strong style={{ fontSize: "16px", color: "black" }}>
-                      {slot.time}
+                      {slot.slotStart.slice(0, 5)} - {slot.slotEnd.slice(0, 5)}
                     </Text>
                   </div>
 
@@ -566,17 +617,17 @@ const ScheduleManagement = () => {
                       flex: 1,
                       paddingLeft: "16px",
                       borderLeft: `3px solid ${
-                        slot.appointment
-                          ? slot.appointment.status === "confirmed"
+                        appointment
+                          ? appointment.status === "confirmed"
                             ? "#52c41a"
-                            : slot.appointment.status === "completed"
+                            : appointment.status === "completed"
                             ? "#1890ff"
                             : "#d9d9d9"
                           : "#f0f0f0"
                       }`,
                     }}
                   >
-                    {slot.appointment ? (
+                    {appointment ? (
                       <div style={{ paddingLeft: "16px" }}>
                         <div
                           style={{
@@ -587,17 +638,17 @@ const ScheduleManagement = () => {
                         >
                           <Avatar
                             size={40}
-                            src={slot.appointment.avatar}
+                            src={appointment.avatar}
                             icon={<UserOutlined />}
                             style={{ marginRight: 12 }}
                           />
                           <div>
                             <Text strong style={{ fontSize: 16 }}>
-                              {slot.appointment.patient}
+                              {appointment.patient}
                             </Text>
                             <br />
                             <Text type="secondary" style={{ fontSize: 14 }}>
-                              {slot.appointment.service}
+                              {appointment.service}
                             </Text>
                           </div>
                         </div>
@@ -615,21 +666,21 @@ const ScheduleManagement = () => {
                             <ClockCircleOutlined
                               style={{ color: "#1890ff", marginRight: 4 }}
                             />
-                            <Text>{slot.appointment.duration}</Text>
+                            <Text>{appointment.duration}</Text>
                           </div>
                           <Tag
                             color={
-                              slot.appointment.status === "confirmed"
+                              appointment.status === "confirmed"
                                 ? "green"
-                                : slot.appointment.status === "completed"
+                                : appointment.status === "completed"
                                 ? "blue"
                                 : "default"
                             }
                             size="small"
                           >
-                            {slot.appointment.status === "confirmed"
+                            {appointment.status === "confirmed"
                               ? "Đã xác nhận"
-                              : slot.appointment.status === "completed"
+                              : appointment.status === "completed"
                               ? "Hoàn thành"
                               : "Đã hủy"}
                           </Tag>

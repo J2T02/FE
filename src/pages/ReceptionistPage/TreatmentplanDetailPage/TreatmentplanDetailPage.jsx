@@ -32,6 +32,8 @@ import {
 } from "../../../apis/treatmentService";
 import { getDoctorScheduleByDoctorId } from "../../../apis/doctorService";
 import { createStepDetail } from "../../../apis/stepDetailService";
+import { getStepDetailByTreatmentPlanId } from "../../../apis/stepDetailService";
+import ReceptionistTreatmentProcessCard from "./components/ReceptionistTreatmentProcessCard";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -245,7 +247,7 @@ export default function TreatmentPlanDetailPage() {
   };
 
   if (!treatmentPlan) return null;
-
+  console.log(treatmentPlan);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
@@ -380,154 +382,13 @@ export default function TreatmentPlanDetailPage() {
             </Col>
           </Row>
 
-          {/* ✅ KHUNG QUÁ TRÌNH ĐIỀU TRỊ */}
-          <Card
-            title={
-              <Space>
-                <Text strong>Quá trình điều trị</Text>
-                <Link
-                  style={{ color: "#f78db3" }}
-                  onClick={() =>
-                    navigate(`/receptionist/treatmentstep/${tpId}`)
-                  }
-                >
-                  Xem đầy đủ
-                </Link>
-              </Space>
-            }
-            bodyStyle={{ backgroundColor: "#fff7fa" }}
-          >
-            <div style={{ maxHeight: 260, overflowY: "auto" }}>
-              <Space direction="vertical" style={{ width: "100%" }}>
-                {treatmentPlan.stepDetails?.length > 0 ? (
-                  treatmentPlan.stepDetails.map((step) => (
-                    <Card
-                      key={step.SD_ID}
-                      type="inner"
-                      style={{ borderLeft: "5px solid #f78db3" }}
-                    >
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>{step.Step_Name}</Text>
-                          <br />
-                          <Text type="secondary">
-                            Ngày hẹn: {step.PlanDate}
-                          </Text>
-                          <br />
-                          <Text>Bác sĩ: {step?.doc}</Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            onClick={() =>
-                              navigate(`/receptionist/stepdetail/${step.SD_ID}`)
-                            }
-                            style={{ color: "#f78db3" }}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))
-                ) : (
-                  <div style={{ textAlign: "center", padding: 50 }}>
-                    <Button
-                      icon={<PlusOutlined />}
-                      size="large"
-                      type="dashed"
-                      style={{
-                        fontSize: 28,
-                        color: "#f78db3",
-                        borderColor: "#f78db3",
-                      }}
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Thêm bước điều trị đầu tiên
-                    </Button>
-                  </div>
-                )}
-              </Space>
-            </div>
-          </Card>
-
-          {/* ✅ MODAL THÊM BƯỚC */}
-          <Modal
-            title="Tạo bước điều trị đầu tiên"
-            open={isModalOpen}
-            onCancel={() => setIsModalOpen(false)}
-            cancelButtonProps={{
-              style: { color: "#f78db3", borderColor: "#f78db3" },
-            }}
-            onOk={() => {
-              form.validateFields().then((values) => {
-                const newStep = {
-                  tpId,
-                  tsId: values.TS_ID,
-                  docId: treatmentPlan.doctor?.docId,
-                  stepName: values.Step_Name,
-                  note: "",
-                  dsId: values.dsId,
-                  drugName: "",
-                  dosage: "",
-                };
-                console.log("📥 Step mới:", newStep);
-                createStep(newStep);
-              });
-            }}
-            okText="Xác nhận"
-            cancelText="Hủy"
-          >
-            <Form
-              form={form}
-              layout="vertical"
-              // initialValues={{
-              //   Step_Name: "Khám tư vấn buổi 1",
-              //   TS_ID: 1,
-              //   PlanDate: dayjs(),
-              // }}
-            >
-              <Form.Item
-                name="Step_Name"
-                label="Tên bước điều trị"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="TS_ID"
-                label="Loại bước điều trị"
-                rules={[{ required: true }]}
-              >
-                <Select
-                  placeholder="Chọn loại bước điều trị"
-                  loading={stepTypes.length === 0}
-                  showSearch
-                  optionFilterProp="children"
-                  defaultActiveFirstOption={1}
-                >
-                  {stepTypes.map((type) => (
-                    <Select.Option key={type.tsId} value={type.tsId}>
-                      {type.stepName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="PlanDate"
-                label="Ngày hẹn"
-                rules={[{ required: true }]}
-              >
-                <DatePicker
-                  style={{ width: "100%" }}
-                  disabledDate={disabledDate}
-                  onChange={handleDateChange}
-                />
-              </Form.Item>
-              <Form.Item name="dsId" style={{ display: "none" }}>
-                <Input />
-              </Form.Item>
-            </Form>
-          </Modal>
+          {/* ✅ KHUNG QUÁ TRÌNH ĐIỀU TRỊ - refactor dùng component mới */}
+          <ReceptionistTreatmentProcessCard
+            tpId={treatmentPlan.TP_ID}
+            doctorId={treatmentPlan.doctor?.docId}
+            stepTypes={stepTypes}
+            onRefresh={null}
+          />
 
           {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
           {Array.isArray(tests) && tests.length > 0 && (

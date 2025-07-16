@@ -5,6 +5,9 @@ const getAllSlotBooking = async () => {
 const GetAllBooking = async () => {
   return await axiosClients.get("/Booking/GetAllBooking");
 };
+const getBookingByDoctorId = async (doctorId) => {
+  return await axiosClients.get(`/Booking/GetBookingsByDocId/${doctorId}`);
+};
 const checkBooking = async (bookingId, statusId) => {
   return await axiosClients.put(`/Booking/UpdateBookingStatus/${bookingId}`, {
     status: statusId,
@@ -60,6 +63,7 @@ const GetCustomerInfo = async (id) => {
 export {
   getAllSlotBooking,
   GetAllDoctor,
+  getBookingByDoctorId,
   GetSchedule,
   getAllDoctorScheduleByDoctorId,
   Booking,

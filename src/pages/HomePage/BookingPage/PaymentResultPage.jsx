@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Result, Button, Spin, Layout } from "antd";
+import { Result, Button, Spin, Layout, theme } from "antd";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
@@ -9,7 +9,7 @@ const PaymentResultPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(null);
-
+  const { token } = theme.useToken();
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const successParam = query.get("success");
@@ -47,7 +47,11 @@ const PaymentResultPage = () => {
             <Button type="primary" onClick={handleViewBooking} key="detail">
               Xem chi tiết đặt lịch
             </Button>,
-            <Button key="home" onClick={() => navigate("/")}>
+            <Button
+              style={{ color: token.colorPrimary }}
+              key="home"
+              onClick={() => navigate("/")}
+            >
               Về trang chủ
             </Button>,
           ]}

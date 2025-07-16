@@ -3,7 +3,11 @@ import axiosClients from "./axiosClients";
 const getStepDetailList = async () => {
   return await axiosClients.get("/StepDetail/GetAllStepDetail");
 };
-
+const getStepDetailListByDoctorIdStatus1 = async (doctorId) => {
+  return await axiosClients.get(
+    `/StepDetail/GetStepDetailsByDoctorIdAndStatus=1/${doctorId}`
+  );
+};
 const getStepDetailDetail = async (id) => {
   return await axiosClients.get(`/StepDetail/GetStepDetailById/${id}`);
 };
@@ -31,6 +35,7 @@ const deleteStepDetail = async (id) => {
 
 export {
   getStepDetailList,
+  getStepDetailListByDoctorIdStatus1,
   getStepDetailDetail,
   getStepDetailByTreatmentPlanId,
   createStepDetail,
