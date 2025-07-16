@@ -157,14 +157,7 @@ export default function TreatmentStepsPage() {
             </Text>
           </Col>
           <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setModalVisible(true)}
-              style={{ backgroundColor: "#f78db3", borderColor: "#f78db3" }}
-            >
-              Thêm bước điều trị mới
-            </Button>
+            
           </Col>
         </Row>
 
@@ -208,7 +201,7 @@ export default function TreatmentStepsPage() {
                         type="link"
                         style={{ color: "#f78db3" }}
                         onClick={() =>
-                          navigate(`/doctorpage/stepdetail/${step.SD_ID}`)
+                          navigate(`/stepdetail/${step.SD_ID}`)
                         }
                       >
                         Xem chi tiết
