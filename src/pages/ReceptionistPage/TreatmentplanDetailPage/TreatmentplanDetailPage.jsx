@@ -98,9 +98,11 @@ export default function TreatmentPlanDetailPage() {
     const fetchTreatmentPlan = async () => {
       try {
         const res = await getTreatmentDetail(tpId);
+
         if (res?.data?.success && res.data.data) {
           const apiData = res.data.data;
           // Map API response to UI expected format
+          console.log(apiData);
           const mappedTP = {
             TP_ID: apiData.tpId,
             StartDate: apiData.startDate ? apiData.startDate.split("T")[0] : "",
@@ -119,9 +121,9 @@ export default function TreatmentPlanDetailPage() {
               Hus_YOB: apiData.cusInfo?.husYob || "2000-05-11",
               Wife_YOB: apiData.cusInfo?.wifeYob || "2000-05-11",
               acc: {
-                fullName: apiData.cusInfo?.husName || "Nguyen van A",
-                mail: "mock@example.com",
-                phone: "0900000000",
+                fullName: apiData?.cusInfo?.accInfo?.fullName || "",
+                mail: apiData?.cusInfo?.accInfo.mail || "",
+                phone: apiData?.cusInfo?.accInfo.phone || "",
               },
             },
             doctor: {
