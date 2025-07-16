@@ -1,5 +1,5 @@
 // File: pages/ReceptionistPage/BookingManagement.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Table,
   Tag,
@@ -19,6 +19,9 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { GetAllBooking } from "../../../apis/bookingService";
+// 👉 Nếu có DoctorStoreContext thì import (nếu không, truyền docId qua prop)
+import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
+
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -28,6 +31,8 @@ const { Option } = Select;
 
 const BookingManagement = () => {
   const navigate = useNavigate();
+  // 👉 Lấy context bác sĩ đăng nhập (nếu dùng context)
+  const { doctorInfo } = useContext(DoctorStoreContext); // Nếu không dùng context thì lấy prop
   const today = dayjs();
   const [dateRange, setDateRange] = useState([today, today]);
   const [selectedShift, setSelectedShift] = useState(null);
@@ -36,19 +41,23 @@ const BookingManagement = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    // Call API GetAllBooking
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
         if (res?.data?.success && Array.isArray(res.data.data)) {
-          // Map API data to UI data
-          const mapped = res.data.data.map((item) => ({
+          // Lọc booking của đúng bác sĩ đăng nhập
+          const doctorBookings = res.data.data.filter(
+            (item) =>
+              String(item.doc?.docId) === String(doctorInfo?.docId)
+          );
+          // Map dữ liệu cho Table
+          const mapped = doctorBookings.map((item) => ({
             bookingId: item.bookingId,
             workDate: item.schedule?.workDate,
             slotStart: item.slot?.slotStart?.slice(0, 5),
             slotEnd: item.slot?.slotEnd?.slice(0, 5),
             status: item.status?.statusName,
-            // Add more fields if needed
+            // Nếu cần field gì thêm thì add vào đây
           }));
           setBookings(mapped);
           setFilteredBookings(mapped);
@@ -61,8 +70,9 @@ const BookingManagement = () => {
         setFilteredBookings([]);
       }
     };
-    fetchBookings();
-  }, []);
+    // Chờ doctorInfo.docId có giá trị mới fetch (tránh lỗi khi context chưa load xong)
+    if (doctorInfo?.docId) fetchBookings();
+  }, [doctorInfo?.docId]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -109,7 +119,7 @@ const BookingManagement = () => {
         <Button
           type="link"
           onClick={() =>
-            navigate(`/receptionist/bookingdetail/${record.bookingId}`)
+            navigate(`/doctorpage/bookingdetail/${record.bookingId}`)
           }
         >
           Xem chi tiết
@@ -120,7 +130,6 @@ const BookingManagement = () => {
 
   const handleFilter = () => {
     let filtered = [...bookings];
-
     if (dateRange && dateRange[0] && dateRange[1]) {
       const [start, end] = dateRange;
       filtered = filtered.filter((b) => {
@@ -132,7 +141,6 @@ const BookingManagement = () => {
         );
       });
     }
-
     if (selectedShift) {
       filtered = filtered.filter((b) => {
         const time = dayjs(b.slotStart, "HH:mm");
@@ -150,13 +158,11 @@ const BookingManagement = () => {
         return true;
       });
     }
-
     if (searchKeyword.trim() !== "") {
       filtered = filtered.filter((b) =>
         b.bookingId?.toString().includes(searchKeyword.trim())
       );
     }
-
     setFilteredBookings(filtered);
   };
 
