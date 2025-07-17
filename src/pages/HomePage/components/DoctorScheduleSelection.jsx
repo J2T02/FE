@@ -74,9 +74,12 @@ const DoctorScheduleSelection = ({
   onPrev,
   disablePrev,
   loading,
+  defaultDoctorId,
 }) => {
   // Doctor selection states
-  const [selectedDoctor, setSelectedDoctor] = useState(data?.doctorId || null);
+  const [selectedDoctor, setSelectedDoctor] = useState(
+    data?.doctorId || defaultDoctorId || null
+  );
   const [selectedDoctorDetail, setSelectedDoctorDetail] = useState(null);
 
   // Schedule states
@@ -131,6 +134,13 @@ const DoctorScheduleSelection = ({
       setSelectedDoctorDetail(null);
     }
   }, [selectedDoctor, doctors, onUpdate]);
+
+  // Nếu defaultDoctorId thay đổi (khi mount), set lại selectedDoctor
+  useEffect(() => {
+    if (defaultDoctorId) {
+      setSelectedDoctor(Number(defaultDoctorId));
+    }
+  }, [defaultDoctorId]);
 
   // Fetch schedule when doctor is selected with improved error handling
   useEffect(() => {
@@ -565,7 +575,8 @@ const DoctorScheduleSelection = ({
                   <div>
                     <Text strong>Phản hồi từ bệnh nhân:</Text>
                     <FeedbackSection
-                      feedbacks={getFeedbacksByDoctorId(modalDoctor.docId)}
+                      // feedbacks={getFeedbacksByDoctorId(modalDoctor.docId)}
+                      docId={modalDoctor?.docId}
                     />
                   </div>
                 ),

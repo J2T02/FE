@@ -20,6 +20,7 @@ import {
   ScheduleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/vi";
 import { getStepDetailListByDoctorIdStatus1 } from "../../../apis/stepDetailService";
@@ -30,7 +31,7 @@ import {
 import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
 dayjs.extend(isoWeek);
 dayjs.locale("vi");
-
+dayjs.extend(isBetween);
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -177,6 +178,7 @@ const ScheduleManagement = () => {
       if (!doctorInfo || !doctorInfo.docId) return;
       // 1. Fetch bookings
       const bookingRes = await getBookingByDoctorId(doctorInfo.docId);
+
       let bookings = [];
       if (bookingRes?.data?.data && Array.isArray(bookingRes.data.data)) {
         bookings = bookingRes.data.data.map((item) => {
@@ -201,8 +203,10 @@ const ScheduleManagement = () => {
             patient: `${item.cus?.husName || ""} & ${item.cus?.wifeName || ""}`,
             service: item.note || "Chưa rõ",
             status,
+            statusId: item.status?.statusId, // thêm statusId
             statusName: item.status?.statusName || "",
             avatar: item.cus?.accCus?.img || null,
+            workDate: item.schedule?.workDate, // thêm workDate
           };
         });
       }
@@ -231,9 +235,11 @@ const ScheduleManagement = () => {
               item.treatmentPlanInfo?.cusInfo?.wifeName || ""
             }`,
             service: item.stepName || "Bước điều trị",
+            statusId: item.status?.statusId, // thêm statusId
             status: "stepdetail",
             statusName: item.status?.statusName || "",
             avatar: item.treatmentPlanInfo?.cusInfo?.accInfo?.img || null,
+            workDate: item.docSchedule?.workDate, // thêm workDate
           };
         });
       }
@@ -281,10 +287,9 @@ const ScheduleManagement = () => {
     };
     fetchSlots();
   }, []);
-  console.log(appointmentData);
+
   if (doctorInfo) {
     const { docId } = doctorInfo;
-    console.log(docId);
   }
   const currentYear = dayjs().year().toString();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -301,13 +306,44 @@ const ScheduleManagement = () => {
     weekOptions[0].value;
 
   const [selectedWeekStart, setSelectedWeekStart] = useState(defaultWeek);
-  const [selectedDate, setSelectedDate] = useState(dayjs("2025-07-08"));
+  const [selectedDate, setSelectedDate] = useState(dayjs());
 
   const weekDates = getWeekDates(selectedWeekStart);
   const selectedDateStr = selectedDate.format("YYYY-MM-DD");
   // Flatten all appointments in all slots for the selected date
   const slotMap = appointmentData[selectedDateStr] || {};
   const todayAppointments = Object.values(slotMap).flat();
+
+  // Flatten all appointments for stats
+  const allAppointments = useMemo(() => {
+    return Object.values(appointmentData).flatMap((slotMap) =>
+      Object.values(slotMap).flat()
+    );
+  }, [appointmentData]);
+
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  const startOfWeek = dayjs().startOf("isoWeek");
+  const endOfWeek = dayjs().endOf("isoWeek");
+
+  const todayCount = allAppointments.filter(
+    (app) => app.workDate === todayStr
+  ).length;
+  const weekCount = allAppointments.filter((app) => {
+    return (
+      app.workDate &&
+      dayjs(app.workDate).isBetween(startOfWeek, endOfWeek, null, "[]")
+    );
+  }).length;
+  console.log(allAppointments);
+  const pendingCount = allAppointments.filter((app) => {
+    if (app.type === "booking") {
+      return [1, 2, 3].includes(app.statusId);
+    }
+    if (app.type === "step") {
+      return app.statusId === 1;
+    }
+    return false;
+  }).length;
 
   // Calendar cell render function
   const dateCellRender = (value) => {
@@ -456,7 +492,7 @@ const ScheduleManagement = () => {
         <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
             title="Hôm nay"
-            value={statsData.today}
+            value={todayCount}
             icon={<CalendarOutlined />}
             color="#1890ff"
           />
@@ -464,7 +500,7 @@ const ScheduleManagement = () => {
         <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
             title="Tuần này"
-            value={statsData.thisWeek}
+            value={weekCount}
             icon={<ClockCircleOutlined />}
             color="#52c41a"
           />
@@ -472,7 +508,7 @@ const ScheduleManagement = () => {
         <Col xs={24} sm={12} md={8} lg={8} xl={8}>
           <StatCard
             title="Chờ thực hiện"
-            value={statsData.pending}
+            value={pendingCount}
             icon={<UserOutlined />}
             color="#fa8c16"
           />
@@ -511,7 +547,7 @@ const ScheduleManagement = () => {
               color: viewMode === "timeline" ? "black" : "white",
             }}
           >
-            Calendar View
+            Xem theo lịch
           </Button>
           <Button
             type={viewMode === "timeline" ? "primary" : "default"}
@@ -526,7 +562,7 @@ const ScheduleManagement = () => {
               color: viewMode === "timeline" ? "white" : "black",
             }}
           >
-            Timeline View
+            Xem theo giờ
           </Button>
         </div>
 

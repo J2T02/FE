@@ -99,9 +99,7 @@ export default function BiosampleListPage() {
                   <Col>
                     <Link
                       style={{ color: "#f78db3" }}
-                      onClick={() =>
-                        navigate(`/doctorpage/biosampledetail/${bs.BS_ID}`)
-                      }
+                      onClick={() => navigate(`/biosampledetail/${bs.BS_ID}`)}
                     >
                       Xem chi tiết
                     </Link>

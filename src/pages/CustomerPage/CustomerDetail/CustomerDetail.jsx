@@ -29,7 +29,7 @@ import { StoreContext } from "../../../contexts/StoreProvider";
 const { Title, Text } = Typography;
 
 const CustomerDetail = () => {
-  const accountId = Cookies.get("accId");
+  const accountId = Cookies.get("accCusId");
   const { userInfo, customerInfo, setCustomerInfo } = useContext(StoreContext);
   console.log(customerInfo);
   const { token } = theme.useToken();

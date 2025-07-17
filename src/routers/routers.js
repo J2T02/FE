@@ -21,6 +21,10 @@ const routers = [
     component: lazy(() => import("~pages/HomePage/BookingPage/BookingPage")),
   },
   {
+    path: "/booking/:docId",
+    component: lazy(() => import("~pages/HomePage/BookingPage/BookingPage")),
+  },
+  {
     path: "/services",
     component: lazy(() => import("~pages/Service/Service")),
   },

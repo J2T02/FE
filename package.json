@@ -12,7 +12,7 @@
     "@ant-design/icons": "^6.0.0",
     "@contentful/rich-text-react-renderer": "^16.0.2",
     "@contentful/rich-text-types": "^17.0.1",
-    "antd": "^5.25.4",
+    "antd": "^5.26.5",
     "axios": "^1.9.0",
     "contentful": "^11.7.6",
     "dayjs": "^1.11.13",

@@ -1,9 +1,19 @@
-import { Button, Rate, theme } from "antd";
+import { Button, message, Rate, theme } from "antd";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 const CardDoctor = ({ doctor }) => {
+  const navigate = useNavigate();
   const { token } = theme.useToken();
-  const { doctorId, accountInfo, img, star, eduInfo, certificateInfo } = doctor;
+  const { docId, accountInfo, img, star, eduInfo, certificateInfo } = doctor;
 
-  const handleBooking = () => {};
+  const handleBooking = () => {
+    const accId = Cookies.get("accCusId");
+    if (accId) {
+      navigate(`/booking/${docId}`);
+    } else {
+      message.warning("Vui lòng đăng nhập để đặt lịch");
+    }
+  };
 
   return (
     <div
@@ -27,7 +37,9 @@ const CardDoctor = ({ doctor }) => {
           width: 224,
           height: 224,
           margin: "0 auto 24px",
+          cursor: "pointer",
         }}
+        onClick={() => navigate(`/doctordetail/${docId}`)}
       >
         <div
           style={{
@@ -76,6 +88,33 @@ const CardDoctor = ({ doctor }) => {
       >
         <strong>Trình độ:{eduInfo?.eduName}</strong>
       </div>
+      {/* Chứng chỉ */}
+      {certificateInfo && certificateInfo.length > 0 && (
+        <div
+          style={{
+            fontSize: 12,
+            color: "#444",
+            marginBottom: 16,
+            textAlign: "center", // 👈 chỉnh từ left → center
+          }}
+        >
+          <strong>Chứng chỉ:</strong>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              marginTop: 4,
+              marginBottom: 0,
+            }}
+          >
+            {certificateInfo.map((cer) => (
+              <li key={cer.cerId} style={{ marginBottom: 4 }}>
+                {cer.cerName}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Nút đặt lịch */}
       <Button
@@ -89,6 +128,7 @@ const CardDoctor = ({ doctor }) => {
           height: "auto",
           border: "none",
         }}
+        onClick={handleBooking}
       >
         Đặt lịch
       </Button>

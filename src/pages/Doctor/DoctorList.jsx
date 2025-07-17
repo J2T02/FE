@@ -110,7 +110,12 @@ function DoctorList() {
             <Option value={2}>Thạc sĩ</Option>
             <Option value={3}>Tiến sĩ</Option>
           </Select>
-          <Button onClick={handleResetFilters}>Reset bộ lọc</Button>
+          <Button
+            style={{ color: token.colorPrimary }}
+            onClick={handleResetFilters}
+          >
+            Reset bộ lọc
+          </Button>
         </Space>
 
         {/* Grid layout */}

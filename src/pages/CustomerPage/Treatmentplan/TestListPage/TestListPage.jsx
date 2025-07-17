@@ -148,9 +148,7 @@ export default function TestListPage() {
                   <Button
                     type="link"
                     style={{ color: "#f78db3" }}
-                    onClick={() =>
-                      navigate(`/doctorpage/testdetail/${test.Test_ID}`)
-                    }
+                    onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
                   >
                     Xem chi tiết
                   </Button>

@@ -9,6 +9,7 @@ function ServiceDetail() {
   const { id } = useParams();
   const location = useLocation();
   const serviceData = location.state?.serviceData;
+  console.log(serviceData);
   return (
     <Layout>
       <Header />
@@ -23,12 +24,11 @@ function ServiceDetail() {
             maxWidth: 1200,
             margin: "0 auto",
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "1fr",
             gap: 24,
           }}
         >
-          <CardList />
-          <CardList />
+          <CardList serId={serviceData?.serId} />
         </div>
       </div>
       <div style={{ margin: "0 64px" }}>

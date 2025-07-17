@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Typography, Button, Tag, Space } from "antd";
+import { Card, Typography, Button, Tag, Space, message } from "antd";
 import { EnvironmentOutlined, NumberOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 import { formatCurrency } from "../../utils/formater";
@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 function SeriveBanner({ title, img, price }) {
   const navigate = useNavigate();
   const handleBooking = () => {
-    if (!Cookies.get("accId")) {
+    if (!Cookies.get("accCusId")) {
       message.warning("Vui lòng đăng nhập để đặt lịch!");
     } else {
       navigate("/booking");

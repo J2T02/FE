@@ -239,7 +239,7 @@ export default function StepDetailPage() {
   };
 
   if (!stepDetail) return null;
-  console.log(stepDetail);
+  console.log(tests);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <DoctorHeader />
@@ -388,7 +388,7 @@ export default function StepDetailPage() {
                         {test.testDate}
                         <br />
                         <Text strong>Ngày trả kết quả: </Text>
-                        {test.ResultDay || "Chưa có"}
+                        {test.resultDate || "Chưa có"}
                         <br />
                         <Text strong>Ghi chú: </Text>
                         {test.note}

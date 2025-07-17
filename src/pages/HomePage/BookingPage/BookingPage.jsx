@@ -3,6 +3,7 @@ import { Steps, message, Layout, Spin, Alert, Button } from "antd";
 import Header from "~components/header/Header";
 import Footer from "~components/footer/Footer";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import CustomerInfo from "../components/CustomerInfo";
 import DoctorScheduleSelection from "../components/DoctorScheduleSelection";
 import ConfirmBooking from "../components/ConfirmBooking";
@@ -15,6 +16,7 @@ import Cookies from "js-cookie";
 import dayjs from "dayjs";
 
 const BookingPage = () => {
+  const { docId } = useParams();
   const [current, setCurrent] = useState(0);
   const [bookingData, setBookingData] = useState({});
   const [showCustomerInfo, setShowCustomerInfo] = useState(true);
@@ -160,6 +162,7 @@ const BookingPage = () => {
       onPrev={prev}
       disablePrev={current === 0}
       loading={loading}
+      defaultDoctorId={docId ? Number(docId) : null}
     />,
     <ConfirmBooking
       key="ConfirmBooking"
