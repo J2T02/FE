@@ -30,13 +30,13 @@ function CustomFooter() {
   return (
     <Footer
       style={{
-        background: token.colorFooterBg,
+        background: "#d35b7b",
         padding: "40px 0 0 0",
         borderTop: `1px solid ${token.colorFooterBorder || "#393e5c"}`,
         color: token.colorFooterText,
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", background: "#d35b7b" }}>
         <Row gutter={[32, 32]} justify="space-between">
           {/* Logo & Slogan */}
           <Col xs={24} md={6}>
@@ -48,11 +48,11 @@ function CustomFooter() {
               />
               <Title
                 level={5}
-                style={{ margin: 0, color: token.colorFooterText }}
+                style={{ margin: 0, color: "#ffffff" }}
               >
                 Phòng khám điều trị hiếm muộn
               </Title>
-              <Text style={{ fontSize: 13, color: "#bfc0c0" }}>
+              <Text style={{ fontSize: 13, color: "#ffffff" }}>
                 "Nơi gửi trọn niềm tin cho hạnh phúc gia đình"
               </Text>
             </div>
@@ -65,16 +65,16 @@ function CustomFooter() {
             </Title>
             <Space direction="vertical" size={8}>
               <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
-                <PhoneOutlined style={{ color: "#f78db3", marginRight: 8 }} />
+                <PhoneOutlined style={{ color: "#ffffff", marginRight: 8 }} />
                 <b>1900 565656</b>
               </Text>
               <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
-                <MailOutlined style={{ color: "#f78db3", marginRight: 8 }} />
+                <MailOutlined style={{ color: "#ffffff", marginRight: 8 }} />
                 ConYeu@hiemmuon.vn
               </Text>
               <Text style={{ color: token.colorFooterText, opacity: 0.85 }}>
                 <EnvironmentOutlined
-                  style={{ color: "#f78db3", marginRight: 8 }}
+                  style={{ color: "#ffffff", marginRight: 8 }}
                 />
                 123 Đường D1, Thủ Đức, TP.HCM
               </Text>
@@ -134,7 +134,7 @@ function CustomFooter() {
                 height={80}
                 style={{ borderRadius: 8, border: "1px solid #555" }}
               />
-              <div style={{ fontSize: 12, color: "#bfc0c0", marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: "#ffffff", marginTop: 4 }}>
                 Quét mã QR để tải app
               </div>
             </div>
@@ -151,7 +151,7 @@ function CustomFooter() {
         <Row
           justify="space-between"
           align="middle"
-          style={{ fontSize: 13, color: "#bfc0c0" }}
+          style={{ fontSize: 13, color: "#ffffff" }}
         >
           <Col xs={24} md={12} style={{ textAlign: "left" }}>
             © {new Date().getFullYear()} CON YÊU. All rights reserved.
@@ -159,7 +159,7 @@ function CustomFooter() {
           <Col xs={24} md={12} style={{ textAlign: "right" }}>
             <Link
               href="#"
-              style={{ color: "#bfc0c0", marginRight: 16 }}
+              style={{ color: "#ffffff", marginRight: 16 }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.color = token.colorFooterLink)
               }
@@ -171,7 +171,7 @@ function CustomFooter() {
             </Link>
             <Link
               href="#"
-              style={{ color: "#bfc0c0" }}
+              style={{ color: "#ffffff" }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.color = token.colorFooterLink)
               }
