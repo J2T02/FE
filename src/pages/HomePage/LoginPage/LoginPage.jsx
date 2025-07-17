@@ -22,7 +22,6 @@ const LoginPage = () => {
   const handleRedirectByRole = (role) => {
     switch (role) {
       case 1:
-        navigate("/admin");
       case 2:
         navigate("/admin");
         break;
@@ -43,6 +42,16 @@ const LoginPage = () => {
   const onFinish = async (values) => {
     setLoading(true);
     const { identifier, password } = values;
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    const isPhone = /^\d{9,11}$/.test(identifier);
+
+    if (!isEmail && !isPhone) {
+      message.error("Vui lòng đăng nhập bằng email hoặc số điện thoại hợp lệ!");
+      setLoading(false);
+      return;
+    }
+
     const body = {
       mailOrPhone: identifier,
       password: password,
@@ -52,22 +61,19 @@ const LoginPage = () => {
       .then((res) => {
         if (res.data.success) {
           const { token, accId, roleId } = res.data.data;
-          console.log(res.data.data);
+
           switch (roleId) {
             case 1:
               Cookies.set("accAdId", accId);
               Cookies.set("token", token);
-
               break;
             case 2:
               Cookies.set("accManaId", accId);
               Cookies.set("token", token);
-
               break;
             case 3:
               Cookies.set("accRecepId", accId);
               Cookies.set("token", token);
-              // setAccRecepId(accId);
               break;
             case 4:
               Cookies.set("accCusId", accId);
@@ -77,7 +83,6 @@ const LoginPage = () => {
             case 5:
               Cookies.set("accDocId", accId);
               Cookies.set("token", token);
-
               break;
             default:
               break;
@@ -85,11 +90,9 @@ const LoginPage = () => {
 
           message.success("Đăng nhập thành công!");
 
-          // Redirect based on role if available in response
-          if (res.data.data.roleId) {
-            handleRedirectByRole(res.data.data.roleId);
+          if (roleId) {
+            handleRedirectByRole(roleId);
           } else {
-            // Default redirect to customer page if no role specified
             navigate("/");
           }
         } else {
@@ -181,19 +184,19 @@ const LoginPage = () => {
 
               <Form layout="vertical" form={form} onFinish={onFinish}>
                 <Form.Item
-                  label="👤 Tên tài khoản / Email / Số điện thoại"
+                  label="👤 Email / Số điện thoại"
                   name="identifier"
                   rules={[
                     {
                       required: true,
-                      message: "Vui lòng nhập thông tin đăng nhập",
+                      message: "Vui lòng nhập email hoặc số điện thoại",
                     },
                   ]}
                 >
                   <Input
                     prefix={<UserOutlined />}
                     size="large"
-                    placeholder="Nhập tên tài khoản, email hoặc số điện thoại"
+                    placeholder="Nhập email hoặc số điện thoại"
                   />
                 </Form.Item>
 
