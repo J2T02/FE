@@ -22,6 +22,7 @@ const LoginPage = () => {
   const handleRedirectByRole = (role) => {
     switch (role) {
       case 1:
+        navigate("/admin");
       case 2:
         navigate("/admin");
         break;

@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table,
-  Typography,
-  Card,
-  Tag,
-  Input,
-  Select,
-  Button,
-  Row,
-  Col,
-  Space,
+  Table, Typography, Card, Tag, Input, Select, Button, Row, Col, Space,
 } from "antd";
 import {
-  MailOutlined,
-  PhoneOutlined,
-  UserOutlined,
-  SearchOutlined,
+  MailOutlined, PhoneOutlined, UserOutlined, SearchOutlined, PlusOutlined,
 } from "@ant-design/icons";
-import AccountDetailPage from "../AccountDetailPage/AccountDetailPage"; // hoặc đúng đường dẫn bạn đang đặt
+import AccountDetailPage from "../AccountDetailPage/AccountDetailPage";
+import CreateManager from "./CreateManager/CreateManager";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -44,6 +33,7 @@ const ManagerList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedManagerId, setSelectedManagerId] = useState(null);
+  const [creatingManager, setCreatingManager] = useState(false);
 
   useEffect(() => {
     setManagers(mockManagers);
@@ -68,45 +58,29 @@ const ManagerList = () => {
       title: "Tên quản lý",
       dataIndex: "fullName",
       key: "fullName",
-      render: (text) => (
-        <Space>
-          <UserOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><UserOutlined />{text}</Space>),
     },
     {
       title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
-      render: (text) => (
-        <Space>
-          <PhoneOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><PhoneOutlined />{text}</Space>),
     },
     {
       title: "Email",
       dataIndex: "mail",
       key: "mail",
-      render: (text) => (
-        <Space>
-          <MailOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><MailOutlined />{text}</Space>),
     },
     {
       title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
-      render: (isActive) =>
-        isActive ? (
-          <Tag color="green">Đang hoạt động</Tag>
-        ) : (
-          <Tag color="red">Ngưng hoạt động</Tag>
-        ),
+      render: (isActive) => isActive ? (
+        <Tag color="green">Đang hoạt động</Tag>
+      ) : (
+        <Tag color="red">Ngưng hoạt động</Tag>
+      ),
     },
     {
       title: "",
@@ -130,13 +104,24 @@ const ManagerList = () => {
     );
   }
 
+  if (creatingManager) {
+    return <CreateManager onBack={() => setCreatingManager(false)} />;
+  }
+
   return (
     <Card bordered={false}>
-      <Title level={3} style={{ marginBottom: 20 }}>
-        Danh sách quản lý
-      </Title>
+      <Row justify="space-between" align="middle">
+        <Title level={3}>Danh sách quản lý</Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setCreatingManager(true)}
+        >
+          Thêm quản lý
+        </Button>
+      </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16, marginTop: 16 }}>
         <Col xs={24} sm={12} md={8}>
           <Input
             placeholder="Tìm theo tên, số điện thoại hoặc email"
@@ -147,11 +132,7 @@ const ManagerList = () => {
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Select
-            value={statusFilter}
-            onChange={(value) => setStatusFilter(value)}
-            style={{ width: "100%" }}
-          >
+          <Select value={statusFilter} onChange={setStatusFilter} style={{ width: "100%" }}>
             <Option value="all">Tất cả trạng thái</Option>
             <Option value="active">Đang hoạt động</Option>
             <Option value="inactive">Ngưng hoạt động</Option>

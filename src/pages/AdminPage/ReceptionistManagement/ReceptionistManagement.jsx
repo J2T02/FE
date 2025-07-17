@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table,
-  Typography,
-  Card,
-  Tag,
-  Input,
-  Select,
-  Button,
-  Row,
-  Col,
-  Space,
+  Table, Typography, Card, Tag, Input, Select, Button, Row, Col, Space
 } from "antd";
 import {
-  MailOutlined,
-  PhoneOutlined,
-  UserOutlined,
-  SearchOutlined,
+  MailOutlined, PhoneOutlined, UserOutlined, SearchOutlined, PlusOutlined
 } from "@ant-design/icons";
-import AccountDetailPage from "../AccountDetailPage/AccountDetailPage"; // hoặc đúng đường dẫn bạn đang đặt
+import AccountDetailPage from "../AccountDetailPage/AccountDetailPage";
+import CreateReceptionist from "./CreateReceptionist/CreateReceptionist";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -44,6 +33,7 @@ const ReceptionistManagement = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedReceptionistId, setSelectedReceptionistId] = useState(null);
+  const [creatingReceptionist, setCreatingReceptionist] = useState(false);
 
   useEffect(() => {
     setReceptionists(mockReceptionists);
@@ -68,45 +58,29 @@ const ReceptionistManagement = () => {
       title: "Tên lễ tân",
       dataIndex: "fullName",
       key: "fullName",
-      render: (text) => (
-        <Space>
-          <UserOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><UserOutlined />{text}</Space>),
     },
     {
       title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
-      render: (text) => (
-        <Space>
-          <PhoneOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><PhoneOutlined />{text}</Space>),
     },
     {
       title: "Email",
       dataIndex: "mail",
       key: "mail",
-      render: (text) => (
-        <Space>
-          <MailOutlined />
-          {text}
-        </Space>
-      ),
+      render: (text) => (<Space><MailOutlined />{text}</Space>),
     },
     {
       title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
-      render: (isActive) =>
-        isActive ? (
-          <Tag color="green">Đang làm việc</Tag>
-        ) : (
-          <Tag color="red">Ngừng hoạt động</Tag>
-        ),
+      render: (isActive) => isActive ? (
+        <Tag color="green">Đang làm việc</Tag>
+      ) : (
+        <Tag color="red">Ngừng hoạt động</Tag>
+      ),
     },
     {
       title: "",
@@ -124,19 +98,25 @@ const ReceptionistManagement = () => {
     return (
       <AccountDetailPage
         accId={selectedReceptionistId}
-        embedded
         onBack={() => setSelectedReceptionistId(null)}
       />
     );
   }
 
+  if (creatingReceptionist) {
+    return <CreateReceptionist onBack={() => setCreatingReceptionist(false)} />;
+  }
+
   return (
     <Card bordered={false}>
-      <Title level={3} style={{ marginBottom: 20 }}>
-        Danh sách lễ tân
-      </Title>
+      <Row justify="space-between" align="middle">
+        <Title level={3}>Danh sách lễ tân</Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreatingReceptionist(true)}>
+          Thêm lễ tân
+        </Button>
+      </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16, marginTop: 16 }}>
         <Col xs={24} sm={12} md={8}>
           <Input
             placeholder="Tìm theo tên, số điện thoại hoặc email"
@@ -147,11 +127,7 @@ const ReceptionistManagement = () => {
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Select
-            value={statusFilter}
-            onChange={(value) => setStatusFilter(value)}
-            style={{ width: "100%" }}
-          >
+          <Select value={statusFilter} onChange={setStatusFilter} style={{ width: "100%" }}>
             <Option value="all">Tất cả trạng thái</Option>
             <Option value="active">Đang làm việc</Option>
             <Option value="inactive">Ngừng hoạt động</Option>
