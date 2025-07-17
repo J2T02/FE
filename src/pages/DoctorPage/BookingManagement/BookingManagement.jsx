@@ -1,4 +1,3 @@
-// File: pages/ReceptionistPage/BookingManagement.jsx
 import React, { useEffect, useState, useContext } from "react";
 import {
   Table,
@@ -13,14 +12,13 @@ import {
   Space,
   Input,
 } from "antd";
-import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { GetAllBooking } from "../../../apis/bookingService";
-// 👉 Nếu có DoctorStoreContext thì import (nếu không, truyền docId qua prop)
 import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
+import BookingDetailPage from "../BookingDetail/BookingDetailPage"; // ✅ thêm import
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -30,34 +28,29 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const BookingManagement = () => {
-  const navigate = useNavigate();
-  // 👉 Lấy context bác sĩ đăng nhập (nếu dùng context)
-  const { doctorInfo } = useContext(DoctorStoreContext); // Nếu không dùng context thì lấy prop
+  const { doctorInfo } = useContext(DoctorStoreContext);
   const today = dayjs();
   const [dateRange, setDateRange] = useState([today, today]);
   const [selectedShift, setSelectedShift] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [selectedBookingId, setSelectedBookingId] = useState(null); // ✅ thêm state hiển thị detail
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
         if (res?.data?.success && Array.isArray(res.data.data)) {
-          // Lọc booking của đúng bác sĩ đăng nhập
           const doctorBookings = res.data.data.filter(
-            (item) =>
-              String(item.doc?.docId) === String(doctorInfo?.docId)
+            (item) => String(item.doc?.docId) === String(doctorInfo?.docId)
           );
-          // Map dữ liệu cho Table
           const mapped = doctorBookings.map((item) => ({
             bookingId: item.bookingId,
             workDate: item.schedule?.workDate,
             slotStart: item.slot?.slotStart?.slice(0, 5),
             slotEnd: item.slot?.slotEnd?.slice(0, 5),
             status: item.status?.statusName,
-            // Nếu cần field gì thêm thì add vào đây
           }));
           setBookings(mapped);
           setFilteredBookings(mapped);
@@ -70,7 +63,7 @@ const BookingManagement = () => {
         setFilteredBookings([]);
       }
     };
-    // Chờ doctorInfo.docId có giá trị mới fetch (tránh lỗi khi context chưa load xong)
+
     if (doctorInfo?.docId) fetchBookings();
   }, [doctorInfo?.docId]);
 
@@ -118,9 +111,7 @@ const BookingManagement = () => {
       render: (_, record) => (
         <Button
           type="link"
-          onClick={() =>
-            navigate(`/doctorpage/bookingdetail/${record.bookingId}`)
-          }
+          onClick={() => setSelectedBookingId(record.bookingId)} // ✅ mở tab nội bộ
         >
           Xem chi tiết
         </Button>
@@ -170,54 +161,67 @@ const BookingManagement = () => {
     handleFilter();
   }, [dateRange, selectedShift, searchKeyword, bookings]);
 
-  return (
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space wrap>
-              <Title level={3} style={{ margin: 0 }}>
-                Danh sách lịch hẹn
-              </Title>
-              <Input
-                allowClear
-                placeholder="Tìm mã Booking..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </Space>
-          </Col>
-          <Col>
-            <Space wrap>
-              <RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(values) => setDateRange(values)}
-              />
-              <Select
-                allowClear
-                placeholder="Chọn ca làm việc"
-                style={{ width: 180 }}
-                value={selectedShift}
-                onChange={(value) => setSelectedShift(value)}
-              >
-                <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={filteredBookings}
-        rowKey="bookingId"
-        pagination={{ pageSize: 8 }}
+  // ✅ Nếu đang xem chi tiết
+  if (selectedBookingId !== null) {
+    return (
+      <BookingDetailPage
+        bookingId={selectedBookingId}
+        onBack={() => setSelectedBookingId(null)}
       />
-    </Card>
+    );
+  }
+
+  // ✅ Giao diện danh sách mặc định
+  return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
+      <Card
+        title={
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Space wrap>
+                <Title level={3} style={{ margin: 0 }}>
+                  Danh sách lịch hẹn
+                </Title>
+                <Input
+                  allowClear
+                  placeholder="Tìm mã Booking..."
+                  prefix={<SearchOutlined />}
+                  style={{ width: 220 }}
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                />
+              </Space>
+            </Col>
+            <Col>
+              <Space wrap>
+                <RangePicker
+                  format="YYYY-MM-DD"
+                  value={dateRange}
+                  onChange={(values) => setDateRange(values)}
+                />
+                <Select
+                  allowClear
+                  placeholder="Chọn ca làm việc"
+                  style={{ width: 180 }}
+                  value={selectedShift}
+                  onChange={(value) => setSelectedShift(value)}
+                >
+                  <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
+                  <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+                </Select>
+              </Space>
+            </Col>
+          </Row>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={filteredBookings}
+          rowKey="bookingId"
+          pagination={{ pageSize: 8 }}
+        />
+      </Card>
+    </div>
   );
 };
 

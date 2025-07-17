@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout, Row, Col, Space, Spin, message, Button } from "antd";
@@ -20,7 +19,7 @@ const mockFetchBooking = async (bookingId) => {
       bookingId,
       createAt: "2025-07-01",
       note: "Khách cần tư vấn thêm",
-      status: { statusId: 3, statusName: "Check-in" },
+      status: { statusId: 2, statusName: "Đã xác nhận" },
       cus: {
         husName: "Nguyễn Văn A",
         wifeName: "Trần Thị B",
@@ -51,10 +50,12 @@ const mockUpdateStatus = async (bookingId, statusId) => {
   return { success: true };
 };
 
-export default function BookingDetailPage() {
-  const { id } = useParams();              
-  const bookingId = parseInt(id);          
-  const navigate = useNavigate();          
+export default function BookingDetailPage({ bookingId: propBookingId, onBack }) {
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const bookingId = propBookingId ?? parseInt(params.id); // ✅ fallback giữa prop và URL param
+  const isEmbedded = !!propBookingId; // ✅ xác định gọi nội bộ hay từ route
 
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
@@ -82,8 +83,8 @@ export default function BookingDetailPage() {
     const currentStatus = bookingData?.status?.statusId;
     let newStatus = null;
 
-    if (currentStatus === 3) newStatus = 4; // From Check-in → Đang khám
-    else if (currentStatus === 4) newStatus = 5; // From Đang khám → Đã khám
+    if (currentStatus === 3) newStatus = 4;
+    else if (currentStatus === 4) newStatus = 5;
     else return;
 
     const res = await mockUpdateStatus(bookingId, newStatus);
@@ -98,10 +99,21 @@ export default function BookingDetailPage() {
   if (loading) return <Spin fullscreen />;
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
+    <Layout style={{ background: "#fff0f4", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <BackButton />
+          {isEmbedded ? (
+            <Button 
+              style={{ marginBottom: 20,
+                  backgroundColor: "#f78db3",
+                  color: "white",
+                  border: "none",
+              }}
+             onClick={onBack}>← Quay lại</Button> // ✅ thêm Back nội bộ
+          ) : (
+            <BackButton />
+          )}
+
           <BookingHeader data={bookingData} />
           <BookingOverviewCard data={bookingData} />
 
@@ -122,7 +134,6 @@ export default function BookingDetailPage() {
               />
             </Col>
           </Row>
-
         </Space>
       </Content>
     </Layout>

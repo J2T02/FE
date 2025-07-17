@@ -124,6 +124,7 @@ const TreatmentplanManagement = () => {
   });
 
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card>
       <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
         <Col span={24}>
@@ -176,6 +177,7 @@ const TreatmentplanManagement = () => {
         pagination={{ pageSize: 5 }}
       />
     </Card>
+    </div>
   );
 };
 

@@ -470,13 +470,7 @@ const ScheduleManagement = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: "24px",
-        backgroundColor: "#f5f5f5",
-        minHeight: "100vh",
-      }}
-    >
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0, color: "black" }}>
