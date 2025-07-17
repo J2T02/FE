@@ -12,6 +12,16 @@ export default function ActionSection({
   const { Link, Text } = Typography;
   const navigate = useNavigate();
 
+  if (statusId === 1) {
+    return (
+      <Card title="Thao tác">
+        <Button type="primary" block onClick={onCheckIn}>
+          Xác nhận
+        </Button>
+      </Card>
+    );
+  }
+
   if (statusId === 2) {
     return (
       <Card title="Thao tác">

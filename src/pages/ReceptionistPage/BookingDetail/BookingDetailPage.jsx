@@ -1,7 +1,6 @@
-// File: pages/ReceptionistPage/BookingDetailPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Layout, Row, Col, Space, Spin, message } from "antd";
+import { Layout, Row, Col, Space, Spin, message, Button } from "antd";
 import BackButton from "./components/BackButton";
 import BookingHeader from "./components/BookingHeader";
 import BookingOverviewCard from "./components/BookingOverviewCard";
@@ -14,12 +13,15 @@ import ReceptionistHeader from "../components/ReceptionistHeader";
 import ReceptionistStoreProvider from "../contexts/ReceptionistStoreProvider";
 import Footer from "~components/footer/Footer";
 import { createTreatment } from "../../../apis/treatmentService";
+
 const { Content } = Layout;
 
-export default function BookingDetailPage() {
-  const { id } = useParams();
-  const bookingId = parseInt(id);
+export default function BookingDetailPage({ bookingId: propBookingId, onBack }) {
+  const params = useParams();
   const navigate = useNavigate();
+
+  const bookingId = propBookingId ?? parseInt(params.id); // ✅ Dùng props nếu có, fallback sang URL param
+  const isEmbedded = !!propBookingId; // ✅ Xác định gọi từ nội bộ hay route riêng
 
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState(null);
@@ -48,7 +50,6 @@ export default function BookingDetailPage() {
       const res = await checkBooking(bookingId, 3);
       if (res?.data?.success) {
         message.success("Check-in thành công!");
-        // Sau khi checkin, cập nhật lại trạng thái booking
         setBookingData((prev) => ({
           ...prev,
           status: { statusId: 3, statusName: "Checkin" },
@@ -69,28 +70,24 @@ export default function BookingDetailPage() {
         serId: 1,
         cusId: cus.cusId,
       };
-      await createTreatment(payload)
-        .then((res) => {
-          if (res.data.success) {
-            setTreatmentPlan(res.data.data);
-            message.success(res.data.message);
-            const newTpId = res.data.data.tpId;
-            navigate(`/receptionist/treatmentplandetail/${newTpId}`);
-          } else {
-            message.error(res.data.message);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-
-          message.error("Tạo hồ sơ bệnh án thất bại!");
-        });
+      try {
+        const res = await createTreatment(payload);
+        if (res.data.success) {
+          setTreatmentPlan(res.data.data);
+          message.success(res.data.message);
+          const newTpId = res.data.data.tpId;
+          navigate(`/receptionist/treatmentplandetail/${newTpId}`);
+        } else {
+          message.error(res.data.message);
+        }
+      } catch (err) {
+        message.error("Tạo hồ sơ bệnh án thất bại!");
+      }
     }
   };
 
   if (loading || !bookingData) return <Spin fullscreen />;
 
-  // Map lại dữ liệu cho các component con nếu cần
   const appointmentData = {
     ...bookingData.schedule,
     slot: bookingData.slot,
@@ -100,11 +97,22 @@ export default function BookingDetailPage() {
 
   return (
     <ReceptionistStoreProvider>
-      <Layout style={{ minHeight: "100vh", backgroundColor: "#F9FAFB" }}>
-        <ReceptionistHeader />
+      <Layout style={{ background: "#fff0f4", minHeight: "100vh" }}>
+        {!isEmbedded && <ReceptionistHeader />} {/* ✅ Không render Header nếu là embedded */}
         <Content style={{ padding: 24 }}>
           <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <BackButton />
+            {isEmbedded ? (
+              <Button 
+                    style={{ marginBottom: 20,
+                  backgroundColor: "#f78db3",
+                  color: "white",
+                  border: "none",
+              }} onClick={onBack}
+              >← Quay lại
+              </Button> // ✅ Nút back nội bộ
+            ) : (
+              <BackButton /> // ✅ Vẫn hỗ trợ khi chạy qua router
+            )}
             <BookingHeader data={bookingData} />
             <BookingOverviewCard data={bookingData} />
 
@@ -135,7 +143,7 @@ export default function BookingDetailPage() {
             </Row>
           </Space>
         </Content>
-        <Footer />
+        {!isEmbedded && <Footer />} {/* ✅ Không render Footer nếu là embedded */}
       </Layout>
     </ReceptionistStoreProvider>
   );

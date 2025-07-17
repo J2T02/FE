@@ -12,13 +12,15 @@ import {
   Card,
   Space,
   Input,
+  message,
 } from "antd";
-import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { GetAllBooking } from "../../../apis/bookingService";
+import BookingDetailPage from "../BookingDetail/BookingDetailPage"; // ✅ THÊM
+
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -27,28 +29,25 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const BookingManagement = () => {
-  const navigate = useNavigate();
   const today = dayjs();
   const [dateRange, setDateRange] = useState([today, today]);
   const [selectedShift, setSelectedShift] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [selectedBookingId, setSelectedBookingId] = useState(null); // ✅ THÊM
 
   useEffect(() => {
-    // Call API GetAllBooking
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
         if (res?.data?.success && Array.isArray(res.data.data)) {
-          // Map API data to UI data
           const mapped = res.data.data.map((item) => ({
             bookingId: item.bookingId,
             workDate: item.schedule?.workDate,
             slotStart: item.slot?.slotStart?.slice(0, 5),
             slotEnd: item.slot?.slotEnd?.slice(0, 5),
             status: item.status?.statusName,
-            // Add more fields if needed
           }));
           setBookings(mapped);
           setFilteredBookings(mapped);
@@ -83,6 +82,15 @@ const BookingManagement = () => {
     }
   };
 
+  const handleConfirmBooking = (bookingId) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.bookingId === bookingId ? { ...b, status: "Đã xác nhận" } : b
+      )
+    );
+    message.success(`Đã xác nhận booking #${bookingId}`);
+  };
+
   const columns = [
     {
       title: "Mã Booking",
@@ -100,7 +108,20 @@ const BookingManagement = () => {
     {
       title: "Trạng thái",
       dataIndex: "status",
-      render: (status) => <Tag color={getStatusColor(status)}>{status}</Tag>,
+      render: (status, record) => (
+        <Space>
+          <Tag color={getStatusColor(status)}>{status}</Tag>
+          {status === "Chờ xác nhận" && (
+            <Button
+              size="small"
+              type="link"
+              onClick={() => handleConfirmBooking(record.bookingId)}
+            >
+              Xác nhận
+            </Button>
+          )}
+        </Space>
+      ),
     },
     {
       title: "",
@@ -108,9 +129,7 @@ const BookingManagement = () => {
       render: (_, record) => (
         <Button
           type="link"
-          onClick={() =>
-            navigate(`/receptionist/bookingdetail/${record.bookingId}`)
-          }
+          onClick={() => setSelectedBookingId(record.bookingId)} // ✅ SỬA
         >
           Xem chi tiết
         </Button>
@@ -137,15 +156,9 @@ const BookingManagement = () => {
       filtered = filtered.filter((b) => {
         const time = dayjs(b.slotStart, "HH:mm");
         if (selectedShift === "sang") {
-          return (
-            time.isSameOrAfter(dayjs("08:00", "HH:mm")) &&
-            time.isBefore(dayjs("12:00", "HH:mm"))
-          );
+          return time.isBetween("08:00", "12:00", "minute", "[)");
         } else if (selectedShift === "chieu") {
-          return (
-            time.isSameOrAfter(dayjs("13:00", "HH:mm")) &&
-            time.isBefore(dayjs("17:00", "HH:mm"))
-          );
+          return time.isBetween("13:00", "17:00", "minute", "[)");
         }
         return true;
       });
@@ -164,54 +177,65 @@ const BookingManagement = () => {
     handleFilter();
   }, [dateRange, selectedShift, searchKeyword, bookings]);
 
-  return (
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space wrap>
-              <Title level={3} style={{ margin: 0 }}>
-                Danh sách lịch hẹn
-              </Title>
-              <Input
-                allowClear
-                placeholder="Tìm mã Booking..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </Space>
-          </Col>
-          <Col>
-            <Space wrap>
-              <RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(values) => setDateRange(values)}
-              />
-              <Select
-                allowClear
-                placeholder="Chọn ca làm việc"
-                style={{ width: 180 }}
-                value={selectedShift}
-                onChange={(value) => setSelectedShift(value)}
-              >
-                <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={filteredBookings}
-        rowKey="bookingId"
-        pagination={{ pageSize: 8 }}
+  if (selectedBookingId !== null) {
+    return (
+      <BookingDetailPage
+        bookingId={selectedBookingId}
+        onBack={() => setSelectedBookingId(null)}
       />
-    </Card>
+    );
+  }
+
+  return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
+      <Card
+        title={
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Space wrap>
+                <Title level={3} style={{ margin: 0 }}>
+                  Danh sách lịch hẹn
+                </Title>
+                <Input
+                  allowClear
+                  placeholder="Tìm mã Booking..."
+                  prefix={<SearchOutlined />}
+                  style={{ width: 220 }}
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                />
+              </Space>
+            </Col>
+            <Col>
+              <Space wrap>
+                <RangePicker
+                  format="YYYY-MM-DD"
+                  value={dateRange}
+                  onChange={(values) => setDateRange(values)}
+                />
+                <Select
+                  allowClear
+                  placeholder="Chọn ca làm việc"
+                  style={{ width: 180 }}
+                  value={selectedShift}
+                  onChange={(value) => setSelectedShift(value)}
+                >
+                  <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
+                  <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+                </Select>
+              </Space>
+            </Col>
+          </Row>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={filteredBookings}
+          rowKey="bookingId"
+          pagination={{ pageSize: 8 }}
+        />
+      </Card>
+    </div>
   );
 };
 

@@ -237,6 +237,7 @@ const TreatmentplanManagement = () => {
   };
 
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card title={<Title level={3}>Danh sách Hồ sơ bệnh án</Title>}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
@@ -394,6 +395,7 @@ const TreatmentplanManagement = () => {
         </Form>
       </Modal>
     </Card>
+    </div>
   );
 };
 
