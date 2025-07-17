@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // ✅ giữ nguyên
 import {
   Table,
   Button,
@@ -8,54 +8,20 @@ import {
   Tag,
   Card,
   message,
-} from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import axios from "axios";
-import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage";
+} from "antd"; // ✅ giữ nguyên
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons"; // ✅ giữ nguyên
+import axios from "axios"; // ✅ giữ nguyên
+import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage"; // ✅ giữ nguyên
+import CreateService from "./CreateService/CreateService"; // ➕ thêm import để load tab tạo mới
 
 const { Title } = Typography;
 
 const ServiceManagement = () => {
-  const [services, setServices] = useState([
-    {
-      ser_ID: 1,
-      ser_Name: "Khám phụ khoa tổng quát",
-      price: 300000,
-      description: "Kiểm tra tổng quát sức khỏe phụ khoa định kỳ.",
-      file_Path: "/files/phu-khoa.pdf",
-    },
-    {
-      ser_ID: 2,
-      ser_Name: "Siêu âm đầu dò",
-      price: 500000,
-      description: "Dịch vụ siêu âm đầu dò chính xác cao, an toàn.",
-      file_Path: "/files/sieu-am.pdf",
-    },
-    {
-      ser_ID: 3,
-      ser_Name: "Tư vấn hiếm muộn",
-      price: 250000,
-      description: "Tư vấn và phân tích tình trạng hiếm muộn cho các cặp vợ chồng.",
-      file_Path: "/files/hiem-muon.pdf",
-    },
-    {
-      ser_ID: 4,
-      ser_Name: "Xét nghiệm nội tiết",
-      price: 450000,
-      description: "Đánh giá chỉ số hormone liên quan đến sinh sản.",
-      file_Path: "/files/noi-tiet.pdf",
-    },
-    {
-      ser_ID: 5,
-      ser_Name: "Chụp tử cung vòi trứng (HSG)",
-      price: 800000,
-      description: "Kiểm tra thông tắc vòi trứng và tử cung bằng HSG.",
-      file_Path: "/files/hsg.pdf",
-    },
-  ]);
-  const [loading, setLoading] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedServiceId, setSelectedServiceId] = useState(null); // ✅ THÊM
+  const [services, setServices] = useState([]); // ✏️ bỏ mảng mock, vì đã fetch từ API (vẫn đúng với logic gốc bạn có ở useEffect)
+  const [loading, setLoading] = useState(false); // ✅ giữ nguyên
+  const [searchKeyword, setSearchKeyword] = useState(""); // ✅ giữ nguyên
+  const [selectedServiceId, setSelectedServiceId] = useState(null); // ✅ giữ nguyên
+  const [creatingService, setCreatingService] = useState(false); // ➕ thêm state để bật tab tạo mới
 
   useEffect(() => {
     fetchServices();
@@ -72,6 +38,10 @@ const ServiceManagement = () => {
       setLoading(false);
     }
   };
+
+  const filteredServices = services.filter((item) =>
+    item.ser_Name.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
 
   const columns = [
     {
@@ -94,7 +64,7 @@ const ServiceManagement = () => {
         <Button
           type="link"
           style={{ color: "#1677ff" }}
-          onClick={() => setSelectedServiceId(record.ser_ID)} // ✅ THÊM
+          onClick={() => setSelectedServiceId(record.ser_ID)}
         >
           Xem chi tiết
         </Button>
@@ -102,26 +72,32 @@ const ServiceManagement = () => {
     },
   ];
 
-  const filteredServices = services.filter((item) =>
-    item.ser_Name.toLowerCase().includes(searchKeyword.toLowerCase())
-  );
-
-  // ✅ Nếu đang xem chi tiết dịch vụ => hiện ServiceDetailPage
+  // ✅ Nếu đang xem chi tiết
   if (selectedServiceId !== null) {
     return (
       <ServiceDetailPage
         serId={selectedServiceId}
-        onBack={() => setSelectedServiceId(null)} // ✅ Nút quay lại
+        onBack={() => setSelectedServiceId(null)}
       />
     );
   }
 
-  // ✅ Trang danh sách dịch vụ (không đổi logic gì cả)
+  // ➕ Nếu đang tạo dịch vụ
+  if (creatingService) {
+    return <CreateService onBack={() => setCreatingService(false)} />;
+  }
+
+  // ✅ Giao diện danh sách
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card
       title={<Title level={3}>Quản lý dịch vụ</Title>}
       extra={
-        <Button type="primary" icon={<PlusOutlined />} href="/services/create">
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setCreatingService(true)} // ✏️ chỉnh từ href → mở tab nội bộ
+        >
           Thêm dịch vụ
         </Button>
       }
@@ -141,6 +117,7 @@ const ServiceManagement = () => {
         pagination={{ pageSize: 5 }}
       />
     </Card>
+    </div>
   );
 };
 

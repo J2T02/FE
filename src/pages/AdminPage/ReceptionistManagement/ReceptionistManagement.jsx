@@ -108,6 +108,7 @@ const ReceptionistManagement = () => {
   }
 
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card bordered={false}>
       <Row justify="space-between" align="middle">
         <Title level={3}>Danh sách lễ tân</Title>
@@ -142,6 +143,7 @@ const ReceptionistManagement = () => {
         pagination={{ pageSize: 5 }}
       />
     </Card>
+    </div>
   );
 };
 

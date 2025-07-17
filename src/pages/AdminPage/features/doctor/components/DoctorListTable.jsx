@@ -11,9 +11,9 @@ import {
   Select,
 } from "antd";
 import { UserOutlined, PlusOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import { GetAllDoctor } from "~/apis/bookingService";
-import CreateDoctor from "../../../DoctorManagement/CreateDoctor/CreateDoctor"; // Đảm bảo đúng đường dẫn
+import CreateDoctor from "../../../DoctorManagement/CreateDoctor/CreateDoctor";
+import DoctorDetailManagement from "../../../DoctorManagement/DoctorDetailManagement"; // ✅ THÊM
 
 const { Option } = Select;
 
@@ -24,7 +24,7 @@ const DoctorListTable = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isCreatingDoctor, setIsCreatingDoctor] = useState(false);
-  const navigate = useNavigate();
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null); // ✅ THÊM
 
   const handleMouseEnter = async () => {
     if (doctors.length > 0 || loading) return;
@@ -100,7 +100,7 @@ const DoctorListTable = () => {
       render: (_, record) => (
         <Button
           type="link"
-          onClick={() => navigate(`/doctordetail/${record.docId}`)}
+          onClick={() => setSelectedDoctorId(record.docId)} // ✅ SỬA navigate → tab nội bộ
         >
           Xem chi tiết
         </Button>
@@ -108,6 +108,17 @@ const DoctorListTable = () => {
     },
   ];
 
+  // ✅ Chuyển sang tab DoctorDetailManagement nếu có selectedDoctorId
+  if (selectedDoctorId !== null) {
+    return (
+      <DoctorDetailManagement
+        doctorId={selectedDoctorId}
+        onBack={() => setSelectedDoctorId(null)}
+      />
+    );
+  }
+
+  // ✅ Giữ nguyên tạo bác sĩ
   if (isCreatingDoctor) {
     return <CreateDoctor onBack={() => setIsCreatingDoctor(false)} />;
   }
@@ -115,10 +126,11 @@ const DoctorListTable = () => {
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#fff0f4",
         padding: 24,
         borderRadius: 8,
         marginBottom: 24,
+        minHeight: "100vh",
       }}
       onMouseEnter={handleMouseEnter}
     >

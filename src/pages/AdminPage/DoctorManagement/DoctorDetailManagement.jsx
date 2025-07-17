@@ -10,20 +10,18 @@ import {
   Pagination,
   Layout,
   theme,
+  Button,
 } from "antd";
 import dayjs from "dayjs";
 import WorkScheduleManagement from "./WorkScheduleManagement";
 import FeedbackCardManagement from "./FeedbackCardManagement";
-import Header from "~components/header/Header";
-import Footer from "~components/footer/Footer";
 import { getDoctorInfo } from "../../../apis/doctorService";
 import { GetAllDoctorSchedule } from "../../../apis/bookingService";
-import { useParams } from "react-router-dom";
+
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const DoctorDetailManagement = () => {
-  const { doctorId } = useParams();
+const DoctorDetailManagement = ({ doctorId, onBack }) => {
   const { token } = theme.useToken();
   const [doctor, setDoctor] = useState(null);
   const [scheduleData, setScheduleData] = useState([]);
@@ -119,15 +117,13 @@ const DoctorDetailManagement = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Lấy thông tin bác sĩ
         const resDoctor = await getDoctorInfo(doctorId);
-        console.log(resDoctor);
         if (resDoctor?.data?.success) {
           setDoctor(resDoctor.data.data);
         } else {
           setDoctor(null);
         }
-        // Lấy lịch làm việc
+
         const resSchedule = await GetAllDoctorSchedule(doctorId);
         if (resSchedule?.data?.success) {
           setScheduleData(resSchedule.data.data);
@@ -172,8 +168,6 @@ const DoctorDetailManagement = () => {
     currentPage * pageSize
   );
 
-  // Mapping các trường từ API vào layout cũ
-  // Nếu thiếu trường thì mock như cũ
   const gender = doctor?.gender || "";
   const yob = doctor?.yob || "1988-03-15T00:00:00.000Z";
   const experience = doctor?.experience || 10;
@@ -181,21 +175,29 @@ const DoctorDetailManagement = () => {
   const full_Name = doctor?.accountInfo?.fullName || "";
   const mail = doctor?.accountInfo?.mail || "lan.bs88@gmail.com";
   const phone = doctor?.accountInfo?.phone || "0908123456";
-  const img = doctor?.img || "";
+  const img = doctor?.img || "/femaledoctor.jpg";
   const avgStar = doctor?.avgStar || 4.8;
   const createAt = doctor?.createAt || "2015-07-01T00:00:00.000Z";
   const status = doctor?.status?.statusId || 1;
   const certificates = doctor?.certificateInfo || [];
 
   return (
-    <Layout>
-      <Header />
+    <Layout style={{ background: "#fff0f4", minHeight: "100vh" }}>
       <div style={{ padding: "24px" }}>
+        <Button onClick={onBack}
+        style={{ marginBottom: 16,
+              backgroundColor: "#f78db3",
+              color: "white",
+              border: "none",
+         }}>
+          Quay lại
+        </Button>
+
         <Title level={3}>Thông tin bác sĩ</Title>
 
         <div style={{ display: "flex", gap: "24px" }}>
           <img
-            src={img}
+            src={img || "imgdefault.jpg"} // ✅ fallback ảnh mặc định
             alt="Doctor"
             style={{
               width: 160,
@@ -225,7 +227,7 @@ const DoctorDetailManagement = () => {
           </p>
           <p>
             <b>Trình độ:</b>{" "}
-            <Tag color="blue">{edu_LevelName ? edu_LevelName : "chưa rõ"}</Tag>
+            <Tag color="blue">{edu_LevelName || "chưa rõ"}</Tag>
           </p>
           <p>
             <b>Kinh nghiệm:</b> {experience} năm
@@ -304,7 +306,6 @@ const DoctorDetailManagement = () => {
           </div>
         )}
       </div>
-      <Footer />
     </Layout>
   );
 };

@@ -90,6 +90,7 @@ const PatientManagement = () => {
   });
 
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
       <Space style={{ marginBottom: 16 }}>
         <Input
@@ -106,6 +107,7 @@ const PatientManagement = () => {
         pagination={{ pageSize: 5 }}
       />
     </Card>
+    </div>
   );
 };
 

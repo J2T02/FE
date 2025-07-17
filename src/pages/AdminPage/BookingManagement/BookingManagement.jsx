@@ -197,6 +197,7 @@ const BookingManagement = () => {
   }
 
   return (
+    <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
     <Card
       title={
         <Row justify="space-between" align="middle">
@@ -244,6 +245,7 @@ const BookingManagement = () => {
         pagination={{ pageSize: 8 }}
       />
     </Card>
+    </div>
   );
 };
 
