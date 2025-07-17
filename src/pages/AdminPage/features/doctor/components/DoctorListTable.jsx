@@ -1,19 +1,33 @@
-import { Table, Avatar, Input, Button, Tag, Space, Spin, Alert } from "antd";
-import { UserOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState, useMemo } from "react";
+import {
+  Table,
+  Avatar,
+  Input,
+  Button,
+  Tag,
+  Space,
+  Spin,
+  Alert,
+  Select,
+} from "antd";
+import { UserOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { GetAllDoctor } from "~/apis/bookingService";
+import CreateDoctor from "../../../DoctorManagement/CreateDoctor/CreateDoctor"; // Đảm bảo đúng đường dẫn
+
+const { Option } = Select;
 
 const DoctorListTable = () => {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isCreatingDoctor, setIsCreatingDoctor] = useState(false);
   const navigate = useNavigate();
 
-  // Gọi API khi mouse enter vào component
   const handleMouseEnter = async () => {
-    if (doctors.length > 0 || loading) return; // Đã có data hoặc đang loading thì không gọi lại
+    if (doctors.length > 0 || loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -31,12 +45,18 @@ const DoctorListTable = () => {
   };
 
   const filteredDoctors = useMemo(() => {
-    return doctors.filter((doctor) =>
-      `${doctor.accountInfo?.fullName || ""} ${doctor.accountInfo?.mail || ""}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
-  }, [search, doctors]);
+    return doctors.filter((doctor) => {
+      const matchesSearch =
+        `${doctor.accountInfo?.fullName || ""} ${doctor.accountInfo?.mail || ""}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || doctor.status?.statusId === Number(statusFilter);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [search, doctors, statusFilter]);
 
   const renderStatus = (statusObj) => {
     if (!statusObj) return null;
@@ -64,9 +84,6 @@ const DoctorListTable = () => {
             <div style={{ fontSize: 12, color: "#888" }}>
               {record.accountInfo?.mail}
             </div>
-            {/* <div style={{ fontSize: 12, color: "#888" }}>
-              {record.accountInfo?.phone}
-            </div> */}
           </div>
         </Space>
       ),
@@ -84,13 +101,16 @@ const DoctorListTable = () => {
         <Button
           type="link"
           onClick={() => navigate(`/doctordetail/${record.docId}`)}
-          // onClick={() => navigate(`/doctordetail/id`)}
         >
           Xem chi tiết
         </Button>
       ),
     },
   ];
+
+  if (isCreatingDoctor) {
+    return <CreateDoctor onBack={() => setIsCreatingDoctor(false)} />;
+  }
 
   return (
     <div
@@ -106,6 +126,8 @@ const DoctorListTable = () => {
         style={{
           display: "flex",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 16,
           marginBottom: 16,
         }}
       >
@@ -115,9 +137,23 @@ const DoctorListTable = () => {
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
-        {/* <Button type="primary" icon={<PlusOutlined />} onClick={onAddDoctor}>
+        <Select
+          value={statusFilter}
+          onChange={(value) => setStatusFilter(value)}
+          style={{ width: 200 }}
+        >
+          <Option value="all">Tất cả trạng thái</Option>
+          <Option value="1">Đang làm việc</Option>
+          <Option value="2">Ngừng hoạt động</Option>
+          <Option value="3">Tạm nghỉ</Option>
+        </Select>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsCreatingDoctor(true)}
+        >
           Thêm bác sĩ
-        </Button> */}
+        </Button>
       </div>
       {loading ? (
         <div style={{ textAlign: "center", padding: 32 }}>
