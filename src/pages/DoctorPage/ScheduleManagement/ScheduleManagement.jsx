@@ -12,6 +12,7 @@ import {
   Space,
   Badge,
   Avatar,
+  message,
 } from "antd";
 import {
   CalendarOutlined,
@@ -19,6 +20,7 @@ import {
   UserOutlined,
   ScheduleOutlined,
 } from "@ant-design/icons";
+import { AiOutlineSchedule } from "react-icons/ai";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -472,13 +474,28 @@ const ScheduleManagement = () => {
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0, color: "black" }}>
-          Lịch làm việc bác sĩ
-        </Title>
-        <Text type="secondary">
-          Quản lý và theo dõi lịch hẹn bệnh nhân • Hệ thống đặt lịch hiện đại
-        </Text>
+      <div style={{ display: "flex" }}>
+        <div style={{ marginBottom: 24, flex: 1 }}>
+          <Title level={2} style={{ margin: 0, color: "black" }}>
+            Lịch làm việc bác sĩ
+          </Title>
+          <Text type="secondary">
+            Quản lý và theo dõi lịch hẹn bệnh nhân • Hệ thống đặt lịch hiện đại
+          </Text>
+        </div>
+        <div style={{}}>
+          <Button
+            icon={<AiOutlineSchedule size={25} />}
+            onClick={() => message.success("viết trang đó đi m")}
+            style={{
+              backgroundColor: "#f78db3",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Đăng ký lịch làm việc
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
