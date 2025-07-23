@@ -1,52 +1,52 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Table, Input, Typography, Space, Card, message } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Input,
+  Typography,
+  Space,
+  Card,
+  message,
+  Button,
+} from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
-import { getTreatmentListForDoctor } from "../../../apis/treatmentService";
+import PatientDetail from "./PatientDetail/PatientDetail"; // ✅ Đảm bảo đường dẫn đúng
+
 const { Title } = Typography;
 
 const PatientManagement = () => {
-  const { doctorInfo } = useContext(DoctorStoreContext);
-
-  if (doctorInfo) {
-    const { docId } = doctorInfo;
-    console.log(docId);
-  }
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState(null);
 
   useEffect(() => {
-    fetchPatients();
+    fetchMockPatients();
   }, []);
 
-  const fetchPatients = async () => {
+  const fetchMockPatients = () => {
     try {
       setLoading(true);
-      if (!doctorInfo || !doctorInfo.docId) {
-        setPatients([]);
-        setLoading(false);
-        return;
-      }
-      const res = await getTreatmentListForDoctor(doctorInfo.docId);
-      if (res?.data?.data && Array.isArray(res.data.data)) {
-        // Lấy thông tin accInfo từ cusInfo
-        const mappedPatients = res.data.data.map((item) => {
-          const acc = item.cusInfo?.accInfo || {};
-          return {
-            fullName: acc.fullName || "",
-            phone: acc.phone || "",
-            mail: acc.mail || "",
-            tpId: item.tpId, // Có thể dùng cho key hoặc link chi tiết
-          };
-        });
-        setPatients(mappedPatients);
-      } else {
-        setPatients([]);
-      }
+      // 👇 Dữ liệu mock tương tự API getTreatmentListForDoctor
+      const mockData = [
+        {
+          fullName: "Nguyễn Văn A",
+          phone: "0901234567",
+          mail: "vana@example.com",
+        },
+        {
+          fullName: "Trần Thị B",
+          phone: "0912345678",
+          mail: "thib@example.com",
+        },
+        {
+          fullName: "Lê Văn C",
+          phone: "0987654321",
+          mail: "vanc@example.com",
+        },
+      ];
+      setPatients(mockData);
     } catch (error) {
       message.error("Không thể tải danh sách bệnh nhân");
-      setPatients([]);
     } finally {
       setLoading(false);
     }
@@ -73,12 +73,9 @@ const PatientManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a
-          href={`/doctorpage/treatmentplandetail/${record.tpId || ""}`}
-          style={{ color: "#1677ff" }}
-        >
+        <Button type="link" onClick={() => setSelectedPatient(record)}>
           Xem chi tiết
-        </a>
+        </Button>
       ),
     },
   ];
@@ -92,24 +89,34 @@ const PatientManagement = () => {
     );
   });
 
+  // ✅ Nếu có selectedPatient, hiển thị trang chi tiết
+  if (selectedPatient) {
+    return (
+      <PatientDetail
+        patient={selectedPatient}
+        onBack={() => setSelectedPatient(null)}
+      />
+    );
+  }
+
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="Tìm theo tên, số điện thoại hoặc email"
-          prefix={<SearchOutlined />}
-          onChange={(e) => setSearchKeyword(e.target.value)}
+      <Card title={<Title level={3}>Danh sách bệnh nhân</Title>}>
+        <Space style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Tìm theo tên, số điện thoại hoặc email"
+            prefix={<SearchOutlined />}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Space>
+        <Table
+          columns={columns}
+          dataSource={filteredPatients}
+          rowKey={(record, index) => index}
+          loading={loading}
+          pagination={{ pageSize: 5 }}
         />
-      </Space>
-      <Table
-        columns={columns}
-        dataSource={filteredPatients}
-        rowKey={(record) => record.tpId || record.fullName}
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
-    </Card>
+      </Card>
     </div>
   );
 };

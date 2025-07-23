@@ -9,7 +9,13 @@ export default function BackButton() {
   return (
     <Button
       icon={<ArrowLeftOutlined />}
-      onClick={() => navigate(-1)} // 🔄 Quay lại trang trước
+      onClick={() => {
+        if (embedded && typeof onBack === "function") {
+          onBack();
+        } else {
+          navigate(-1);
+        }
+      }}
       style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 6 }}
       type="primary"
     >

@@ -73,9 +73,9 @@ const TEST_QUALITY_RESULT_STATUS = {
   4: "Âm tính",
 };
 
-export default function TreatmentPlanDetailPage() {
-  const { id } = useParams();
-  const tpId = parseInt(id);
+export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedded = false }) {
+  const params = useParams();
+  const tpId = propTPId ?? parseInt(params?.id);
   const navigate = useNavigate();
 
   const [treatmentPlan, setTreatmentPlan] = useState(null);
@@ -239,7 +239,13 @@ export default function TreatmentPlanDetailPage() {
             border: "none",
             marginBottom: 24,
           }}
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            if (embedded && typeof onBack === "function") {
+              onBack();
+            } else {
+              navigate(-1);
+            }
+          }}
         >
           Quay lại
         </Button>

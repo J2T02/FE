@@ -50,7 +50,7 @@ const mockUpdateStatus = async (bookingId, statusId) => {
   return { success: true };
 };
 
-export default function BookingDetailPage({ bookingId: propBookingId, onBack }) {
+export default function BookingDetailPage({ bookingId: propBookingId, onBack, embedded = false }) {
   const params = useParams();
   const navigate = useNavigate();
 
