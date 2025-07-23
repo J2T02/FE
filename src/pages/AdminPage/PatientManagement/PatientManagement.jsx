@@ -6,8 +6,10 @@ import {
   Space,
   Card,
   message,
+  Button,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
+import PatientDetail from "./PatientDetail/PatientDetail";
 
 const { Title } = Typography;
 
@@ -15,6 +17,8 @@ const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState(null);
+
 
   useEffect(() => {
     fetchPatients();
@@ -69,15 +73,15 @@ const PatientManagement = () => {
       ),
     },
     {
-      title: "",
-      key: "actions",
-      align: "right",
-      render: (_, record, index) => (
-        <a href={`/patients/${index}`} style={{ color: "#1677ff" }}>
-          Xem chi tiết
-        </a>
-      ),
-    },
+  title: "",
+  key: "actions",
+  align: "right",
+  render: (_, record) => (
+    <Button type="link" onClick={() => setSelectedPatient(record)}>
+      Xem chi tiết
+    </Button>
+  ),
+},
   ];
 
   const filteredPatients = patients.filter((item) => {
@@ -88,6 +92,16 @@ const PatientManagement = () => {
       (item.mail && item.mail.toLowerCase().includes(keyword))
     );
   });
+
+  if (selectedPatient) {
+    return (
+      <PatientDetail
+        patient={selectedPatient}
+        onBack={() => setSelectedPatient(null)}
+      />
+    );
+  }
+
 
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>

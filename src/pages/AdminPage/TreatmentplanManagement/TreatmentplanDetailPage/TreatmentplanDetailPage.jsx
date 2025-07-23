@@ -70,9 +70,9 @@ const TEST_QUALITY_RESULT_STATUS = {
 };
 
 
-export default function TreatmentPlanDetailPage() {
-  const { id } = useParams();
-  const tpId = parseInt(id);
+export default function TreatmentPlanDetailPage({ tpId, embedded = false, onBack }) {
+  const params = useParams();
+  tpId = tpId || parseInt(params?.id);
   const navigate = useNavigate();
 
   const [treatmentPlan, setTreatmentPlan] = useState(null);
@@ -209,7 +209,13 @@ export default function TreatmentPlanDetailPage() {
           <Button
             icon={<ArrowLeftOutlined />}
             style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (embedded && typeof onBack === "function") {
+                onBack();
+              } else {
+                navigate(-1);
+              }
+            }}
           >
             Quay lại
           </Button>

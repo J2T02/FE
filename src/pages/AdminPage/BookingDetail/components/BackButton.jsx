@@ -10,10 +10,16 @@ const BackButton = () => {
     <Button
       type="text"
       icon={<ArrowLeftOutlined />}
-      onClick={() => navigate("/admin")}
+      onClick={() => {
+        if (embedded && typeof onBack === "function") {
+          onBack();
+        } else {
+          navigate(-1);
+        }
+      }}
       style={{ padding: 5, height: "auto", background: "#f78db3" }}
     >
-      Quay lại danh sách lịch hẹn
+      Quay lại
     </Button>
   );
 };

@@ -108,7 +108,13 @@ export default function BookingDetailPage({ id, embedded = false, onBack }) {
           {embedded ? (
             <Button
               icon={<ArrowLeftOutlined />}
-              onClick={onBack}
+              onClick={() => {
+                if (embedded && typeof onBack === "function") {
+                  onBack();
+                } else {
+                  navigate(-1);
+                }
+              }}
               style={{
                 backgroundColor: "#f78db3",
                 color: "white",
@@ -116,7 +122,7 @@ export default function BookingDetailPage({ id, embedded = false, onBack }) {
                 width: "fit-content",
               }}
             >
-              Quay lại danh sách lịch hẹn
+              Quay lại
             </Button>
           ) : (
             <BackButton />
