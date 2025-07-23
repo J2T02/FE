@@ -19,10 +19,14 @@ const getDoctorScheduleByDoctorId = async (doctorId) => {
     `/Doctor/GetAllDoctorScheduleByDoctorId/${doctorId}`
   );
 };
+const createDoctor = async (body) => {
+  return await axiosClients.post("/Doctor", body);
+};
 export {
   loginDoctor,
   getDoctorInfo,
   getDoctorList,
   getDoctorInfoByAccId,
   getDoctorScheduleByDoctorId,
+  createDoctor,
 };

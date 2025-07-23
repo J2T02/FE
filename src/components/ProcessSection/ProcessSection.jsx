@@ -49,16 +49,13 @@ const ProcessSection = () => {
       style={{
         padding: "80px 0",
         textAlign: "center",
-        backgroundImage: `url("/i2.jpg")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        // background: "#fffafc",
       }}
     >
-      <h2 style={{ fontSize: 28, fontWeight: 700, color: "white" }}>
+      <h2 style={{ fontSize: 28, fontWeight: 700, color: "black" }}>
         Quy trình hỗ trợ khám chữa bệnh
       </h2>
-      <p style={{ maxWidth: 700, margin: "12px auto", color: "white" }}>
+      <p style={{ maxWidth: 700, margin: "12px auto", color: "black" }}>
         Dịch vụ y tế đạt chuẩn quốc tế từ khâu đón tiếp, hỗ trợ, điều trị tới hỗ
         trợ trực tuyến, giúp người bệnh trải nghiệm quy trình khám chữa bệnh
         chuyên nghiệp ngay tại Việt Nam

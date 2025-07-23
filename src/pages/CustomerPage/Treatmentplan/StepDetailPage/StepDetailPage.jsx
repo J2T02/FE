@@ -47,6 +47,8 @@ export default function StepDetailPage() {
         setDoctorSlot({
           WorkDate: d.docSchedule?.workDate,
           Slot_ID: d.docSchedule?.slotId,
+          slotStar: d.docSchedule?.slotStart,
+          slotEnd: d.docSchedule?.slotEnd,
         });
       }
     });
@@ -99,7 +101,7 @@ export default function StepDetailPage() {
   };
 
   if (!stepDetail) return null;
-
+  // console.log(stepDetail);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
@@ -148,7 +150,7 @@ export default function StepDetailPage() {
             <Col span={12}>
               <Text strong>Thời gian:</Text>
               <br />
-              <Text>{doctorSlot?.Slot_ID}</Text>
+              <Text>{doctorSlot?.slotStar + "-" + doctorSlot?.slotEnd}</Text>
             </Col>
 
             <Col span={24}>

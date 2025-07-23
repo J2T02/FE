@@ -110,7 +110,9 @@ const DoctorCarousel = ({ doctors = [] }) => {
                 <div>
                   <Rate disabled defaultValue={doc?.star ? doc.star : 5} />
                 </div>
-                <Text type="secondary">{doc.eduInfo.eduName}</Text>
+                <p>
+                  <Text type="secondary">{doc.eduInfo.eduName}</Text>
+                </p>
                 {/* Nút đặt lịch */}
                 <Button
                   type="primary"

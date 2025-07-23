@@ -183,17 +183,7 @@ const ReceptionistHeader = () => {
             trigger={["click"]}
             placement="bottomRight"
             onOpenChange={(open) => open && setUnreadCount(0)}
-          >
-            <Badge count={unreadCount} size="small" offset={[-2, 2]}>
-              <BellOutlined
-                style={{
-                  fontSize: 20,
-                  cursor: "pointer",
-                  color: unreadCount ? "#fa541c" : "#555",
-                }}
-              />
-            </Badge>
-          </Dropdown>
+          ></Dropdown>
 
           <Divider type="vertical" />
 

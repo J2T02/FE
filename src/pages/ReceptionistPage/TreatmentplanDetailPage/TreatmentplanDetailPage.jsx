@@ -104,7 +104,7 @@ export default function TreatmentPlanDetailPage() {
         if (res?.data?.success && res.data.data) {
           const apiData = res.data.data;
           // Map API response to UI expected format
-          console.log(apiData);
+
           const mappedTP = {
             TP_ID: apiData.tpId,
             StartDate: apiData.startDate ? apiData.startDate.split("T")[0] : "",
@@ -149,7 +149,6 @@ export default function TreatmentPlanDetailPage() {
               : [],
           };
           setTreatmentPlan(mappedTP);
-          console.log(treatmentPlan);
         } else {
           setTreatmentPlan(null);
         }
@@ -164,6 +163,7 @@ export default function TreatmentPlanDetailPage() {
     const fetchStepTypes = async () => {
       try {
         const res = await getTreatmentStepList();
+        console.log(res);
         if (res?.data?.success && Array.isArray(res.data.data)) {
           setStepTypes(res.data.data);
         }
@@ -247,7 +247,7 @@ export default function TreatmentPlanDetailPage() {
   };
 
   if (!treatmentPlan) return null;
-  console.log(treatmentPlan);
+
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
@@ -385,6 +385,7 @@ export default function TreatmentPlanDetailPage() {
           {/* ✅ KHUNG QUÁ TRÌNH ĐIỀU TRỊ - refactor dùng component mới */}
           <ReceptionistTreatmentProcessCard
             tpId={treatmentPlan.TP_ID}
+            serId={treatmentPlan.service.Ser_ID}
             doctorId={treatmentPlan.doctor?.docId}
             stepTypes={stepTypes}
             onRefresh={null}

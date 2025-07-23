@@ -7,7 +7,9 @@ import {
   PhoneOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-
+import { getStepDetailDetail } from "../../../apis/stepDetailService";
+import { getTestByStepDetailId } from "../../../apis/testService";
+import { getBioSampleByStepDetailId } from "../../../apis/bioSampleService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 
@@ -22,75 +24,67 @@ export default function StepDetailPage() {
   const [doctorSlot, setDoctorSlot] = useState(null);
 
   useEffect(() => {
-    const mockStepDetail = {
-      SD_ID: stepId,
-      Step_Name: "Khám tổng quát",
-      Note: "Bệnh nhân có dấu hiệu ổn định",
-      Status: 1,
-      Drug_Name: "Vitamin E",
-      Dosage: "1 viên/ngày",
-      DS_ID: 10,
-      treatmentStep: {
-        Step_Name: "Giai đoạn đầu kiểm tra sức khỏe",
-      },
-      doctor: {
-        docId: 301,
-        acc: {
-          fullName: "BS. Lê Văn C",
-          phone: "0901234567",
-          mail: "levanc@example.com",
-        },
-      },
-    };
-
-    const mockDoctorSchedule = {
-      DS_ID: 10,
-      WorkDate: "2025-07-08",
-      Slot: {
-        Slot_ID: 3,
-        Slot_Start: "08:00",
-        Slot_End: "09:00", // Không cần hiển thị
-      },
-    };
-
-    const mockTests = [
-      {
-        Test_ID: 1,
-        TestDate: "2025-07-08",
-        Note: "Xét nghiệm máu tổng quát",
-        File_Path: "",
-        ResultDay: "2025-07-09",
-      },
-      {
-        Test_ID: 2,
-        TestDate: "2025-07-08",
-        Note: "Xét nghiệm nội tiết tố",
-        File_Path: "",
-        ResultDay: "2025-07-10",
-      },
-    ];
-
-    const mockBiosamples = [
-      {
-        BS_ID: 1,
-        BS_Name: "Mẫu máu bệnh nhân",
-        CollectionDate: "2025-07-08",
-        StorageLocation: "Tủ A - Ngăn 2",
-        Note: "Mẫu đạt tiêu chuẩn",
-      },
-      {
-        BS_ID: 2,
-        BS_Name: "Tinh dịch",
-        CollectionDate: "2025-07-08",
-        StorageLocation: "Tủ B - Ngăn 1",
-        Note: "Mẫu hơi loãng",
-      },
-    ];
-
-    setStepDetail(mockStepDetail);
-    setDoctorSlot(mockDoctorSchedule);
-    setTests(mockTests);
-    setBiosamples(mockBiosamples);
+    getStepDetailDetail(stepId).then((res) => {
+      if (res && res.data && res.data.success && res.data.data) {
+        const d = res.data.data;
+        setStepDetail({
+          SD_ID: d.sdId,
+          Step_Name: d.stepName,
+          Note: d.note,
+          Status: d.status?.statusId,
+          StatusName: d.status?.statusName,
+          Drug_Name: d.drugName,
+          Dosage: d.dosage,
+          treatmentStep: {
+            Step_Name: d.treatmentStepInfo?.stepName,
+            StatusName: d.treatmentStepInfo?.statusName,
+          },
+          doctor: {
+            docId: d.doctorInfo?.docId,
+            acc: d.doctorInfo?.accountInfo,
+          },
+        });
+        setDoctorSlot({
+          WorkDate: d.docSchedule?.workDate,
+          Slot_ID: d.docSchedule?.slotId,
+          slotStar: d.docSchedule?.slotStart,
+          slotEnd: d.docSchedule?.slotEnd,
+        });
+      }
+    });
+    getTestByStepDetailId(stepId).then((res) => {
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        setTests(
+          res.data.data.map((test) => ({
+            Test_ID: test.testId,
+            TestType_ID: test.testType?.id,
+            TestDate: test.testDate,
+            Status: test.status?.id,
+            Person: test.testType?.person,
+            TQS_ID: test.testQualityStatus?.id,
+            Result: test.testQualityStatus?.name,
+            TestName: test.testType?.testName,
+            ResultDay: test.resultDate,
+            Note: test.note,
+          }))
+        );
+      }
+    });
+    getBioSampleByStepDetailId(stepId).then((res) => {
+      if (res && res.data && res.data.success && Array.isArray(res.data.data)) {
+        setBiosamples(
+          res.data.data.map((bs) => ({
+            BS_ID: bs.bsId,
+            BS_Name: bs.bsName,
+            CollectionDate: bs.collectionDate,
+            Status: bs.bioSampleStatus?.id,
+            BQS_ID: bs.qualityStatus?.id,
+            Note: bs.note,
+            StorageLocation: bs.storageLocation,
+          }))
+        );
+      }
+    });
   }, [stepId]);
 
   const getStatusTag = (status) => {
@@ -107,7 +101,7 @@ export default function StepDetailPage() {
   };
 
   if (!stepDetail) return null;
-
+  // console.log(stepDetail);
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
       <Content style={{ padding: 24 }}>
@@ -140,6 +134,11 @@ export default function StepDetailPage() {
               <Text strong>Giai đoạn:</Text>
               <br />
               <Text>{stepDetail.treatmentStep?.Step_Name}</Text>
+              {stepDetail.treatmentStep?.StatusName && (
+                <span style={{ marginLeft: 8, color: "#888" }}>
+                  ({stepDetail.treatmentStep.StatusName})
+                </span>
+              )}
             </Col>
 
             <Col span={12}>
@@ -151,7 +150,7 @@ export default function StepDetailPage() {
             <Col span={12}>
               <Text strong>Thời gian:</Text>
               <br />
-              <Text>{doctorSlot?.Slot.Slot_Start}</Text>
+              <Text>{doctorSlot?.slotStar + "-" + doctorSlot?.slotEnd}</Text>
             </Col>
 
             <Col span={24}>

@@ -26,6 +26,7 @@ const { Text, Link } = Typography;
 
 const ReceptionistTreatmentProcessCard = ({
   tpId,
+  serId,
   doctorId,
   stepTypes,
   onRefresh,
@@ -36,7 +37,6 @@ const ReceptionistTreatmentProcessCard = ({
   const [form] = Form.useForm();
   const [doctorSchedule, setDoctorSchedule] = useState([]);
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchStepDetails = async () => {
       setLoading(true);
@@ -221,11 +221,13 @@ const ReceptionistTreatmentProcessCard = ({
               showSearch
               optionFilterProp="children"
             >
-              {stepTypes.map((type) => (
-                <Select.Option key={type.tsId} value={type.tsId}>
-                  {type.stepName}
-                </Select.Option>
-              ))}
+              {stepTypes
+                .filter((type) => type.serviceInfo?.serId === serId)
+                .map((type) => (
+                  <Select.Option key={type.tsId} value={type.tsId}>
+                    {type.stepName}
+                  </Select.Option>
+                ))}
             </Select>
           </Form.Item>
 

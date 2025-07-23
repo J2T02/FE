@@ -125,58 +125,59 @@ const TreatmentplanManagement = () => {
 
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
-        <Col span={24}>
-          <Title level={3} style={{ margin: 0 }}>
-            Danh sách Hồ sơ bệnh án
-          </Title>
-        </Col>
-      </Row>
+      <Card>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 12 }}
+        >
+          <Col span={24}>
+            <Title level={3} style={{ margin: 0 }}>
+              Danh sách Hồ sơ bệnh án
+            </Title>
+          </Col>
+        </Row>
 
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Input
-            placeholder="Tìm theo mã bệnh án"
-            prefix={<SearchOutlined />}
-            allowClear
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            style={{ width: 240 }}
-          />
-        </Col>
-        <Col>
-          <Space>
-            <Select
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col>
+            <Input
+              placeholder="Tìm theo mã bệnh án"
+              prefix={<SearchOutlined />}
               allowClear
-              placeholder="Lọc theo trạng thái"
-              style={{ width: 180 }}
-              value={selectedStatus}
-              onChange={(value) => setSelectedStatus(value)}
-            >
-              <Option value={0}>Đang tiến hành</Option>
-              <Option value={1}>Đã hoàn thành</Option>
-              <Option value={2}>Đã huỷ</Option>
-            </Select>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate("/treatmentplans/create")}
-            >
-              Tạo hồ sơ mới
-            </Button>
-          </Space>
-        </Col>
-      </Row>
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              style={{ width: 240 }}
+            />
+          </Col>
+          <Col>
+            <Space>
+              <Select
+                allowClear
+                placeholder="Lọc theo trạng thái"
+                style={{ width: 180 }}
+                value={selectedStatus}
+                onChange={(value) => setSelectedStatus(value)}
+              >
+                <Option value={0}>Đang tiến hành</Option>
+                <Option value={1}>Đã hoàn thành</Option>
+                <Option value={2}>Đã huỷ</Option>
+              </Select>
+            </Space>
+          </Col>
+        </Row>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="tp_ID"
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
-    </Card>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="tp_ID"
+          loading={loading}
+          pagination={{ pageSize: 5 }}
+        />
+      </Card>
     </div>
   );
 };

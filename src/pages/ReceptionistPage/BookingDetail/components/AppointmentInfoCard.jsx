@@ -4,6 +4,7 @@ import { CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
 export default function AppointmentInfoCard({ data, statusId }) {
   // Nếu statusId khác 1 hoặc 2 thì không cho thao tác
+  console.log(data);
   const isDisabled = statusId !== 1 && statusId !== 2;
   return (
     <Card
@@ -27,7 +28,7 @@ export default function AppointmentInfoCard({ data, statusId }) {
             Khung giờ
           </Typography.Text>
           <Typography.Text>
-            {data?.slotId === 1 ? "8:00-12:00" : "13:00-17:00"}
+            {data?.slot?.slotStart + "-" + data?.slot?.slotEnd}
           </Typography.Text>
         </Space>
         {/* Nếu cho phép thao tác thì mới hiển thị nút thay đổi lịch */}

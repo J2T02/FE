@@ -17,7 +17,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { GetAllBooking } from "../../../apis/bookingService";
+import { GetAllBooking, checkBooking } from "../../../apis/bookingService";
 import BookingDetailPage from "../BookingDetail/BookingDetailPage"; // embedded
 
 dayjs.extend(isSameOrAfter);
@@ -78,24 +78,38 @@ const BookingManagement = () => {
     }
   };
 
-  const handleConfirmSingle = (bookingId) => {
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.bookingId === bookingId ? { ...b, status: "Đã xác nhận" } : b
-      )
-    );
-    message.success(`Đã xác nhận booking #${bookingId}`);
+  const handleConfirmSingle = async (bookingId) => {
+    await checkBooking(bookingId, 2)
+      .then((res) => {
+        if (res.data.success) {
+          setBookings((prev) =>
+            prev.map((b) =>
+              b.bookingId === bookingId ? { ...b, status: "Đã xác nhận" } : b
+            )
+          );
+          message.success(`Đã xác nhận booking #${bookingId}`);
+        } else {
+          message.error(res.data.message);
+        }
+      })
+      .catch((err) => {
+        message.error(`thất bại xác nhận booking #${bookingId}`);
+      });
   };
 
   const handleConfirmAllVisible = () => {
-    const count = filteredBookings.filter((b) => b.status === "Chờ xác nhận").length;
+    const count = filteredBookings.filter(
+      (b) => b.status === "Chờ xác nhận"
+    ).length;
     if (count === 0) {
       message.info("Không có booking nào cần xác nhận");
       return;
     }
     setBookings((prev) =>
       prev.map((b) =>
-        filteredBookings.some((fb) => fb.bookingId === b.bookingId && fb.status === "Chờ xác nhận")
+        filteredBookings.some(
+          (fb) => fb.bookingId === b.bookingId && fb.status === "Chờ xác nhận"
+        )
           ? { ...b, status: "Đã xác nhận" }
           : b
       )
@@ -139,7 +153,10 @@ const BookingManagement = () => {
       title: "",
       align: "right",
       render: (_, record) => (
-        <Button type="link" onClick={() => setSelectedBookingId(record.bookingId)}>
+        <Button
+          type="link"
+          onClick={() => setSelectedBookingId(record.bookingId)}
+        >
           Xem chi tiết
         </Button>
       ),
@@ -165,9 +182,15 @@ const BookingManagement = () => {
       filtered = filtered.filter((b) => {
         const time = dayjs(b.slotStart, "HH:mm");
         if (selectedShift === "sang") {
-          return time.isSameOrAfter(dayjs("08:00", "HH:mm")) && time.isBefore(dayjs("12:00", "HH:mm"));
+          return (
+            time.isSameOrAfter(dayjs("08:00", "HH:mm")) &&
+            time.isBefore(dayjs("12:00", "HH:mm"))
+          );
         } else if (selectedShift === "chieu") {
-          return time.isSameOrAfter(dayjs("13:00", "HH:mm")) && time.isBefore(dayjs("17:00", "HH:mm"));
+          return (
+            time.isSameOrAfter(dayjs("13:00", "HH:mm")) &&
+            time.isBefore(dayjs("17:00", "HH:mm"))
+          );
         }
         return true;
       });
@@ -198,53 +221,53 @@ const BookingManagement = () => {
 
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card
-      title={
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space wrap>
-              <Title level={3} style={{ margin: 0 }}>
-                Danh sách lịch hẹn
-              </Title>
-              <Input
-                allowClear
-                placeholder="Tìm mã Booking..."
-                prefix={<SearchOutlined />}
-                style={{ width: 220 }}
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </Space>
-          </Col>
-          <Col>
-            <Space wrap>
-              <RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(values) => setDateRange(values)}
-              />
-              <Select
-                allowClear
-                placeholder="Chọn ca làm việc"
-                style={{ width: 180 }}
-                value={selectedShift}
-                onChange={(value) => setSelectedShift(value)}
-              >
-                <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
-              </Select>
-            </Space>
-          </Col>
-        </Row>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={filteredBookings}
-        rowKey="bookingId"
-        pagination={{ pageSize: 8 }}
-      />
-    </Card>
+      <Card
+        title={
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Space wrap>
+                <Title level={3} style={{ margin: 0 }}>
+                  Danh sách lịch hẹn
+                </Title>
+                <Input
+                  allowClear
+                  placeholder="Tìm mã Booking..."
+                  prefix={<SearchOutlined />}
+                  style={{ width: 220 }}
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                />
+              </Space>
+            </Col>
+            <Col>
+              <Space wrap>
+                <RangePicker
+                  format="YYYY-MM-DD"
+                  value={dateRange}
+                  onChange={(values) => setDateRange(values)}
+                />
+                <Select
+                  allowClear
+                  placeholder="Chọn ca làm việc"
+                  style={{ width: 180 }}
+                  value={selectedShift}
+                  onChange={(value) => setSelectedShift(value)}
+                >
+                  <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
+                  <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+                </Select>
+              </Space>
+            </Col>
+          </Row>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={filteredBookings}
+          rowKey="bookingId"
+          pagination={{ pageSize: 8 }}
+        />
+      </Card>
     </div>
   );
 };

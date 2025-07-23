@@ -70,17 +70,6 @@ const DoctorHeader = () => {
     },
   ];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setNotifications((prev) => [
-        ...prev,
-        { id: prev.length + 1, content: "🔔 Thông báo mới đến!" },
-      ]);
-      setUnreadCount((count) => count + 1);
-    }, 15000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleMenuClick = ({ key }) => {
     const item = avatarItems.find((i) => i.key === key);
     if (item?.onClick) item.onClick();
@@ -182,17 +171,7 @@ const DoctorHeader = () => {
             trigger={["click"]}
             placement="bottomRight"
             onOpenChange={(open) => open && setUnreadCount(0)}
-          >
-            <Badge count={unreadCount} size="small" offset={[-2, 2]}>
-              <BellOutlined
-                style={{
-                  fontSize: 20,
-                  cursor: "pointer",
-                  color: unreadCount ? "#fa541c" : "#555",
-                }}
-              />
-            </Badge>
-          </Dropdown>
+          ></Dropdown>
 
           <Divider type="vertical" />
 

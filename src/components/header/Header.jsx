@@ -16,6 +16,7 @@ import { DownOutlined } from "@ant-design/icons";
 import { MdEditCalendar } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoIosLogOut } from "react-icons/io";
+import { LuFileUser } from "react-icons/lu";
 import "./header.css";
 import ItemHeader from "~components/header/itemHeader/ItemHeader";
 import LoginModal from "~components/formModal/LoginModal";
@@ -24,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { StoreContext } from "../../contexts/StoreProvider";
 import { UserOutlined } from "@ant-design/icons";
 import { LuHistory } from "react-icons/lu";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 // --- TopBar Component ---
 const TopBar = () => (
@@ -105,6 +107,41 @@ function Header() {
   const onSearch = (value) => {
     // Tùy chỉnh logic search nếu cần
   };
+
+  // Mock remind data
+  const [reminds, setReminds] = useState([
+    {
+      RemindId: 1,
+      Message: "Nhắc nhở uống thuốc ngày 10/06/2024",
+      ReminderDay: "2024-06-10",
+      IsTaken: false,
+    },
+    {
+      RemindId: 2,
+      Message: "Tái khám vào ngày 12/06/2024",
+      ReminderDay: "2024-06-12",
+      IsTaken: false,
+    },
+    {
+      RemindId: 3,
+      Message: "Lấy mẫu xét nghiệm ngày 15/06/2024",
+      ReminderDay: "2024-06-15",
+      IsTaken: true,
+    },
+    {
+      RemindId: 4,
+      Message: "Nhắc nhở tiêm thuốc ngày 18/06/2024",
+      ReminderDay: "2024-06-18",
+      IsTaken: false,
+    },
+    {
+      RemindId: 5,
+      Message: "Tái khám lần 2 ngày 20/06/2024",
+      ReminderDay: "2024-06-20",
+      IsTaken: false,
+    },
+  ]);
+  const [showAll, setShowAll] = useState(false);
 
   return (
     <>
@@ -258,6 +295,105 @@ function Header() {
                   }}
                   onClick={handleBooking}
                 />
+                {/* Notification Dropdown */}
+                <Dropdown
+                  placement="bottomRight"
+                  trigger={["click"]}
+                  dropdownRender={() => (
+                    <div
+                      style={{
+                        width: 320,
+                        maxHeight: 350,
+                        overflow: "auto",
+                        padding: 8,
+                      }}
+                    >
+                      <Typography.Title level={5} style={{ margin: 0 }}>
+                        Thông báo
+                      </Typography.Title>
+                      <Divider style={{ margin: "8px 0" }} />
+                      <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                        <Menu>
+                          {(showAll ? reminds : reminds.slice(0, 4)).map(
+                            (remind) => (
+                              <Menu.Item
+                                key={remind.RemindId}
+                                style={{
+                                  whiteSpace: "normal",
+                                  height: "auto",
+                                  padding: 8,
+                                  background: remind.IsTaken
+                                    ? "#f6ffed"
+                                    : undefined,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontWeight: remind.IsTaken ? 400 : 600,
+                                    color: remind.IsTaken
+                                      ? "#52c41a"
+                                      : undefined,
+                                  }}
+                                >
+                                  {remind.Message}
+                                </div>
+                                <div style={{ fontSize: 12, color: "#888" }}>
+                                  {remind.ReminderDay}
+                                </div>
+                              </Menu.Item>
+                            )
+                          )}
+                        </Menu>
+                      </div>
+                      {reminds.length > 4 && (
+                        <div style={{ textAlign: "center", marginTop: 8 }}>
+                          <Button
+                            type="link"
+                            onClick={() => setShowAll((prev) => !prev)}
+                          >
+                            {showAll ? "Ẩn bớt" : "Xem thêm"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                >
+                  <Button
+                    type="text"
+                    style={{
+                      position: "relative",
+                      background: "none",
+                      border: "none",
+                      boxShadow: "none",
+                      margin: "0 4px",
+                      padding: 0,
+                    }}
+                  >
+                    <IoMdNotificationsOutline size={26} color="#d35b7b" />
+                    {reminds.filter((r) => !r.IsTaken).length > 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: 2,
+                          right: 2,
+                          background: "#ff4d4f",
+                          color: "#fff",
+                          borderRadius: "50%",
+                          width: 16,
+                          height: 16,
+                          fontSize: 11,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {reminds.filter((r) => !r.IsTaken).length}
+                      </span>
+                    )}
+                  </Button>
+                </Dropdown>
+                {/* End Notification Dropdown */}
                 <Dropdown
                   placement="bottomRight"
                   menu={{
@@ -273,6 +409,12 @@ function Header() {
                         icon: <LuHistory style={{ fontSize: 20 }} />,
                         label: "Lịch sử đặt lịch",
                         onClick: () => navigate("/customer/booking"),
+                      },
+                      {
+                        key: "treatmentplan",
+                        icon: <LuFileUser style={{ fontSize: 23 }} />,
+                        label: "Hồ sơ điều trị",
+                        onClick: () => navigate("/customer/treatmentplan"),
                       },
                       {
                         key: "Logout",

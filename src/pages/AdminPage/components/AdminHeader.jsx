@@ -143,13 +143,7 @@ const AdminHeader = () => {
             onOpenChange={(open) => {
               if (open) setUnreadCount(0);
             }}
-          >
-            <Badge count={unreadCount} size="small" offset={[0, 4]}>
-              <BellOutlined
-                style={{ fontSize: 20, color: "#000", cursor: "pointer" }}
-              />
-            </Badge>
-          </Dropdown>
+          ></Dropdown>
 
           {/* Avatar */}
           <Dropdown
