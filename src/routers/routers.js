@@ -60,6 +60,14 @@ const routers = [
       import("~pages/CustomerPage/CustomerDetail/CustomerDetail")
     ),
   },
+    {
+    path: "/listtreatmentplan",
+    component: lazy(() =>
+      import(
+        "~pages/CustomerPage/Treatmentplan/ListTreatmentplan/ListTreatmentplan"
+      )
+    ),
+  },
   {
     path: "/customerTreatmentplanDetailPage/:id",
     component: lazy(() =>
@@ -68,6 +76,7 @@ const routers = [
       )
     ),
   },
+
   {
     path: "/treatmentplandetail/:id",
     component: lazy(() =>
