@@ -414,7 +414,7 @@ function Header() {
                         key: "treatmentplan",
                         icon: <LuFileUser style={{ fontSize: 23 }} />,
                         label: "Hồ sơ điều trị",
-                        onClick: () => navigate("/customer/treatmentplan"),
+                        onClick: () => navigate("/customer/listtreatmentplan"),
                       },
                       {
                         key: "Logout",

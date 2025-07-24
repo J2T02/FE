@@ -4,7 +4,8 @@ import dayjs from "dayjs";
 
 const { Text } = Typography;
 
-const FeedbackCardManagement = ({ data }) => {
+const FeedbackCardManagement = ({ data, doctorId }) => {
+  // Lấy đúng các trường từ data
   const { hus_Name, wife_Name, createAt, star, content } = data;
 
   return (

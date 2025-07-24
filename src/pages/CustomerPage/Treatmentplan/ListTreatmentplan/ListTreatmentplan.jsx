@@ -1,15 +1,9 @@
-import React, { useEffect, useState } from "react";
-import {
-  Typography,
-  Card,
-  Tag,
-  message,
-  Spin,
-  Space,
-  Button,
-} from "antd";
+import React, { useContext, useEffect, useState } from "react";
+import { Typography, Card, Tag, message, Spin, Space, Button } from "antd";
 import dayjs from "dayjs";
-
+import { StoreContext } from "../../../../contexts/StoreProvider";
+import { getTreatmentListForCustomer } from "../../../../apis/treatmentService";
+import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
 
 const STATUS_COLORS = {
@@ -19,42 +13,22 @@ const STATUS_COLORS = {
   "Đã hủy": "red",
 };
 
-const mockTreatmentPlans = [
-  {
-    tpId: 1,
-    startDate: "2025-07-01",
-    endDate: "2025-07-20",
-    status: { statusName: "Hoàn tất" },
-    serviceInfo: { serName: "IVF Full Package" },
-    doctorInfo: { accountInfo: { fullName: "BS. Nguyễn Văn A" } },
-  },
-  {
-    tpId: 2,
-    startDate: "2025-08-01",
-    endDate: null,
-    status: { statusName: "Đang điều trị" },
-    serviceInfo: { serName: "Theo dõi rụng trứng" },
-    doctorInfo: { accountInfo: { fullName: "BS. Trần Thị B" } },
-  },
-];
-
 const ListTreatmentplan = ({ customerId }) => {
   const [treatments, setTreatments] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const { customerInfo } = useContext(StoreContext);
+  const cusId = customerId || customerInfo?.cusId;
+  const navigate = useNavigate();
   useEffect(() => {
-    if (customerId) {
-      fetchTreatmentPlans(customerId);
-    } else {
-      // Mock mode
-      setTreatments(mockTreatmentPlans);
+    if (cusId) {
+      fetchTreatmentPlans(cusId);
     }
-  }, [customerId]);
+  }, [cusId]);
 
   const fetchTreatmentPlans = async (cusId) => {
     try {
       setLoading(true);
-      const res = await getTreatmentPlansForCustomer(cusId);
+      const res = await getTreatmentListForCustomer(cusId);
       if (res?.data?.success && Array.isArray(res.data.data)) {
         setTreatments(res.data.data);
       } else {
@@ -106,15 +80,24 @@ const ListTreatmentplan = ({ customerId }) => {
                     <Text strong>Bác sĩ phụ trách:</Text> {doctor}
                   </p>
                   <p>
-                    <Text strong>Ngày bắt đầu:</Text> {dayjs(startDate).format("DD/MM/YYYY")}
+                    <Text strong>Ngày bắt đầu:</Text>{" "}
+                    {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
                   </p>
                   {endDate && (
                     <p>
-                      <Text strong>Ngày kết thúc:</Text> {dayjs(endDate).format("DD/MM/YYYY")}
+                      <Text strong>Ngày kết thúc:</Text>{" "}
+                      {dayjs(endDate).format("DD/MM/YYYY")}
                     </p>
                   )}
                   <div style={{ marginTop: 12 }}>
-                    <Button type="link">Xem chi tiết</Button>
+                    <Button
+                      type="link"
+                      onClick={() =>
+                        navigate(`/customerTreatmentplanDetailPage/${tpId}`)
+                      }
+                    >
+                      Xem chi tiết
+                    </Button>
                   </div>
                 </Card>
               );

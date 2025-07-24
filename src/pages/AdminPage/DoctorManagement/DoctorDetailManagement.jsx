@@ -16,8 +16,7 @@ import dayjs from "dayjs";
 import WorkScheduleManagement from "./WorkScheduleManagement";
 import FeedbackCardManagement from "./FeedbackCardManagement";
 import { getDoctorInfo } from "../../../apis/doctorService";
-import { GetAllDoctorSchedule } from "../../../apis/bookingService";
-
+import { getFeedbackByDoctorId } from "../../../apis/feedbackService";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -26,88 +25,7 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
   const [doctor, setDoctor] = useState(null);
   const [scheduleData, setScheduleData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [feedbacks, setFeedbacks] = useState([
-    {
-      fb_ID: 309,
-      star: 5,
-      content:
-        "Bác sĩ nhẹ nhàng đến mức tôi tưởng mình đang được chữa lành bằng tâm linh 🤣.",
-      createAt: "2025-06-20",
-      hus_Name: "Nguyễn Văn Hùng",
-      wife_Name: "Phạm Thị Mai",
-    },
-    {
-      fb_ID: 310,
-      star: 5,
-      content:
-        "Vừa vào đã thấy bác sĩ cười, tôi quên luôn lý do mình đến khám 😅.",
-      createAt: "2025-06-21",
-      hus_Name: "Trần Công Minh",
-      wife_Name: "Nguyễn Thị Hường",
-    },
-    {
-      fb_ID: 311,
-      star: 5,
-      content:
-        "Tôi bị mất tập trung mỗi khi bác sĩ nói... nên xin được tái khám nhiều lần 😂.",
-      createAt: "2025-06-22",
-      hus_Name: "Lê Văn Thái",
-      wife_Name: "Vũ Ngọc Hà",
-    },
-    {
-      fb_ID: 312,
-      star: 4,
-      content:
-        "Khám xong ra ngoài mà vợ tôi bảo 'em thấy anh nhìn bác sĩ hơi lâu đấy nha' 🙈.",
-      createAt: "2025-06-23",
-      hus_Name: "Phan Văn Nghĩa",
-      wife_Name: "Lê Thị Hồng",
-    },
-    {
-      fb_ID: 313,
-      star: 5,
-      content:
-        "Lần đầu tiên đi bệnh viện mà thấy như... đến spa! Cảm ơn bác sĩ rất nhiều!",
-      createAt: "2025-06-24",
-      hus_Name: "Đỗ Mạnh Hùng",
-      wife_Name: "Đào Thị Kim",
-    },
-    {
-      fb_ID: 314,
-      star: 5,
-      content:
-        "Giọng bác sĩ nhẹ nhàng đến mức tôi tưởng đang nghe ASMR trị liệu 😌.",
-      createAt: "2025-06-25",
-      hus_Name: "Bùi Minh Quân",
-      wife_Name: "Trịnh Ngọc Anh",
-    },
-    {
-      fb_ID: 315,
-      star: 5,
-      content:
-        "Chuyên môn vững, tâm lý tốt, ngoại hình như idol. Không biết chê chỗ nào!",
-      createAt: "2025-06-26",
-      hus_Name: "Lý Đức Thịnh",
-      wife_Name: "Tô Thị Tuyết",
-    },
-    {
-      fb_ID: 316,
-      star: 4,
-      content:
-        "Có lẽ tôi cần bác sĩ khám tim sau buổi hôm nay… tim đập mạnh quá!",
-      createAt: "2025-06-26",
-      hus_Name: "Vũ Hải Đăng",
-      wife_Name: "Lê Như Quỳnh",
-    },
-    {
-      fb_ID: 317,
-      star: 5,
-      content: "Nếu được chọn bác sĩ khám cả đời, tôi chọn chị Lan ❤️.",
-      createAt: "2025-06-26",
-      hus_Name: "Ngô Bá Duy",
-      wife_Name: "Trần Kim Chi",
-    },
-  ]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -118,21 +36,33 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
       setLoading(true);
       try {
         const resDoctor = await getDoctorInfo(doctorId);
+
         if (resDoctor?.data?.success) {
           setDoctor(resDoctor.data.data);
         } else {
           setDoctor(null);
         }
-
-        const resSchedule = await GetAllDoctorSchedule(doctorId);
-        if (resSchedule?.data?.success) {
-          setScheduleData(resSchedule.data.data);
+        // Lấy feedbacks
+        const resFeedback = await getFeedbackByDoctorId(doctorId);
+        if (resFeedback?.data?.success) {
+          // Map lại cho đúng format UI
+          const mappedFeedbacks = (resFeedback.data.data || []).map(
+            (fb, idx) => ({
+              fb_ID: idx + 1, // hoặc fb.treatmentPlanId nếu unique
+              star: fb.star,
+              content: fb.content,
+              createAt: fb.createAt,
+              hus_Name: fb.cus?.husName || "",
+              wife_Name: fb.cus?.wifeName || "",
+            })
+          );
+          setFeedbacks(mappedFeedbacks);
         } else {
-          setScheduleData([]);
+          setFeedbacks([]);
         }
       } catch (err) {
         setDoctor(null);
-        setScheduleData([]);
+        setFeedbacks([]);
       } finally {
         setLoading(false);
       }
@@ -167,7 +97,7 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
+  console.log(doctor);
   const gender = doctor?.gender || "";
   const yob = doctor?.yob || "1988-03-15T00:00:00.000Z";
   const experience = doctor?.experience || 10;
@@ -184,12 +114,15 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
   return (
     <Layout style={{ background: "#fff0f4", minHeight: "100vh" }}>
       <div style={{ padding: "24px" }}>
-        <Button onClick={onBack}
-        style={{ marginBottom: 16,
-              backgroundColor: "#f78db3",
-              color: "white",
-              border: "none",
-         }}>
+        <Button
+          onClick={onBack}
+          style={{
+            marginBottom: 16,
+            backgroundColor: "#f78db3",
+            color: "white",
+            border: "none",
+          }}
+        >
           Quay lại
         </Button>
 
@@ -220,7 +153,7 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
 
         <div>
           <p>
-            <b>Giới tính:</b> {gender}
+            <b>Giới tính:</b> {gender || ""}
           </p>
           <p>
             <b>Năm sinh:</b> {dayjs(yob).format("DD/MM/YYYY")}
@@ -291,7 +224,11 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
         </div>
 
         {paginatedFeedbacks.map((fb) => (
-          <FeedbackCardManagement key={fb.fb_ID} data={fb} />
+          <FeedbackCardManagement
+            key={fb.fb_ID}
+            data={fb}
+            doctorId={doctorId}
+          />
         ))}
 
         {filteredFeedbacks.length > pageSize && (

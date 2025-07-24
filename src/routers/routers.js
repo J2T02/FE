@@ -60,8 +60,8 @@ const routers = [
       import("~pages/CustomerPage/CustomerDetail/CustomerDetail")
     ),
   },
-    {
-    path: "/listtreatmentplan",
+  {
+    path: "/customer/listtreatmentplan",
     component: lazy(() =>
       import(
         "~pages/CustomerPage/Treatmentplan/ListTreatmentplan/ListTreatmentplan"
