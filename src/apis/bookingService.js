@@ -35,6 +35,9 @@ const getAllDoctorScheduleByDoctorId = async (doctorId) => {
 const Booking = async (body) => {
   return await axiosClients.post(`/Booking/Booking`, body);
 };
+const createPayment = async (bookingId) => {
+  return await axiosClients.get(`/Payment/vnpay-repayment/${bookingId}`);
+};
 
 const updatebookingDoctor = async (bookingId, doctorId) => {
   return await axiosClients.put(`/BookingUpdate/update-doctor/${bookingId}`, {
@@ -76,4 +79,5 @@ export {
   GetAllDoctorSchedule,
   GetAllBooking,
   checkBooking,
+  createPayment,
 };

@@ -36,11 +36,14 @@ export default function BookingDetailPage() {
     // setBookingData(sampleBookingData);
     fetchBooking();
   }, [bookingId]);
+
   if (loading || !bookingData) return <Spin fullscreen />;
 
   // Disable thao tác nếu statusId không phải 1 hoặc 2
   const isDisable =
     bookingData?.status?.statusId !== 1 && bookingData?.status?.statusId !== 2;
+  // unPaid
+  const unPaid = bookingData?.payments[0] == null;
 
   return (
     <Layout
@@ -78,7 +81,11 @@ export default function BookingDetailPage() {
               />
             </Col>
             <Col xs={24} md={12}>
-              <ActionSection bookingId={bookingId} isDisable={isDisable} />
+              <ActionSection
+                bookingId={bookingId}
+                isDisable={isDisable}
+                unPaid={unPaid}
+              />
             </Col>
           </Row>
         </Space>

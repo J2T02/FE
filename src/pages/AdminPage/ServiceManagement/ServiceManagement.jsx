@@ -13,7 +13,7 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons"; // ✅ giữ n
 import axios from "axios"; // ✅ giữ nguyên
 import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage"; // ✅ giữ nguyên
 import CreateService from "./CreateService/CreateService"; // ➕ thêm import để load tab tạo mới
-
+import { GetAllService } from "../../../apis/service";
 const { Title } = Typography;
 
 const ServiceManagement = () => {
@@ -30,8 +30,13 @@ const ServiceManagement = () => {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/services");
-      setServices(res.data);
+      const res = await GetAllService();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setServices(res.data.data);
+      } else {
+        setServices([]);
+        message.error("Không thể tải danh sách dịch vụ");
+      }
     } catch (error) {
       message.error("Không thể tải danh sách dịch vụ");
     } finally {
@@ -40,21 +45,27 @@ const ServiceManagement = () => {
   };
 
   const filteredServices = services.filter((item) =>
-    item.ser_Name.toLowerCase().includes(searchKeyword.toLowerCase())
+    item.serName.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   const columns = [
     {
       title: "Tên dịch vụ",
-      dataIndex: "ser_Name",
-      key: "ser_Name",
+      dataIndex: "serName",
+      key: "serName",
       render: (text) => <b>{text}</b>,
     },
     {
       title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price) => <Tag color="green">{price.toLocaleString()} VND</Tag>,
+      render: (price) => <Tag color="green">{price?.toLocaleString()} VND</Tag>,
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      render: (desc) => <span>{desc}</span>,
     },
     {
       title: "",
@@ -64,7 +75,7 @@ const ServiceManagement = () => {
         <Button
           type="link"
           style={{ color: "#1677ff" }}
-          onClick={() => setSelectedServiceId(record.ser_ID)}
+          onClick={() => setSelectedServiceId(record.serId)}
         >
           Xem chi tiết
         </Button>
@@ -90,33 +101,33 @@ const ServiceManagement = () => {
   // ✅ Giao diện danh sách
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card
-      title={<Title level={3}>Quản lý dịch vụ</Title>}
-      extra={
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setCreatingService(true)} // ✏️ chỉnh từ href → mở tab nội bộ
-        >
-          Thêm dịch vụ
-        </Button>
-      }
-    >
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="Tìm theo tên dịch vụ"
-          prefix={<SearchOutlined />}
-          onChange={(e) => setSearchKeyword(e.target.value)}
+      <Card
+        title={<Title level={3}>Quản lý dịch vụ</Title>}
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreatingService(true)} // ✏️ chỉnh từ href → mở tab nội bộ
+          >
+            Thêm dịch vụ
+          </Button>
+        }
+      >
+        <Space style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Tìm theo tên dịch vụ"
+            prefix={<SearchOutlined />}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Space>
+        <Table
+          columns={columns}
+          dataSource={filteredServices}
+          rowKey="serId"
+          loading={loading}
+          pagination={{ pageSize: 5 }}
         />
-      </Space>
-      <Table
-        columns={columns}
-        dataSource={filteredServices}
-        rowKey="ser_ID"
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
-    </Card>
+      </Card>
     </div>
   );
 };
