@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Input,
-  Typography,
-  Space,
-  Card,
-  message,
-  Button,
-} from "antd";
+import { Table, Input, Typography, Space, Card, message, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import PatientDetail from "./PatientDetail/PatientDetail";
+import { getCustomerList } from "../../../apis/CustomerService";
 
 const { Title } = Typography;
 
@@ -19,7 +12,6 @@ const PatientManagement = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -27,28 +19,13 @@ const PatientManagement = () => {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = {
-        data: {
-          data: [
-            {
-              fullName: "Nguyễn Văn A",
-              phone: "0901234567",
-              mail: "vana@example.com",
-            },
-            {
-              fullName: "Trần Thị B",
-              phone: "0912345678",
-              mail: "thib@example.com",
-            },
-            {
-              fullName: "Lê Văn C",
-              phone: "0987654321",
-              mail: "vanc@example.com",
-            },
-          ],
-        },
-      };
-      setPatients(res.data.data);
+      const res = await getCustomerList();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setPatients(res.data.data);
+      } else {
+        setPatients([]);
+        message.error("Không thể tải danh sách bệnh nhân");
+      }
     } catch (error) {
       message.error("Không thể tải danh sách bệnh nhân");
     } finally {
@@ -59,37 +36,39 @@ const PatientManagement = () => {
   const columns = [
     {
       title: "Bệnh nhân",
-      dataIndex: "fullName",
+      dataIndex: ["accCus", "fullName"],
       key: "fullName",
-      render: (text) => <b>{text}</b>,
+      render: (_, record) => <b>{record.accCus?.fullName || "-"}</b>,
     },
     {
       title: "Thông tin liên hệ",
       key: "contact",
       render: (_, record) => (
         <span>
-          📞 {record.phone} <br /> ✉️ {record.mail}
+          📞 {record.accCus?.phone || "-"} <br /> ✉️{" "}
+          {record.accCus?.mail || "-"}
         </span>
       ),
     },
     {
-  title: "",
-  key: "actions",
-  align: "right",
-  render: (_, record) => (
-    <Button type="link" onClick={() => setSelectedPatient(record)}>
-      Xem chi tiết
-    </Button>
-  ),
-},
+      title: "",
+      key: "actions",
+      align: "right",
+      render: (_, record) => (
+        <Button type="link" onClick={() => setSelectedPatient(record)}>
+          Xem chi tiết
+        </Button>
+      ),
+    },
   ];
 
   const filteredPatients = patients.filter((item) => {
     const keyword = searchKeyword.toLowerCase();
     return (
-      (item.fullName && item.fullName.toLowerCase().includes(keyword)) ||
-      (item.phone && item.phone.includes(keyword)) ||
-      (item.mail && item.mail.toLowerCase().includes(keyword))
+      (item.accCus?.fullName &&
+        item.accCus.fullName.toLowerCase().includes(keyword)) ||
+      (item.accCus?.phone && item.accCus.phone.includes(keyword)) ||
+      (item.accCus?.mail && item.accCus.mail.toLowerCase().includes(keyword))
     );
   });
 
@@ -102,25 +81,24 @@ const PatientManagement = () => {
     );
   }
 
-
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="Tìm theo tên, số điện thoại hoặc email"
-          prefix={<SearchOutlined />}
-          onChange={(e) => setSearchKeyword(e.target.value)}
+      <Card title={<Title level={3}>Quản lý bệnh nhân</Title>}>
+        <Space style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Tìm theo tên, số điện thoại hoặc email"
+            prefix={<SearchOutlined />}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Space>
+        <Table
+          columns={columns}
+          dataSource={filteredPatients}
+          rowKey="cusId"
+          loading={loading}
+          pagination={{ pageSize: 5 }}
         />
-      </Space>
-      <Table
-        columns={columns}
-        dataSource={filteredPatients}
-        rowKey={(record, index) => index}
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
-    </Card>
+      </Card>
     </div>
   );
 };

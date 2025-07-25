@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-
+import { getTreatmentListForCustomer } from "../../../../apis/treatmentService";
 // 🔻 import trang chi tiết
 import BookingDetailPage from "../../BookingDetail/BookingDetailPage";
 import TreatmentPlanDetailPage from "../../TreatmentplanManagement/TreatmentplanDetailPage/TreatmentplanDetailPage";
@@ -51,57 +51,15 @@ const generateMockDetails = (patient) => ({
 });
 
 const PatientDetail = ({ patient, onBack }) => {
-  const [detail, setDetail] = useState(null);
-
+  const { cusId } = patient;
+  // patient: { cusId, husName, husYob, wifeName, wifeYob, accCus: { accId, fullName, mail, phone, img } }
   const [activeView, setActiveView] = useState("info"); // "info" | "booking" | "treatment"
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [selectedTPId, setSelectedTPId] = useState(null);
 
-  useEffect(() => {
-    if (!patient || !patient.mail) {
-      message.error("Thiếu thông tin bệnh nhân.");
-      return;
-    }
-
-    if (patient.mail === "thib@example.com") {
-      setDetail({
-        accId: 2,
-        fullName: "Trần Thị B",
-        mail: "thib@example.com",
-        phone: "0912345678",
-        customer: {
-          cusId: 101,
-          husName: "Trần Văn A",
-          wifeName: "Trần Thị B",
-          husYOB: "1985-01-01",
-          wifeYOB: "1988-01-01",
-        },
-        bookings: [
-          {
-            bookingId: 1,
-            workDate: "2025-07-20",
-            slot: "08:30 - 09:30",
-            status: "Đang chờ",
-          },
-          {
-            bookingId: 2,
-            workDate: "2025-07-22",
-            slot: "09:00 - 10:00",
-            status: "Hoàn thành",
-          },
-        ],
-        records: [
-          {
-            tpId: 1,
-            service: "Điều trị IVF",
-            status: "Hoàn tất",
-          },
-        ],
-      });
-    } else {
-      setDetail(generateMockDetails(patient));
-    }
-  }, [patient]);
+  // Nếu có bookings/records thì truyền qua props hoặc fetch thêm, ở đây để trống
+  const bookings = patient.bookings || [];
+  const records = patient.records || [];
 
   // 🔝 Hiển thị BookingDetailPage nếu chọn
   if (activeView === "booking") {
@@ -125,7 +83,7 @@ const PatientDetail = ({ patient, onBack }) => {
     );
   }
 
-  if (!detail) return null;
+  if (!patient) return null;
 
   return (
     <div style={{ background: "#fff0f4", padding: 24 }}>
@@ -134,7 +92,11 @@ const PatientDetail = ({ patient, onBack }) => {
         bodyStyle={{ padding: 36 }}
         style={{ borderRadius: 16 }}
       >
-        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 24 }}
+        >
           <Col>
             <Button
               icon={<ArrowLeftOutlined />}
@@ -154,16 +116,26 @@ const PatientDetail = ({ patient, onBack }) => {
         </Row>
 
         <Descriptions bordered column={1} size="small">
-          <Descriptions.Item label="Họ tên">{detail.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Email">{detail.mail}</Descriptions.Item>
-          <Descriptions.Item label="Số điện thoại">{detail.phone}</Descriptions.Item>
-          <Descriptions.Item label="Tên chồng">{detail.customer.husName}</Descriptions.Item>
-          <Descriptions.Item label="Tên vợ">{detail.customer.wifeName}</Descriptions.Item>
+          <Descriptions.Item label="Họ tên">
+            {patient.accCus?.fullName || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Email">
+            {patient.accCus?.mail || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Số điện thoại">
+            {patient.accCus?.phone || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Tên chồng">
+            {patient.husName || "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Tên vợ">
+            {patient.wifeName || "-"}
+          </Descriptions.Item>
           <Descriptions.Item label="Năm sinh chồng">
-            {dayjs(detail.customer.husYOB).format("YYYY")}
+            {patient.husYob ? dayjs(patient.husYob).format("YYYY") : "-"}
           </Descriptions.Item>
           <Descriptions.Item label="Năm sinh vợ">
-            {dayjs(detail.customer.wifeYOB).format("YYYY")}
+            {patient.wifeYob ? dayjs(patient.wifeYob).format("YYYY") : "-"}
           </Descriptions.Item>
         </Descriptions>
 
@@ -171,7 +143,7 @@ const PatientDetail = ({ patient, onBack }) => {
 
         <Title level={4}>📅 Lịch đặt khám</Title>
         <Table
-          dataSource={detail.bookings}
+          dataSource={bookings}
           rowKey="bookingId"
           size="small"
           pagination={false}
@@ -180,7 +152,7 @@ const PatientDetail = ({ patient, onBack }) => {
             {
               title: "Ngày hẹn",
               dataIndex: "workDate",
-              render: (text) => dayjs(text).format("DD/MM/YYYY"),
+              render: (text) => (text ? dayjs(text).format("DD/MM/YYYY") : "-"),
             },
             { title: "Khung giờ", dataIndex: "slot" },
             {
@@ -210,7 +182,7 @@ const PatientDetail = ({ patient, onBack }) => {
 
         <Title level={4}>📋 Hồ sơ điều trị</Title>
         <Table
-          dataSource={detail.records}
+          dataSource={records}
           rowKey="tpId"
           size="small"
           pagination={false}

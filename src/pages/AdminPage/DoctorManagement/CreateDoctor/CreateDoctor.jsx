@@ -20,12 +20,35 @@ import {
 import dayjs from "dayjs";
 import { useState } from "react";
 import { createDoctor } from "../../../../apis/doctorService";
+import { uploadFileToCloudinary } from "../../../../utils/cloudinaryUtils";
 const { Title } = Typography;
 const { Option } = Select;
+
+const MAX_FILE_SIZE_MB = 5;
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+];
+
+const validateFile = (file) => {
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    message.error("Chỉ chấp nhận file .pdf, .jpg, .jpeg, .png");
+    return false;
+  }
+  if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
+    message.error("Kích thước file không được vượt quá 5MB");
+    return false;
+  }
+  return true;
+};
 
 const CreateDoctor = ({ onBack }) => {
   const [form] = Form.useForm();
   const [certificates, setCertificates] = useState([]);
+  const [loading, setLoading] = useState(false); // Thêm state loading
+  const [avatarFile, setAvatarFile] = useState(null); // State cho file ảnh đại diện
 
   const handleAddCertificate = () => {
     setCertificates([...certificates, { Cer_Name: "", File_Path: null }]);
@@ -44,48 +67,70 @@ const CreateDoctor = ({ onBack }) => {
   };
 
   const handleSubmit = async (values) => {
-    const newDoctor = {
-      accId: Math.floor(Math.random() * 10000),
-      roleId: 3,
-      fullName: values.fullname,
-      password: values.phone,
-      phone: values.phone,
-      mail: values.mail,
-      isActive: true,
-      createAt: dayjs().format(),
-      img: "",
-      gender: values.gender,
-      yob: values.yob.format("YYYY-MM-DD"),
-      experience: values.experience,
-      status: 1,
-      eduId: values.educationLevel,
-      certificates,
-    };
-    const payload = {
-      mail: newDoctor.mail,
-      password: newDoctor.password,
-      fullName: newDoctor.fullName,
-      phone: newDoctor.phone,
-      gender: newDoctor.gender,
-      yob: newDoctor.yob,
-      experience: newDoctor.experience,
-      edu_Id: newDoctor.eduId,
-      status: newDoctor.status,
-      img: newDoctor.img,
-    };
-    await createDoctor(payload)
-      .then((res) => {
-        if (res.data.success) {
-          message.success("Đã tạo bác sĩ thành công!");
-        } else message.error(res.data.message);
-      })
-      .catch((err) => {
-        message.error("tạo bác sĩ thất bại");
-      });
+    setLoading(true); // Bắt đầu loading
+    try {
+      // Upload ảnh đại diện lên Cloudinary nếu có
+      let avatarUrl = "";
+      if (avatarFile) {
+        try {
+          avatarUrl = await uploadFileToCloudinary(avatarFile);
+        } catch (err) {
+          message.error("Tải ảnh đại diện lên Cloudinary thất bại");
+          throw err;
+        }
+      }
+      // Upload từng file bằng cấp lên Cloudinary trước khi tạo payload
+      const uploadedCertificates = await Promise.all(
+        certificates.map(async (cer) => {
+          let filePath = "";
+          if (cer.File_Path) {
+            try {
+              filePath = await uploadFileToCloudinary(cer.File_Path);
+            } catch (err) {
+              message.error("Tải file bằng cấp lên Cloudinary thất bại");
+              throw err;
+            }
+          }
+          return {
+            cerName: cer.Cer_Name,
+            filePath: filePath,
+          };
+        })
+      );
 
-    form.resetFields();
-    setCertificates([]);
-    onBack();
+      const payload = {
+        mail: values.mail,
+        fullName: values.fullname,
+        phone: values.phone,
+        gender: values.gender,
+        yob: values.yob.format("YYYY-MM-DD"),
+        experience: values.experience,
+        edu_Id: values.educationLevel,
+        status: 1,
+        img: avatarUrl,
+        certificates: uploadedCertificates,
+      };
+      console.log(payload);
+      await createDoctor(payload)
+        .then((res) => {
+          console.log(res);
+          if (res.data.success) {
+            message.success("Đã tạo bác sĩ thành công!");
+          } else {
+            message.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          message.error("tạo bác sĩ thất bại");
+        });
+
+      form.resetFields();
+      setCertificates([]);
+      setAvatarFile(null);
+      onBack();
+    } finally {
+      setLoading(false); // Kết thúc loading dù thành công hay thất bại
+    }
   };
 
   return (
@@ -141,6 +186,36 @@ const CreateDoctor = ({ onBack }) => {
             <Radio value="Nam">Nam</Radio>
             <Radio value="Nữ">Nữ</Radio>
           </Radio.Group>
+        </Form.Item>
+        {/* Upload ảnh đại diện */}
+        <Form.Item label="Ảnh đại diện">
+          <Upload
+            beforeUpload={(file) => {
+              if (!validateFile(file)) return Upload.LIST_IGNORE;
+              return false;
+            }}
+            onChange={(info) => {
+              if (info.fileList && info.fileList.length > 0) {
+                setAvatarFile(info.fileList[0].originFileObj);
+              } else {
+                setAvatarFile(null);
+              }
+            }}
+            maxCount={1}
+            showUploadList={{ showRemoveIcon: true }}
+          >
+            <Button
+              icon={<UploadOutlined />}
+              style={{
+                marginBottom: 10,
+                backgroundColor: "#f78db3",
+                color: "white",
+                border: "none",
+              }}
+            >
+              Chọn ảnh
+            </Button>
+          </Upload>
         </Form.Item>
 
         <Form.Item
@@ -201,7 +276,10 @@ const CreateDoctor = ({ onBack }) => {
 
             <Form.Item required label="Tải chứng chỉ">
               <Upload
-                beforeUpload={() => false}
+                beforeUpload={(file) => {
+                  if (!validateFile(file)) return Upload.LIST_IGNORE;
+                  return false;
+                }}
                 onChange={(info) =>
                   handleCertificateChange(index, "File_Path", info.file)
                 }
@@ -230,7 +308,12 @@ const CreateDoctor = ({ onBack }) => {
         ))}
 
         <Form.Item style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            disabled={loading}
+          >
             Tạo bác sĩ
           </Button>
         </Form.Item>

@@ -1,49 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Input,
-  Typography,
-  Space,
-  Card,
-  Tag,
-  message,
-} from "antd";
+import { Table, Input, Typography, Space, Card, Tag, message } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
-
+import { getTreatmentList } from "../../../apis/treatmentService";
 const { Title } = Typography;
 
 const TreatmentplanManagement = () => {
-  const [plans, setPlans] = useState([{
-    tp_ID: 1,
-    service_Name: "Khám tổng quát",
-    status: 0,
-    startDate: "2025-06-01",
-    endDate: null,
-    ser_ID: 1,
-    cus_ID: 2,
-    doc_ID: 1
-  },
-  {
-    tp_ID: 2,
-    service_Name: "IVF",
-    status: 1,
-    startDate: "2025-05-01",
-    endDate: "2025-06-10",
-    ser_ID: 2,
-    cus_ID: 3,
-    doc_ID: 1
-  },
-  {
-    tp_ID: 3,
-    service_Name: "IUI",
-    status: 2,
-    startDate: "2025-04-15",
-    endDate: "2025-04-30",
-    ser_ID: 3,
-    cus_ID: 4,
-    doc_ID: 2
-  }]);
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -54,8 +17,13 @@ const TreatmentplanManagement = () => {
   const fetchTreatmentPlans = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/treatmentplans");
-      setPlans(res.data);
+      const res = await getTreatmentList();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setPlans(res.data.data);
+      } else {
+        setPlans([]);
+        message.error("Không thể tải danh sách hồ sơ bệnh án");
+      }
     } catch (error) {
       message.error("Không thể tải danh sách hồ sơ bệnh án");
     } finally {
@@ -63,28 +31,52 @@ const TreatmentplanManagement = () => {
     }
   };
 
-  const getStatusTag = (status) => {
-    const statusMap = {
-      0: { text: "Đang tiến hành", color: "blue" },
-      1: { text: "Đã hoàn thành", color: "green" },
-      2: { text: "Đã huỷ", color: "red" },
+  const getStatusTag = (statusObj) => {
+    if (!statusObj) return <Tag color="default">Không xác định</Tag>;
+    const colorMap = {
+      "Đang tiến hành": "blue",
+      "Đã hoàn thành": "green",
+      "Đã huỷ": "red",
     };
-    const s = statusMap[status] || { text: "Không xác định", color: "default" };
-    return <Tag color={s.color}>{s.text}</Tag>;
+    return (
+      <Tag color={colorMap[statusObj.statusName] || "default"}>
+        {statusObj.statusName}
+      </Tag>
+    );
   };
 
   const columns = [
     {
       title: "Mã Bệnh Án",
-      dataIndex: "tp_ID",
-      key: "tp_ID",
+      dataIndex: "tpId",
+      key: "tpId",
       render: (id) => <b>#{id}</b>,
     },
     {
       title: "Dịch vụ hiện tại",
-      dataIndex: "service_Name",
-      key: "service_Name",
-      render: (name) => name || "Không rõ",
+      dataIndex: ["serviceInfo", "serName"],
+      key: "serviceInfo",
+      render: (_, record) => record.serviceInfo?.serName || "Không rõ",
+    },
+    {
+      title: "Bác sĩ phụ trách",
+      dataIndex: ["doctorInfo", "accountInfo", "fullName"],
+      key: "doctorInfo",
+      render: (_, record) => record.doctorInfo?.accountInfo?.fullName || "-",
+    },
+    {
+      title: "Ngày bắt đầu",
+      dataIndex: "startDate",
+      key: "startDate",
+      render: (date) =>
+        date ? new Date(date).toLocaleDateString("vi-VN") : "-",
+    },
+    {
+      title: "Ngày kết thúc",
+      dataIndex: "endDate",
+      key: "endDate",
+      render: (date) =>
+        date ? new Date(date).toLocaleDateString("vi-VN") : "-",
     },
     {
       title: "Trạng thái",
@@ -97,7 +89,10 @@ const TreatmentplanManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <a href={`/admin/treatmentplandetail/${record.tp_ID}`} style={{ color: "#1677ff" }}>
+        <a
+          href={`/admin/treatmentplandetail/${record.tpId}`}
+          style={{ color: "#1677ff" }}
+        >
           Xem chi tiết
         </a>
       ),
@@ -105,27 +100,27 @@ const TreatmentplanManagement = () => {
   ];
 
   const filteredData = plans.filter((item) =>
-    item.tp_ID.toString().includes(searchKeyword)
+    item.tpId?.toString().includes(searchKeyword)
   );
 
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
-    <Card title={<Title level={3}>Danh sách Hồ sơ bệnh án</Title>}>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="Tìm theo mã bệnh án"
-          prefix={<SearchOutlined />}
-          onChange={(e) => setSearchKeyword(e.target.value)}
+      <Card title={<Title level={3}>Danh sách Hồ sơ bệnh án</Title>}>
+        <Space style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Tìm theo mã bệnh án"
+            prefix={<SearchOutlined />}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+        </Space>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="tpId"
+          loading={loading}
+          pagination={{ pageSize: 5 }}
         />
-      </Space>
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="tp_ID"
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
-    </Card>
+      </Card>
     </div>
   );
 };
