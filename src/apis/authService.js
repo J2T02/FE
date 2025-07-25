@@ -26,12 +26,16 @@ const resetPassword = async (body) => {
 const changePassword = async (body) => {
   return await axiosClients.post("/Account/change-password", body);
 };
+const OtpRegister = async (body) => {
+  return await axiosClients.post("/Account/OtpRegister/request", body);
+};
 export {
   register,
   signIn,
   getInfo,
   forgotPasswordRequest,
   otpRequest,
+  OtpRegister,
   otpVerify,
   resetPassword,
   changePassword,

@@ -22,7 +22,7 @@ import {
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import { otpRequest, otpVerify, register } from "../../../apis/authService";
+import { OtpRegister, otpVerify, register } from "../../../apis/authService";
 const registerAccount = async (values) => {
   console.log("Register payload", values);
   return { success: true };
@@ -43,6 +43,8 @@ const RegisterPage = () => {
   const [timer, setTimer] = useState(30);
   const [resendDisabled, setResendDisabled] = useState(true);
   const [registerPayload, setRegisterPayload] = useState(null); // Lưu thông tin đăng ký để dùng sau khi xác thực OTP
+  const [loadingRegister, setLoadingRegister] = useState(false); // loading cho nút Đăng ký
+  const [loadingVerifyOtp, setLoadingVerifyOtp] = useState(false); // loading cho nút Xác nhận OTP
 
   useEffect(() => {
     let interval;
@@ -84,7 +86,9 @@ const RegisterPage = () => {
 
   // Bước 1: Gửi OTP
   const onFinish = async (values) => {
+    setLoadingRegister(true);
     const emailValue = values.Mail;
+    const phoneValue = values.Phone;
     setEmail(emailValue);
     // Lưu lại thông tin đăng ký để dùng sau khi xác thực OTP
     setRegisterPayload({
@@ -102,7 +106,7 @@ const RegisterPage = () => {
         : null,
     });
     try {
-      const res = await otpRequest({ emailOrPhone: emailValue });
+      const res = await OtpRegister({ email: emailValue, phone: phoneValue });
       if (res?.data?.success) {
         setStep(2);
         form.resetFields();
@@ -115,11 +119,14 @@ const RegisterPage = () => {
       }
     } catch (err) {
       message.error("Gửi mã xác nhận thất bại");
+    } finally {
+      setLoadingRegister(false);
     }
   };
 
   // Bước 2: Xác thực OTP
   const handleVerifyOtp = async () => {
+    setLoadingVerifyOtp(true);
     try {
       const res = await otpVerify({ emailOrPhone: email, otpCode: otp });
       if (res?.data?.success) {
@@ -142,6 +149,8 @@ const RegisterPage = () => {
       }
     } catch (err) {
       message.error("Mã OTP không chính xác. Vui lòng thử lại.");
+    } finally {
+      setLoadingVerifyOtp(false);
     }
   };
 
@@ -152,7 +161,7 @@ const RegisterPage = () => {
       return;
     }
     try {
-      const res = await otpRequest({ emailOrPhone: email });
+      const res = await OtpRegister({ email, phone: registerPayload?.phone });
       if (res?.data?.success) {
         message.success("Đã gửi lại mã xác nhận đến email");
         setResendCount((prev) => prev + 1);
@@ -264,6 +273,8 @@ const RegisterPage = () => {
               htmlType="submit"
               block
               size="large"
+              loading={loadingRegister}
+              disabled={loadingRegister}
               style={{
                 backgroundColor: "#ff85a2",
                 borderColor: "#ff85a2",
@@ -301,6 +312,8 @@ const RegisterPage = () => {
             size="large"
             block
             onClick={handleVerifyOtp}
+            loading={loadingVerifyOtp}
+            disabled={loadingVerifyOtp}
             style={{
               borderRadius: 10,
               backgroundColor: "#ff85a2",
