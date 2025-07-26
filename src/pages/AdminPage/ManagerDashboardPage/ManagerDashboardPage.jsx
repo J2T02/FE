@@ -242,7 +242,7 @@ export default function ManagerDashboardPage() {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+        <Col span={4} xs={24} sm={12} md={8} lg={4}>
           <Card>
             <Statistic
               title="Tổng bệnh án"
@@ -251,7 +251,7 @@ export default function ManagerDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={5} xs={24} sm={12} md={8} lg={5}>
           <Card>
             <Statistic
               title="Đang điều trị"
@@ -260,7 +260,7 @@ export default function ManagerDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={5} xs={24} sm={12} md={8} lg={5}>
           <Card>
             <Statistic
               title="Đã thành công"
@@ -269,7 +269,7 @@ export default function ManagerDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={5} xs={24} sm={12} md={8} lg={5}>
           <Card>
             <Statistic
               title="Thất bại"
@@ -278,7 +278,7 @@ export default function ManagerDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={5} xs={24} sm={12} md={8} lg={5}>
           <Card>
             <Statistic
               title="Đã hủy"

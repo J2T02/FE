@@ -219,7 +219,7 @@ export default function ManagerRevenueDashboardPage() {
       </Title>
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+        <Col span={8} xs={24} sm={12} md={8}>
           <Card bordered={false}>
             <Statistic
               title="Tổng doanh thu"
@@ -228,7 +228,7 @@ export default function ManagerRevenueDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={8} xs={24} sm={12} md={8}>
           <Card bordered={false}>
             <Statistic
               title="Số lượng booking"
@@ -237,7 +237,7 @@ export default function ManagerRevenueDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={8} xs={24} sm={12} md={8}>
           <Card bordered={false}>
             <Statistic
               title="Số lượng hồ sơ đang điều trị"
