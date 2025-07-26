@@ -31,6 +31,7 @@ import {
   getAllSlotBooking,
 } from "../../../apis/bookingService";
 import { DoctorStoreContext } from "../contexts/DoctorStoreProvider";
+import RegisterSchedulePage from "./RegisterSchedulePage/RegisterSchedulePage";
 dayjs.extend(isoWeek);
 dayjs.locale("vi");
 dayjs.extend(isBetween);
@@ -155,6 +156,7 @@ const formatVNDate = (date) =>
 
 const ScheduleManagement = () => {
   const { doctorInfo } = useContext(DoctorStoreContext);
+  const [showRegisterSchedule, setShowRegisterSchedule] = useState(false);
   const [appointmentData, setAppointmentData] = useState({});
   const [slots, setSlots] = useState([]);
   const [stepDetails, setStepDetails] = useState([]);
@@ -470,6 +472,12 @@ const ScheduleManagement = () => {
       };
     });
   };
+  
+  if (showRegisterSchedule) {
+    return (
+      <RegisterSchedulePage onBack={() => setShowRegisterSchedule(false)} />
+    );
+  }
 
   return (
     <div style={{ background: "#fff0f4", minHeight: "100vh", padding: 24 }}>
@@ -486,7 +494,7 @@ const ScheduleManagement = () => {
         <div style={{}}>
           <Button
             icon={<AiOutlineSchedule size={25} />}
-            onClick={() => message.success("viết trang đó đi m")}
+            onClick={() => setShowRegisterSchedule(true)}
             style={{
               backgroundColor: "#f78db3",
               color: "white",
