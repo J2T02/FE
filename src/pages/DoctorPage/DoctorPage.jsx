@@ -62,7 +62,6 @@ const SidebarLogo = () => {
 };
 
 const DoctorPanel = () => {
-  // const docId = doctorInfo.docId;
   const [selectedKey, setSelectedKey] = useState("1");
 
   const menuItems = [

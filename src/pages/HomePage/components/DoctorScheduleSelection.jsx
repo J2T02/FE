@@ -15,6 +15,8 @@ import {
   Alert,
   Modal,
   Tabs,
+  Input,
+  theme,
 } from "antd";
 import { PiStudentBold } from "react-icons/pi";
 import {
@@ -65,6 +67,7 @@ const MESSAGES = {
 };
 
 const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 const DoctorScheduleSelection = ({
   data,
@@ -81,7 +84,7 @@ const DoctorScheduleSelection = ({
     data?.doctorId || defaultDoctorId || null
   );
   const [selectedDoctorDetail, setSelectedDoctorDetail] = useState(null);
-
+  const { token } = theme.useToken();
   // Schedule states
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -89,6 +92,10 @@ const DoctorScheduleSelection = ({
   const [availableSchedules, setAvailableSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
+
+  // Notes state
+  const [notes, setNotes] = useState(data?.notes || "");
+
   // Modal states
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalDoctor, setModalDoctor] = useState(null);
@@ -116,6 +123,9 @@ const DoctorScheduleSelection = ({
     }
     if (data?.slot) {
       setSelectedSlot(data.slot);
+    }
+    if (data?.notes) {
+      setNotes(data.notes);
     }
   }, [data]);
 
@@ -208,6 +218,7 @@ const DoctorScheduleSelection = ({
             slot: slotObj.slotId,
             slotStart: slotObj.slotStart,
             slotEnd: slotObj.slotEnd,
+            notes: notes,
           });
         } else {
           // fallback về SLOT_CONFIG nếu không tìm thấy
@@ -218,6 +229,7 @@ const DoctorScheduleSelection = ({
               slot: slotConfig.id,
               slotStart: slotConfig.start,
               slotEnd: slotConfig.end,
+              notes: notes,
             });
           }
         }
@@ -233,11 +245,19 @@ const DoctorScheduleSelection = ({
             slot: selectedSlotInfo.slot.slotId,
             slotStart: selectedSlotInfo.slot.slotStart,
             slotEnd: selectedSlotInfo.slot.slotEnd,
+            notes: notes,
           });
         }
       }
     }
-  }, [selectedDate, selectedSlot, selectedDoctor, onUpdate, slotBooking]);
+  }, [
+    selectedDate,
+    selectedSlot,
+    selectedDoctor,
+    onUpdate,
+    slotBooking,
+    notes,
+  ]);
 
   // Memoized functions for better performance
   const getSlotsForSelectedDate = useCallback(() => {
@@ -304,6 +324,7 @@ const DoctorScheduleSelection = ({
         slot: selectedSlot,
         slotStart: SLOT_CONFIG[selectedSlot]?.start,
         slotEnd: SLOT_CONFIG[selectedSlot]?.end,
+        notes: notes,
       });
 
       setSelectedDoctorDetail(null);
@@ -317,7 +338,7 @@ const DoctorScheduleSelection = ({
       console.error("Error in handleSkip:", error);
       message.error("Có lỗi xảy ra khi bỏ qua chọn bác sĩ.");
     }
-  }, [onUpdate, onNext, selectedDate, selectedSlot]);
+  }, [onUpdate, onNext, selectedDate, selectedSlot, notes]);
 
   const handleDoctorSelect = useCallback(
     (doctorId) => {
@@ -411,6 +432,10 @@ const DoctorScheduleSelection = ({
       message.error("Có lỗi xảy ra khi tiếp tục.");
     }
   }, [selectedDate, selectedSlot, onNext]);
+
+  const handleNotesChange = useCallback((e) => {
+    setNotes(e.target.value);
+  }, []);
 
   const handleDoctorSelectFromModal = useCallback(() => {
     try {
@@ -911,6 +936,24 @@ const DoctorScheduleSelection = ({
                     </Text>
                   )}
                 </Card>
+
+                {/* Ghi chú section */}
+                <Card title="Ghi chú" size="small" style={{ marginTop: 16 }}>
+                  <TextArea
+                    rows={3}
+                    value={notes}
+                    onChange={handleNotesChange}
+                    placeholder="Nhập ghi chú cho lịch hẹn (nếu có)..."
+                    style={{ resize: "none" }}
+                  />
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 12, marginTop: 8, display: "block" }}
+                  >
+                    Ghi chú sẽ được gửi đến bác sĩ để hiểu rõ hơn về tình trạng
+                    của bạn
+                  </Text>
+                </Card>
               </Space>
             </Card>
           </Col>
@@ -925,7 +968,12 @@ const DoctorScheduleSelection = ({
             marginTop: 24,
           }}
         >
-          <Button onClick={onPrev} disabled={disablePrev} size="large">
+          <Button
+            onClick={onPrev}
+            disabled={disablePrev}
+            style={{ color: token.colorPrimary }}
+            size="large"
+          >
             Quay lại
           </Button>
 

@@ -64,13 +64,7 @@ const BookingPage = () => {
   const validateCurrentStep = useCallback(() => {
     switch (current) {
       case 0:
-        if (showCustomerInfo) {
-          const { wifeName, husName, wifeYob, husYob } = bookingData;
-          if (!wifeName || !husName || !wifeYob || !husYob) {
-            message.warning("Vui lòng điền đủ thông tin.");
-            return false;
-          }
-        }
+        // Bỏ qua validation cho bước CustomerInfo vì có thể bỏ qua
         break;
       case 1:
         if (!bookingData.date || !bookingData.slot) {
