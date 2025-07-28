@@ -13,7 +13,7 @@ import {
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { DoctorStoreContext } from "../../contexts/DoctorStoreProvider";
-
+import { registerSchedule } from "../../../../apis/doctorService";
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -54,7 +54,7 @@ const RegisterSchedulePage = ({ onBack }) => {
     updateHighlightedDates(value);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedCombo) {
       message.warning("Vui lòng chọn combo lịch làm việc.");
       return;
@@ -72,7 +72,7 @@ const RegisterSchedulePage = ({ onBack }) => {
             workDate: current.format("YYYY-MM-DD"),
             slotId,
             isAvailable: true,
-            maxBooking: 1,
+            maxBooking: 5,
           });
         });
       }
@@ -85,12 +85,17 @@ const RegisterSchedulePage = ({ onBack }) => {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
       console.log("📦 Payload đăng ký:", payload);
-      setLoading(false);
+      await registerSchedule(payload);
       message.success("Đăng ký lịch làm việc thành công!");
       onBack();
-    }, 1000);
+    } catch (error) {
+      console.error("❌ Lỗi đăng ký lịch:", error);
+      message.error("Đăng ký lịch làm việc thất bại. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const dateFullCellRender = (date) => {
@@ -120,16 +125,25 @@ const RegisterSchedulePage = ({ onBack }) => {
           background: "white",
         }}
       >
-        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 24 }}
+        >
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={onBack}
-            style={{ backgroundColor: "#f78db3", color: "white", border: "none" }}
+            style={{
+              backgroundColor: "#f78db3",
+              color: "white",
+              border: "none",
+            }}
           >
             Quay lại
           </Button>
           <Title level={3}>
-            📅 Đăng ký lịch làm việc cho tháng {nextMonthStart.format("MM/YYYY")}
+            📅 Đăng ký lịch làm việc cho tháng{" "}
+            {nextMonthStart.format("MM/YYYY")}
           </Title>
         </Row>
 
@@ -166,7 +180,11 @@ const RegisterSchedulePage = ({ onBack }) => {
             <Button
               type="primary"
               size="large"
-              style={{ backgroundColor: "#f78db3", border: "none", fontWeight: "bold" }}
+              style={{
+                backgroundColor: "#f78db3",
+                border: "none",
+                fontWeight: "bold",
+              }}
               onClick={handleSubmit}
             >
               Xác nhận đăng ký lịch

@@ -13,10 +13,6 @@ import {
 } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getTreatmentListForCustomer } from "../../../../apis/treatmentService";
-// 🔻 import trang chi tiết
-import BookingDetailPage from "../../BookingDetail/BookingDetailPage";
-import TreatmentPlanDetailPage from "../../TreatmentplanManagement/TreatmentplanDetailPage/TreatmentplanDetailPage";
 
 const { Title } = Typography;
 
@@ -50,8 +46,14 @@ const generateMockDetails = (patient) => ({
   ],
 });
 
-const PatientDetail = ({ patient, onBack }) => {
+const PatientDetail = ({
+  patient,
+  treatmentData = [],
+  loadingTreatment = false,
+  onBack,
+}) => {
   const { cusId } = patient;
+  console.log(treatmentData);
   // patient: { cusId, husName, husYob, wifeName, wifeYob, accCus: { accId, fullName, mail, phone, img } }
   const [activeView, setActiveView] = useState("info"); // "info" | "booking" | "treatment"
   const [selectedBookingId, setSelectedBookingId] = useState(null);
@@ -59,7 +61,17 @@ const PatientDetail = ({ patient, onBack }) => {
 
   // Nếu có bookings/records thì truyền qua props hoặc fetch thêm, ở đây để trống
   const bookings = patient.bookings || [];
-  const records = patient.records || [];
+
+  // Chuyển đổi dữ liệu từ API thành format phù hợp với UI
+  const records = treatmentData.map((item) => ({
+    tpId: item.tpId,
+    service: item.serviceInfo?.serName || "Chưa cập nhật",
+    status: item.status?.statusName || "Chưa cập nhật",
+    startDate: item.startDate,
+    endDate: item.endDate,
+    doctorName: item.doctorInfo?.accountInfo?.fullName || "Chưa cập nhật",
+    result: item.result || "Chưa cập nhật",
+  }));
 
   // 🔝 Hiển thị BookingDetailPage nếu chọn
   if (activeView === "booking") {
@@ -186,13 +198,35 @@ const PatientDetail = ({ patient, onBack }) => {
           rowKey="tpId"
           size="small"
           pagination={false}
+          loading={loadingTreatment}
           columns={[
             { title: "Mã bệnh án", dataIndex: "tpId" },
-            { title: "Dịch vụ hiện tại", dataIndex: "service" },
+            { title: "Dịch vụ", dataIndex: "service" },
+            {
+              title: "Bác sĩ điều trị",
+              dataIndex: "doctorName",
+            },
+            {
+              title: "Ngày bắt đầu",
+              dataIndex: "startDate",
+              render: (text) => (text ? dayjs(text).format("DD/MM/YYYY") : "-"),
+            },
+            {
+              title: "Kết quả",
+              dataIndex: "result",
+              render: (text) => <Tag color="blue">{text}</Tag>,
+            },
             {
               title: "Trạng thái",
               dataIndex: "status",
-              render: (status) => <Tag color="green">{status}</Tag>,
+              render: (status) => {
+                let color = "green";
+                if (status === "Đang tiến hành") color = "blue";
+                if (status === "Hoàn thành") color = "green";
+                if (status === "Tạm dừng") color = "orange";
+                if (status === "Hủy bỏ") color = "red";
+                return <Tag color={color}>{status}</Tag>;
+              },
             },
             {
               title: "",
@@ -201,8 +235,10 @@ const PatientDetail = ({ patient, onBack }) => {
                 <Button
                   type="link"
                   onClick={() => {
-                    setSelectedTPId(record.tpId);
-                    setActiveView("treatment");
+                    window.open(
+                      `/admin/treatmentplandetail/${treatmentData[0].tpId}`,
+                      "_blank"
+                    );
                   }}
                 >
                   Xem chi tiết

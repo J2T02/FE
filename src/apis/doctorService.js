@@ -22,6 +22,10 @@ const getDoctorScheduleByDoctorId = async (doctorId) => {
 const createDoctor = async (body) => {
   return await axiosClients.post("/Doctor", body);
 };
+const registerSchedule = async (body) => {
+  return await axiosClients.post("/Doctor/RegisterSchedule", body);
+};
+
 export {
   loginDoctor,
   getDoctorInfo,
@@ -29,4 +33,5 @@ export {
   getDoctorInfoByAccId,
   getDoctorScheduleByDoctorId,
   createDoctor,
+  registerSchedule,
 };

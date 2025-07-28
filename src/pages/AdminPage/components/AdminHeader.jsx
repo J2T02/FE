@@ -151,7 +151,7 @@ const AdminHeader = () => {
               items: avatarItems,
               onClick: ({ key }) => {
                 if (key === "logout") {
-                  navigate("/");
+                  navigate("/login");
                 }
               },
             }}

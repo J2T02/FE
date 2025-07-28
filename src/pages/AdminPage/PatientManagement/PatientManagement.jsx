@@ -3,7 +3,7 @@ import { Table, Input, Typography, Space, Card, message, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import PatientDetail from "./PatientDetail/PatientDetail";
 import { getCustomerList } from "../../../apis/CustomerService";
-
+import { getTreatmentListForCustomer } from "../../../apis/treatmentService";
 const { Title } = Typography;
 
 const PatientManagement = () => {
@@ -11,6 +11,8 @@ const PatientManagement = () => {
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [treatmentData, setTreatmentData] = useState([]);
+  const [loadingTreatment, setLoadingTreatment] = useState(false);
 
   useEffect(() => {
     fetchPatients();
@@ -30,6 +32,25 @@ const PatientManagement = () => {
       message.error("Không thể tải danh sách bệnh nhân");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTreatmentData = async (cusId) => {
+    console.log(cusId, "cus");
+    try {
+      setLoadingTreatment(true);
+      const res = await getTreatmentListForCustomer(cusId);
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setTreatmentData(res.data.data);
+      } else {
+        setTreatmentData([]);
+        console.log("Không có dữ liệu điều trị cho bệnh nhân này");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu điều trị:", error);
+      setTreatmentData([]);
+    } finally {
+      setLoadingTreatment(false);
     }
   };
 
@@ -55,7 +76,13 @@ const PatientManagement = () => {
       key: "actions",
       align: "right",
       render: (_, record) => (
-        <Button type="link" onClick={() => setSelectedPatient(record)}>
+        <Button
+          type="link"
+          onClick={() => {
+            setSelectedPatient(record);
+            fetchTreatmentData(record.cusId);
+          }}
+        >
           Xem chi tiết
         </Button>
       ),
@@ -76,7 +103,12 @@ const PatientManagement = () => {
     return (
       <PatientDetail
         patient={selectedPatient}
-        onBack={() => setSelectedPatient(null)}
+        treatmentData={treatmentData}
+        loadingTreatment={loadingTreatment}
+        onBack={() => {
+          setSelectedPatient(null);
+          setTreatmentData([]);
+        }}
       />
     );
   }

@@ -203,7 +203,7 @@ const WorkScheduleManagement = ({ doctorId }) => {
         </Row>
       </div>
 
-      <div style={{ flex: 1 }}>
+      {/* <div style={{ flex: 1 }}>
         <Divider orientation="left">Lịch làm việc cố định cho bác sĩ</Divider>
         <Row gutter={[8, 8]}>
           {Array.from({ length: 7 }).map((_, dayIndex) => {
@@ -237,7 +237,7 @@ const WorkScheduleManagement = ({ doctorId }) => {
         >
           Lưu lịch cố định
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -206,7 +206,7 @@ export default function TestDetailPage() {
           Quay lại
         </Button>
 
-        <Title level={3}>Chie tiết xét nghiệm (bác sĩ)</Title>
+        <Title level={3}>Chi tiết xét nghiệm (bác sĩ)</Title>
 
         <Card
           title="Thông tin xét nghiệm"
