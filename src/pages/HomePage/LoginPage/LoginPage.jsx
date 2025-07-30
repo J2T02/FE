@@ -123,90 +123,74 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      const res = await loginByGoogle();
-      const url = res?.data?.url;
-      if (!url) {
-        message.error("Không lấy được link đăng nhập Google");
-        return;
-      }
-      // Mở popup
-      const width = 500;
-      const height = 600;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      const popup = window.open(
-        url,
-        "GoogleLogin",
-        `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
-      );
-      if (!popup) {
-        message.error("Không thể mở cửa sổ đăng nhập Google");
-        return;
-      }
-      // Lắng nghe message từ popup
-      const handleMessage = async (event) => {
-        if (
-          event.origin !== window.location.origin &&
-          !event.origin.includes("google")
-        )
-          return;
-        const { code } = event.data || {};
-
-        if (code) {
-          try {
-            const callbackRes = await loginByGoogleCallback(code);
-            if (callbackRes.data.success) {
-              // Xử lý giống như login thường
-              const { token, accId, roleId } = callbackRes.data.data;
-              switch (roleId) {
-                case 1:
-                  Cookies.set("accAdId", accId);
-                  Cookies.set("token", token);
-                  break;
-                case 2:
-                  Cookies.set("accManaId", accId);
-                  Cookies.set("token", token);
-                  break;
-                case 3:
-                  Cookies.set("accRecepId", accId);
-                  Cookies.set("token", token);
-                  break;
-                case 4:
-                  Cookies.set("accCusId", accId);
-                  Cookies.set("token", token);
-                  setAccCusId(accId);
-                  break;
-                case 5:
-                  Cookies.set("accDocId", accId);
-                  Cookies.set("token", token);
-                  break;
-                default:
-                  break;
-              }
-              message.success("Đăng nhập Google thành công!");
-              if (roleId) {
-                handleRedirectByRole(roleId);
-              } else {
-                navigate("/");
-              }
-            } else {
-              message.error(
-                callbackRes.data.message || "Đăng nhập Google thất bại"
-              );
-            }
-          } catch (err) {
-            message.error("Đăng nhập Google thất bại");
-          }
-          window.removeEventListener("message", handleMessage);
-          popup.close();
-        }
-      };
-      window.addEventListener("message", handleMessage);
-    } catch (err) {
-      message.error("Không thể đăng nhập bằng Google");
+  try {
+    const res = await loginByGoogle();
+    const url = res?.data?.url;
+    if (!url) {
+      message.error("Không lấy được link đăng nhập Google");
+      return;
     }
-  };
+
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+
+    const popup = window.open(
+      url,
+      "GoogleLogin",
+      `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
+    );
+
+    if (!popup) {
+      message.error("Không thể mở cửa sổ đăng nhập Google");
+      return;
+    }
+
+    // ✅ Lắng nghe phản hồi từ popup
+    const handleMessage = (event) => {
+      if (!event.origin.includes("localhost")) return;
+
+      const { token, accId, roleId } = event.data || {};
+      if (token && accId && roleId) {
+        // 👉 Lưu cookie
+        Cookies.set("token", token);
+        switch (roleId) {
+          case 1:
+            Cookies.set("accAdId", accId);
+            break;
+          case 2:
+            Cookies.set("accManaId", accId);
+            break;
+          case 3:
+            Cookies.set("accRecepId", accId);
+            break;
+          case 4:
+            Cookies.set("accCusId", accId);
+            setAccCusId(accId);
+            break;
+          case 5:
+            Cookies.set("accDocId", accId);
+            break;
+          default:
+            break;
+        }
+
+        // 👉 Xoá sự kiện và đóng popup
+        window.removeEventListener("message", handleMessage);
+        popup.close();
+
+        // ✅ Chuyển toàn trang về http://localhost:5173/
+        window.location.href = "http://localhost:5173/";
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+  } catch (err) {
+    message.error("Không thể đăng nhập bằng Google");
+  }
+};
+
 
   return (
     <div
