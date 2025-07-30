@@ -14,6 +14,7 @@ import {
   DatePicker,
   Select,
   message,
+  Tabs,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -91,6 +92,7 @@ export default function TreatmentPlanDetailPage() {
   const [treatmentPlan, setTreatmentPlan] = useState(null);
   const [biosamples, setBiosamples] = useState([]);
   const [tests, setTests] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [stepTypes, setStepTypes] = useState([]);
@@ -191,6 +193,26 @@ export default function TreatmentPlanDetailPage() {
     fetchDoctorSchedule();
   }, [treatmentPlan?.doctor?.docId]);
 
+  useEffect(() => {
+  // Test dữ liệu feedback (mock)
+  setFeedbacks([
+    {
+      fbId: 1,
+      content: "Bác sĩ rất tận tâm, tôi rất hài lòng!",
+      star: 5,
+      createAt: "2025-07-28",
+      doctorName: "BS. Nguyễn Văn A"
+    },
+    {
+      fbId: 2,
+      content: "Dịch vụ nhanh chóng, nhẹ nhàng.",
+      star: 4,
+      createAt: "2025-07-29",
+      doctorName: null
+    }
+  ]);
+}, []);
+
   const availableDates = doctorSchedule.map((item) => item.workDate);
   const disabledDate = (current) => {
     return !availableDates.includes(current.format("YYYY-MM-DD"));
@@ -247,6 +269,102 @@ export default function TreatmentPlanDetailPage() {
   };
 
   if (!treatmentPlan) return null;
+  const tabItems = [
+    {
+      key: "process",
+      label: "Quá trình điều trị",
+      children: (
+        <ReceptionistTreatmentProcessCard
+          tpId={treatmentPlan.TP_ID}
+          serId={treatmentPlan.service.Ser_ID}
+          doctorId={treatmentPlan.doctor?.docId}
+          stepTypes={stepTypes}
+          onRefresh={null}
+        />
+      ),
+    },
+  ];
+ if (tests.length > 0) {
+  tabItems.push({
+    key: "tests",
+    label: "Danh sách xét nghiệm",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fef2f6" }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          {tests.map((test) => (
+            <Card key={test.Test_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+              <Row justify="space-between">
+                <Col>
+                  <Text strong>Loại xét nghiệm:</Text> {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}<br />
+                  <Text strong>Ngày xét nghiệm:</Text> {test.TestDate}<br />
+                  <Text strong>Người xét nghiệm:</Text> {test.Person}<br />
+                  <Text strong>Trạng thái:</Text> {TEST_STATUS[test.Status]}<br />
+                  <Text strong>Kết quả:</Text> {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                </Col>
+                <Col>
+                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`${test.Test_ID}`)}>Xem chi tiết</Link>
+                </Col>
+              </Row>
+            </Card>
+          ))}
+        </Space>
+      </Card>
+    ),
+  });
+}
+ if (biosamples.length > 0) {
+  tabItems.push({
+    key: "biosamples",
+    label: "Mẫu sinh học",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fff0f5" }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          {biosamples.map((bs) => (
+            <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "5px solid #f78db3" }}>
+              <Row justify="space-between">
+                <Col>
+                  <Text strong>Tên mẫu:</Text> {bs.BS_Name}<br />
+                  <Text strong>Ngày thu thập:</Text> {bs.CollectionDate}<br />
+                  <Text strong>Trạng thái:</Text> {BIO_SAMPLE_STATUS[bs.Status]}<br />
+                  <Text strong>Chất lượng:</Text> {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                </Col>
+                <Col>
+                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/receptionist/biosampledetail/${bs.BS_ID}`)}>
+                    Xem chi tiết
+                  </Link>
+                </Col>
+              </Row>
+            </Card>
+          ))}
+        </Space>
+      </Card>
+    ),
+  });
+}
+ if (feedbacks.length > 0) {
+  tabItems.push({
+    key: "feedback",
+    label: "Phản hồi",
+    children: (
+      <Card title="Phản hồi từ khách hàng" bodyStyle={{ backgroundColor: "#fff0f5" }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          {feedbacks.map((fb) => (
+            <Card key={fb.fbId} type="inner" style={{ borderLeft: "4px solid #f78db3" }}>
+              <Text strong>Ngày đánh giá:</Text> {dayjs(fb.createAt).format("DD/MM/YYYY")}<br />
+              <Text strong>Số sao:</Text> {"⭐".repeat(fb.star)}<br />
+              {fb.doctorName && (
+                <>
+                  <Text strong>Bác sĩ:</Text> {fb.doctorName}<br />
+                </>
+              )}
+              <Text strong>Nội dung:</Text> {fb.content}
+            </Card>
+          ))}
+        </Space>
+      </Card>
+    ),
+  });
+}
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
@@ -382,131 +500,8 @@ export default function TreatmentPlanDetailPage() {
             </Col>
           </Row>
 
-          {/* ✅ KHUNG QUÁ TRÌNH ĐIỀU TRỊ - refactor dùng component mới */}
-          <ReceptionistTreatmentProcessCard
-            tpId={treatmentPlan.TP_ID}
-            serId={treatmentPlan.service.Ser_ID}
-            doctorId={treatmentPlan.doctor?.docId}
-            stepTypes={stepTypes}
-            onRefresh={null}
-          />
+          <Tabs defaultActiveKey="process" items={tabItems} />
 
-          {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
-          {Array.isArray(tests) && tests.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách xét nghiệm</Text>
-                  <Link
-                    style={{ color: "#f78db3" }}
-                    onClick={() => navigate(`/receptionist/testlist/${tpId}`)}
-                  >
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fef2f6" }}
-            >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {tests.map((test) => (
-                    <Card
-                      key={test.Test_ID}
-                      type="inner"
-                      style={{ borderLeft: "5px solid #f78db3" }}
-                    >
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Loại xét nghiệm: </Text>
-                          {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
-                          <br />
-                          <Text strong>Ngày xét nghiệm: </Text>
-                          {test.TestDate}
-                          <br />
-                          <Text strong>Người xét nghiệm: </Text>
-                          {test.Person}
-                          <br />
-                          <Text strong>Trạng thái: </Text>
-                          {TEST_STATUS[test.Status] || "Không xác định"}
-                          <br />
-                          <Text strong>Tình trạng kết quả: </Text>
-                          {TEST_QUALITY_RESULT_STATUS[test.TQS_ID] || "Chưa có"}
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3" }}
-                            onClick={() => navigate(`${test.Test_ID}`)}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
-          {Array.isArray(biosamples) && biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link
-                    style={{ color: "#f78db3" }}
-                    onClick={() =>
-                      navigate(`/receptionist/biosamplelist/${tpId}`)
-                    }
-                  >
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff0f5" }}
-            >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card
-                      key={bs.BS_ID}
-                      type="inner"
-                      style={{ borderLeft: "5px solid #f78db3" }}
-                    >
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Tên mẫu: </Text>
-                          {bs.BS_Name}
-                          <br />
-                          <Text strong>Ngày thu thập: </Text>
-                          {bs.CollectionDate}
-                          <br />
-                          <Text strong>Trạng thái: </Text>
-                          {BIO_SAMPLE_STATUS[bs.Status] || "Không xác định"}
-                          <br />
-                          <Text strong>Chất lượng: </Text>
-                          {BIO_QUALITY_STATUS[bs.BQS_ID] || "Chưa đánh giá"}
-                          <br />
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3" }}
-                            onClick={() =>
-                              navigate(
-                                `/receptionist/biosampledetail/${bs.BS_ID}`
-                              )
-                            }
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
         </Space>
       </Content>
     </Layout>

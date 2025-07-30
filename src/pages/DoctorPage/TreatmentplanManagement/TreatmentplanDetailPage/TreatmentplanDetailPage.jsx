@@ -10,6 +10,7 @@ import {
   Tag,
   Divider,
   message,
+  Tabs,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -25,6 +26,8 @@ import TreatmentOverviewCard from "./components/TreatmentOverviewCard";
 import { getTreatmentDetail } from "../../../../apis/treatmentService";
 import { getTestByTreatmentPlanId } from "../../../../apis/testService";
 import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
+import TestListCard from "./components/TestListCard";
+import BioSampleListCard from "./components/BioSampleListCard";
 
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
@@ -81,6 +84,7 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
   const [treatmentPlan, setTreatmentPlan] = useState(null);
   const [biosamples, setBiosamples] = useState([]);
   const [tests, setTests] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -131,6 +135,7 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
                 doc: { fullName: step.doctorName },
               }))
             : [],
+          Feedback: apiData.feedback || "",
         };
 
         mappedTreatmentPlan.stepDetails.sort(
@@ -194,6 +199,23 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
 
   useEffect(() => {
     fetchData();
+    setFeedbacks([
+  {
+    fbId: 1,
+    docId: treatmentPlan?.doctor?.docId ?? 2,
+    doctorName: "TS. Nguyễn Văn A",
+    star: 5,
+    createAt: "2025-07-28",
+    content: "Bác sĩ rất tận tâm, tôi rất hài lòng!",
+  },
+  {
+    fbId: 2,
+    docId: null,
+    star: 4,
+    createAt: "2025-07-29",
+    content: "Dịch vụ tư vấn nhanh chóng, nhẹ nhàng.",
+  },
+  ]);
   }, [tpId]);
 
   const getStatusTag = (status) => {
@@ -227,6 +249,82 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
   }
 
   if (!treatmentPlan) return null;
+  const tabItems = [
+  {
+    key: "process",
+    label: "Quá trình điều trị",
+    children: (
+      <TreatmentProcessCard
+        tpId={treatmentPlan.TP_ID}
+        stepDetails={treatmentPlan.stepDetails}
+        doctorId={treatmentPlan.doctor?.docId}
+        serviceId={treatmentPlan.service?.Ser_ID}
+        latestTSID={treatmentPlan.stepDetails?.[0]?.TS_ID}
+        onRefresh={fetchData}
+      />
+    ),
+  },
+];
+
+if (tests.length > 0) {
+  tabItems.push({
+    key: "tests",
+    label: "Xét nghiệm",
+    children: (
+      <TestListCard tests={tests} tpId={tpId} />
+    ),
+  });
+}
+
+if (biosamples.length > 0) {
+  tabItems.push({
+    key: "biosamples",
+    label: "Mẫu sinh học",
+    children: (
+      <BioSampleListCard biosamples={biosamples} tpId={tpId} />
+    ),
+  });
+}
+
+if (feedbacks.length > 0) {
+  tabItems.push({
+    key: "feedback",
+    label: "Phản hồi",
+    children: (
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {feedbacks.map((fb) => (
+          <Card
+            key={fb.fbId}
+            title={
+              <Space>
+                <Text strong>Đánh giá:</Text>
+                <span>
+                  {Array.from({ length: fb.star }).map((_, idx) => (
+                    <span key={idx}>⭐</span>
+                  ))}
+                </span>
+              </Space>
+            }
+            extra={
+              <Text type="secondary">
+                Ngày đánh giá:{" "}
+                {new Date(fb.createAt).toLocaleDateString("vi-VN")}
+              </Text>
+            }
+            bodyStyle={{ backgroundColor: "#fff0f5" }}
+          >
+            <p>{fb.content}</p>
+            {fb.docId && fb.doctorName && (
+              <Text type="secondary">
+                Phản hồi về bác sĩ: {fb.doctorName}
+              </Text>
+            )}
+          </Card>
+        ))}
+      </Space>
+    ),
+  });
+}
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
@@ -348,153 +446,7 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
               </Card>
             </Col>
           </Row>
-
-          {/* ✅ Quá trình điều trị */}
-          <TreatmentProcessCard
-            tpId={treatmentPlan.TP_ID}
-            stepDetails={treatmentPlan.stepDetails}
-            doctorId={treatmentPlan.doctor?.docId}
-            serviceId={treatmentPlan.service?.Ser_ID}
-            latestTSID={treatmentPlan.stepDetails?.[0]?.TS_ID} // ✅ bổ sung TS_ID mới nhất
-            onRefresh={fetchData}
-          />
-
-          {/* ✅ Xét nghiệm */}
-          {tests.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách xét nghiệm</Text>
-                  <Link
-                    style={{ color: "#f78db3" }}
-                    onClick={() => navigate(`/doctorpage/testlist/${tpId}`)}
-                  >
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fef2f6" }}
-            >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {tests.map((test) => (
-                    <Card
-                      key={test.Test_ID}
-                      type="inner"
-                      style={{ borderLeft: "5px solid #f78db3" }}
-                    >
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Loại xét nghiệm: </Text>
-                          {test.TestType_Name || "Không rõ"}
-                          <br />
-                          <Text strong>Ngày xét nghiệm: </Text>
-                          {test.TestDate}
-                          <br />
-                          <Text strong>Người xét nghiệm: </Text>
-                          {test.Person}
-                          <br />
-                          <Text strong>Trạng thái: </Text>
-                          {test.StatusName || "Không xác định"}
-                          <br />
-                          <Text strong>Tình trạng kết quả: </Text>
-                          {test.TQS_Name || "Chưa có"}
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3" }}
-                            onClick={() =>
-                              navigate(`/doctorpage/testdetail/${test.Test_ID}`)
-                            }
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
-          {/* ✅ Mẫu sinh học */}
-          {biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link
-                    style={{ color: "#f78db3" }}
-                    onClick={() =>
-                      navigate(`/doctorpage/biosamplelist/${tpId}`)
-                    }
-                  >
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff0f5" }}
-            >
-              <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card
-                      key={bs.BS_ID}
-                      type="inner"
-                      style={{ borderLeft: "5px solid #f78db3" }}
-                    >
-                      <Row justify="space-between">
-                        <Col>
-                          <Text strong>Tên mẫu: </Text>
-                          {bs.BS_Name}
-                          <br />
-                          <Text strong>Loại mẫu: </Text>
-                          {bs.BioType || "Không xác định"}
-                          <br />
-                          <Text strong>Ngày thu thập: </Text>
-                          {bs.CollectionDate}
-                          <br />
-                          <Text strong>Vị trí lưu trữ: </Text>
-                          {bs.StorageLocation || "Chưa cập nhật"}
-                          <br />
-                          <Text strong>Trạng thái: </Text>
-                          {bs.StatusName ||
-                            BIO_SAMPLE_STATUS[bs.Status] ||
-                            "Không xác định"}
-                          <br />
-                          <Text strong>Chất lượng: </Text>
-                          {bs.BQS_Name ||
-                            BIO_QUALITY_STATUS[bs.BQS_ID] ||
-                            "Chưa đánh giá"}
-                          <br />
-                          {bs.Note && (
-                            <>
-                              <Text strong>Ghi chú: </Text>
-                              {bs.Note}
-                              <br />
-                            </>
-                          )}
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3" }}
-                            onClick={() =>
-                              navigate(
-                                `/doctorpage/biosampledetail/${bs.BS_ID}`
-                              )
-                            }
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
+          <Tabs defaultActiveKey="process" items={tabItems} />
         </Space>
       </Content>
     </Layout>

@@ -9,6 +9,8 @@ import {
   Space,
   Tag,
   Divider,
+  Tabs,
+  Rate,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -78,6 +80,8 @@ export default function TreatmentPlanDetailPage({ tpId, embedded = false, onBack
   const [treatmentPlan, setTreatmentPlan] = useState(null);
   const [biosamples, setBiosamples] = useState([]);
   const [tests, setTests] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+
 
   useEffect(() => {
     const mockTP = {
@@ -133,6 +137,24 @@ export default function TreatmentPlanDetailPage({ tpId, embedded = false, onBack
         },
       ],
     };
+    const mockFeedbacks = [
+  {
+    fbId: 1,
+    docName: "BS. Lê Văn C",
+    createAt: "2025-07-29",
+    star: 4,
+    content: "Dịch vụ nhanh chóng và chu đáo.",
+  },
+  {
+    fbId: 2,
+    docName: null, // feedback về dịch vụ
+    createAt: "2025-07-28",
+    star: 5,
+    content: "Tôi rất hài lòng về dịch vụ chăm sóc!",
+  },
+];
+
+setFeedbacks(mockFeedbacks);
 
     // ✅ Sắp xếp các bước điều trị theo ngày hẹn mới nhất ở trên
     mockTP.stepDetails.sort((a, b) => new Date(b.PlanDate) - new Date(a.PlanDate));
@@ -201,6 +223,122 @@ export default function TreatmentPlanDetailPage({ tpId, embedded = false, onBack
   };
 
   if (!treatmentPlan) return null;
+
+  const tabItems = [
+  {
+    key: "steps",
+    label: "Quá trình điều trị",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }} size="small">
+        <div style={{ maxHeight: 200, overflowY: "auto" }}>
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            {treatmentPlan.stepDetails.map((step) => (
+              <Card key={step.SD_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                <Row justify="space-between" align="middle">
+                  <Col flex="auto">
+                    <Text strong style={{ fontSize: '14px' }}>{step.Step_Name}</Text><br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>Ngày: {step.PlanDate} | BS: {step.doc?.fullName}</Text>
+                  </Col>
+                  <Col>
+                    <Link onClick={() => navigate(`/admin/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Xem chi tiết</Link>
+                  </Col>
+                </Row>
+              </Card>
+            ))}
+          </Space>
+        </div>
+      </Card>
+    ),
+  },
+];
+
+if (tests.length > 0) {
+  tabItems.push({
+    key: "tests",
+    label: "Xét nghiệm",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }} size="small">
+        <div style={{ maxHeight: 160, overflowY: "auto" }}>
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            {tests.map((test) => (
+              <Card key={test.Test_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                <Row justify="space-between" align="middle">
+                  <Col flex="auto">
+                    <Text strong style={{ fontSize: '14px' }}>{TEST_TYPE_MAP[test.TestType_ID]}</Text><br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {test.TestDate} | {test.Person} | {TEST_STATUS[test.Status]} | {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                    </Text>
+                  </Col>
+                  <Col>
+                    <Link style={{ color: "#f78db3", fontSize: '12px' }} onClick={() => navigate(`/admin/testdetail/${test.Test_ID}`)}>
+                      Xem chi tiết
+                    </Link>
+                  </Col>
+                </Row>
+              </Card>
+            ))}
+          </Space>
+        </div>
+      </Card>
+    ),
+  });
+}
+
+if (biosamples.length > 0) {
+  tabItems.push({
+    key: "biosamples",
+    label: "Mẫu sinh học",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
+        <div style={{ maxHeight: 160, overflowY: "auto" }}>
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            {biosamples.map((bs) => (
+              <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
+                <Row justify="space-between" align="middle">
+                  <Col flex="auto">
+                    <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                    </Text>
+                  </Col>
+                  <Col>
+                    <Link
+                      style={{ color: "#f78db3", fontSize: '12px' }}
+                      onClick={() => navigate(`/admin/biosampledetail/${bs.BS_ID}`)}
+                    >
+                      Xem chi tiết
+                    </Link>
+                  </Col>
+                </Row>
+              </Card>
+            ))}
+          </Space>
+        </div>
+      </Card>
+    ),
+  });
+}
+
+if (feedbacks.length > 0) {
+  tabItems.push({
+    key: "feedback",
+    label: "Phản hồi",
+    children: (
+      <Card bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }} size="small">
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          {feedbacks.map((fb) => (
+            <Card key={fb.fbId} size="small">
+              <Text strong>{fb.docName ? `Bác sĩ: ${fb.docName}` : "Phản hồi dịch vụ"}</Text><br />
+              <Text type="secondary" style={{ fontSize: '12px' }}>{fb.createAt}</Text><br />
+              <Rate value={fb.star} disabled style={{ fontSize: '14px' }} />
+              <p style={{ marginTop: 4 }}>{fb.content}</p>
+            </Card>
+          ))}
+        </Space>
+      </Card>
+    ),
+  });
+}
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
@@ -307,116 +445,8 @@ export default function TreatmentPlanDetailPage({ tpId, embedded = false, onBack
             </Col>
           </Row>
 
-          <Card
-            title={
-              <Space>
-                <Text strong>Quá trình điều trị</Text>
-                <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/admin/treatmentstep/${tpId}`)}>Xem đầy đủ</Link>
-              </Space>
-            }
-            bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
-            size="small"
-          >
-            <div style={{ maxHeight: 200, overflowY: "auto" }}>
-              <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                {treatmentPlan.stepDetails.map((step) => (
-                  <Card key={step.SD_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                    <Row justify="space-between" align="middle">
-                      <Col flex="auto">
-                        <Text strong style={{ fontSize: '14px' }}>{step.Step_Name}</Text><br />
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Ngày: {step.PlanDate} | BS: {step.doc?.fullName}</Text>
-                      </Col>
-                      <Col>
-                        <Link onClick={() => navigate(`/admin/stepdetail/${step.SD_ID}`)} style={{ color: "#f78db3", fontSize: '12px' }}>Xem chi tiết</Link>
-                      </Col>
-                    </Row>
-                  </Card>
-                ))}
-              </Space>
-            </div>
-          </Card>
-
-          {/* ✅ KHUNG DANH SÁCH XÉT NGHIỆM */}
-          {Array.isArray(tests) && tests.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách xét nghiệm</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/admin/testlist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
-              size="small"
-            >
-              <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  {tests.map((test) => (
-                    <Card key={test.Test_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                      <Row justify="space-between" align="middle">
-                        <Col flex="auto">
-                          <Text strong style={{ fontSize: '14px' }}>{TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}</Text><br />
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {test.TestDate} | {test.Person} | {TEST_STATUS[test.Status]} | {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
-                          </Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3", fontSize: '12px' }}
-                            onClick={() => navigate(`/admin/testdetail/${test.Test_ID}`)}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
-          {Array.isArray(biosamples) && biosamples.length > 0 && (
-            <Card
-              title={
-                <Space>
-                  <Text strong>Danh sách mẫu sinh học</Text>
-                  <Link style={{ color: "#f78db3" }} onClick={() => navigate(`/admin/biosamplelist/${tpId}`)}>
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
-              size="small"
-            >
-              <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  {biosamples.map((bs) => (
-                    <Card key={bs.BS_ID} type="inner" style={{ borderLeft: "3px solid #f78db3", padding: 8 }} size="small">
-                      <Row justify="space-between" align="middle">
-                        <Col flex="auto">
-                          <Text strong style={{ fontSize: '14px' }}>{bs.BS_Name}</Text><br />
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} | {BIO_QUALITY_STATUS[bs.BQS_ID]}
-                          </Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            style={{ color: "#f78db3", fontSize: '12px' }}
-                            onClick={() => navigate(`/admin/biosampledetail/${bs.BS_ID}`)}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-          )}
-
+          <Tabs defaultActiveKey="steps" items={tabItems} />
+          
         </Space>
       </Content>
     </Layout>

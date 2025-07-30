@@ -15,6 +15,7 @@ import {
   Input,
   message,
   Rate,
+  Tabs,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -26,6 +27,7 @@ import {
   CheckCircleTwoTone,
   CloseCircleTwoTone,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { getTreatmentDetail } from "../../../../apis/treatmentService";
 import { getStepDetailByTreatmentPlanId } from "../../../../apis/stepDetailService";
@@ -206,6 +208,21 @@ export default function TreatmentPlanDetailPage() {
       }
     });
   }, [tpId]);
+
+  useEffect(() => {
+  if (!tpId) return;
+  fetch(`/api/feedback/byTreatmentPlan/${tpId}`)
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.success && Array.isArray(res.data)) {
+        setFeedbacks(res.data);
+      }
+    })
+    .catch(() => {
+      console.error("Lỗi khi tải phản hồi");
+    });
+}, [tpId]);
+
 
   const getFeedbackTargets = () => {
     if (!treatmentPlan) return [];
@@ -563,178 +580,192 @@ export default function TreatmentPlanDetailPage() {
               </Col>
             </Row>
 
-            <Card
-              title={
-                <Space>
-                  <Text strong>Quá trình điều trị</Text>
-                  <Link
-                    style={{ color: "#f78db3" }}
-                    onClick={() => navigate(`/treatmentstep/${tpId}`)}
-                  >
-                    Xem đầy đủ
-                  </Link>
-                </Space>
-              }
-              bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
-              size="small"
-            >
-              <div style={{ maxHeight: 200, overflowY: "auto" }}>
-                <Space
-                  direction="vertical"
+            <Tabs
+  defaultActiveKey="process"
+  type="card"
+  size="middle"
+  style={{ backgroundColor: "white", padding: 8, borderRadius: 12 }}
+  tabBarGutter={12}
+  items={[
+    {
+      key: "process",
+      label: "Quá trình điều trị",
+      children: (
+        <Card
+          title="Quá trình điều trị"
+          bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
+          size="small"
+        >
+          <div style={{ maxHeight: 200, overflowY: "auto" }}>
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {treatmentPlan.stepDetails.map((step) => (
+                <Card
+                  key={step.SD_ID}
+                  type="inner"
+                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
                   size="small"
-                  style={{ width: "100%" }}
                 >
-                  {treatmentPlan.stepDetails.map((step) => (
-                    <Card
-                      key={step.SD_ID}
-                      type="inner"
-                      style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                      size="small"
-                    >
-                      <Row justify="space-between" align="middle">
-                        <Col flex="auto">
-                          <Text strong style={{ fontSize: "14px" }}>
-                            {step.Step_Name}
-                          </Text>
-                          <br />
-                          <Text type="secondary" style={{ fontSize: "12px" }}>
-                            Ngày: {step.PlanDate} | BS: {step.doc?.fullName}
-                          </Text>
-                        </Col>
-                        <Col>
-                          <Link
-                            onClick={() =>
-                              navigate(`/stepdetail/${step.SD_ID}`)
-                            }
-                            style={{ color: "#f78db3", fontSize: "12px" }}
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
-              </div>
-            </Card>
-
-            {Array.isArray(tests) && tests.length > 0 && (
-              <Card
-                title={
-                  <Space>
-                    <Text strong>Danh sách xét nghiệm</Text>
-                    <Link
-                      style={{ color: "#f78db3" }}
-                      onClick={() => navigate(`/testlist/${tpId}`)}
-                    >
-                      Xem đầy đủ
-                    </Link>
-                  </Space>
-                }
-                bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
-                size="small"
-              >
-                <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                  <Space
-                    direction="vertical"
-                    size="small"
-                    style={{ width: "100%" }}
-                  >
-                    {tests.map((test) => (
-                      <Card
-                        key={test.Test_ID}
-                        type="inner"
-                        style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                        size="small"
+                  <Row justify="space-between" align="middle">
+                    <Col flex="auto">
+                      <Text strong style={{ fontSize: "14px" }}>
+                        {step.Step_Name}
+                      </Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        Ngày: {step.PlanDate} | BS: {step.doc?.fullName}
+                      </Text>
+                    </Col>
+                    <Col>
+                      <Link
+                        onClick={() =>
+                          navigate(`/stepdetail/${step.SD_ID}`)
+                        }
+                        style={{ color: "#f78db3", fontSize: "12px" }}
                       >
-                        <Row justify="space-between" align="middle">
-                          <Col flex="auto">
-                            <Text strong style={{ fontSize: "14px" }}>
-                              {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
-                            </Text>
-                            <br />
-                            <Text type="secondary" style={{ fontSize: "12px" }}>
-                              {test.TestDate} | {test.Person} |{" "}
-                              {TEST_STATUS[test.Status]} |{" "}
-                              {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
-                            </Text>
-                          </Col>
-                          <Col>
-                            <Link
-                              style={{ color: "#f78db3", fontSize: "12px" }}
-                              onClick={() =>
-                                navigate(`/testdetail/${test.Test_ID}`)
-                              }
-                            >
-                              Xem chi tiết
-                            </Link>
-                          </Col>
-                        </Row>
-                      </Card>
-                    ))}
-                  </Space>
-                </div>
-              </Card>
-            )}
-
-            {Array.isArray(biosamples) && biosamples.length > 0 && (
-              <Card
-                title={
-                  <Space>
-                    <Text strong>Danh sách mẫu sinh học</Text>
-                    <Link
-                      style={{ color: "#f78db3" }}
-                      onClick={() => navigate(`/biosamplelist/${tpId}`)}
-                    >
-                      Xem đầy đủ
-                    </Link>
-                  </Space>
-                }
-                bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
-                size="small"
-              >
-                <div style={{ maxHeight: 160, overflowY: "auto" }}>
-                  <Space
-                    direction="vertical"
-                    size="small"
-                    style={{ width: "100%" }}
-                  >
-                    {biosamples.map((bs) => (
-                      <Card
-                        key={bs.BS_ID}
-                        type="inner"
-                        style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                        size="small"
+                        Xem chi tiết
+                      </Link>
+                    </Col>
+                  </Row>
+                </Card>
+              ))}
+            </Space>
+          </div>
+        </Card>
+      ),
+    },
+    tests.length > 0 && {
+      key: "tests",
+      label: "Xét nghiệm",
+      children: (
+        <Card
+          title="Danh sách xét nghiệm"
+          bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
+          size="small"
+        >
+          <div style={{ maxHeight: 160, overflowY: "auto" }}>
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {tests.map((test) => (
+                <Card
+                  key={test.Test_ID}
+                  type="inner"
+                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
+                  size="small"
+                >
+                  <Row justify="space-between" align="middle">
+                    <Col flex="auto">
+                      <Text strong style={{ fontSize: "14px" }}>
+                        {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
+                      </Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        {test.TestDate} | {test.Person} |{" "}
+                        {TEST_STATUS[test.Status]} |{" "}
+                        {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                      </Text>
+                    </Col>
+                    <Col>
+                      <Link
+                        style={{ color: "#f78db3", fontSize: "12px" }}
+                        onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
                       >
-                        <Row justify="space-between" align="middle">
-                          <Col flex="auto">
-                            <Text strong style={{ fontSize: "14px" }}>
-                              {bs.BS_Name}
-                            </Text>
-                            <br />
-                            <Text type="secondary" style={{ fontSize: "12px" }}>
-                              {bs.CollectionDate} |{" "}
-                              {BIO_SAMPLE_STATUS[bs.Status]} |{" "}
-                              {BIO_QUALITY_STATUS[bs.BQS_ID]}
-                            </Text>
-                          </Col>
-                          <Col>
-                            <Link
-                              style={{ color: "#f78db3", fontSize: "12px" }}
-                              onClick={() =>
-                                navigate(`/biosampledetail/${bs.BS_ID}`)
-                              }
-                            >
-                              Xem chi tiết
-                            </Link>
-                          </Col>
-                        </Row>
-                      </Card>
-                    ))}
-                  </Space>
-                </div>
+                        Xem chi tiết
+                      </Link>
+                    </Col>
+                  </Row>
+                </Card>
+              ))}
+            </Space>
+          </div>
+        </Card>
+      ),
+    },
+    biosamples.length > 0 && {
+      key: "biosamples",
+      label: "Mẫu sinh học",
+      children: (
+        <Card
+          title="Danh sách mẫu sinh học"
+          bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+          size="small"
+        >
+          <div style={{ maxHeight: 160, overflowY: "auto" }}>
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {biosamples.map((bs) => (
+                <Card
+                  key={bs.BS_ID}
+                  type="inner"
+                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
+                  size="small"
+                >
+                  <Row justify="space-between" align="middle">
+                    <Col flex="auto">
+                      <Text strong style={{ fontSize: "14px" }}>
+                        {bs.BS_Name}
+                      </Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} |{" "}
+                        {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                      </Text>
+                    </Col>
+                    <Col>
+                      <Link
+                        style={{ color: "#f78db3", fontSize: "12px" }}
+                        onClick={() =>
+                          navigate(`/biosampledetail/${bs.BS_ID}`)
+                        }
+                      >
+                        Xem chi tiết
+                      </Link>
+                    </Col>
+                  </Row>
+                </Card>
+              ))}
+            </Space>
+          </div>
+        </Card>
+      ),
+    },
+    feedbacks.length > 0 && {
+      key: "feedbacks",
+      label: `Phản hồi (${feedbacks.length})`,
+      children: (
+        <Card
+          title="Phản hồi từ khách hàng"
+          bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+        >
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            {feedbacks.map((fb) => (
+              <Card
+                key={fb.fbId}
+                type="inner"
+                size="small"
+                style={{ borderLeft: "3px solid #f78db3" }}
+              >
+                <Row justify="space-between">
+                  <Col>
+                    <Text strong style={{ fontSize: 14 }}>
+                      {fb.doctorName ? `BS. ${fb.doctorName}` : "Dịch vụ"}
+                    </Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Ngày đánh giá: {dayjs(fb.createAt).format("DD/MM/YYYY")}
+                    </Text>
+                  </Col>
+                  <Col>
+                    <Rate disabled value={fb.star} />
+                  </Col>
+                </Row>
+                <Divider style={{ margin: "8px 0" }} />
+                <Text>{fb.content}</Text>
               </Card>
-            )}
+            ))}
+          </Space>
+        </Card>
+      ),
+    },
+  ].filter(Boolean)}
+/>
           </Space>
         )}
       </Content>
