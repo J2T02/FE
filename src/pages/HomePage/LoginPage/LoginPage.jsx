@@ -1,5 +1,15 @@
 import React, { useContext, useState } from "react";
-import { Form, Input, Button, Typography, Card, Row, Col, message } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  Card,
+  Row,
+  Col,
+  message,
+  Space,
+} from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -8,8 +18,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { StoreContext } from "../../../contexts/StoreProvider";
 import { motion } from "framer-motion";
-import { signIn } from "../../../apis/authService";
+import {
+  signIn,
+  loginByGoogle,
+  loginByGoogleCallback,
+} from "../../../apis/authService";
 import Cookies from "js-cookie";
+import { FcGoogle } from "react-icons/fc";
 
 const { Title, Text } = Typography;
 
@@ -105,6 +120,92 @@ const LoginPage = () => {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await loginByGoogle();
+      const url = res?.data?.url;
+      if (!url) {
+        message.error("Không lấy được link đăng nhập Google");
+        return;
+      }
+      // Mở popup
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      const popup = window.open(
+        url,
+        "GoogleLogin",
+        `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
+      );
+      if (!popup) {
+        message.error("Không thể mở cửa sổ đăng nhập Google");
+        return;
+      }
+      // Lắng nghe message từ popup
+      const handleMessage = async (event) => {
+        if (
+          event.origin !== window.location.origin &&
+          !event.origin.includes("google")
+        )
+          return;
+        const { code } = event.data || {};
+
+        if (code) {
+          try {
+            const callbackRes = await loginByGoogleCallback(code);
+            if (callbackRes.data.success) {
+              // Xử lý giống như login thường
+              const { token, accId, roleId } = callbackRes.data.data;
+              switch (roleId) {
+                case 1:
+                  Cookies.set("accAdId", accId);
+                  Cookies.set("token", token);
+                  break;
+                case 2:
+                  Cookies.set("accManaId", accId);
+                  Cookies.set("token", token);
+                  break;
+                case 3:
+                  Cookies.set("accRecepId", accId);
+                  Cookies.set("token", token);
+                  break;
+                case 4:
+                  Cookies.set("accCusId", accId);
+                  Cookies.set("token", token);
+                  setAccCusId(accId);
+                  break;
+                case 5:
+                  Cookies.set("accDocId", accId);
+                  Cookies.set("token", token);
+                  break;
+                default:
+                  break;
+              }
+              message.success("Đăng nhập Google thành công!");
+              if (roleId) {
+                handleRedirectByRole(roleId);
+              } else {
+                navigate("/");
+              }
+            } else {
+              message.error(
+                callbackRes.data.message || "Đăng nhập Google thất bại"
+              );
+            }
+          } catch (err) {
+            message.error("Đăng nhập Google thất bại");
+          }
+          window.removeEventListener("message", handleMessage);
+          popup.close();
+        }
+      };
+      window.addEventListener("message", handleMessage);
+    } catch (err) {
+      message.error("Không thể đăng nhập bằng Google");
+    }
   };
 
   return (
@@ -233,6 +334,20 @@ const LoginPage = () => {
                     Đăng nhập
                   </Button>
                 </Form.Item>
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  <Button
+                    block
+                    icon={<FcGoogle size={22} style={{ marginRight: 8 }} />}
+                    style={{
+                      borderRadius: 10,
+                      border: "1px solid #d63384",
+                      color: "#d63384",
+                    }}
+                    onClick={handleGoogleLogin}
+                  >
+                    Đăng nhập bằng Google
+                  </Button>
+                </Space>
 
                 <div style={{ textAlign: "center" }}>
                   <Text type="secondary">

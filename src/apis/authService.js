@@ -7,7 +7,12 @@ const register = async (body) => {
 const signIn = async (body) => {
   return await axiosClients.post("/Account/login", body);
 };
-
+const loginByGoogle = async (body) => {
+  return await axiosClients.get("/LoginGoogle/login-url", body);
+};
+const loginByGoogleCallback = async (code) => {
+  return await axiosClients.get(`/LoginGoogle/google-callback?code=${code}`);
+};
 const getInfo = async () => {
   return await axiosClients.get(`/Account`);
 };
@@ -32,6 +37,8 @@ const OtpRegister = async (body) => {
 export {
   register,
   signIn,
+  loginByGoogle,
+  loginByGoogleCallback,
   getInfo,
   forgotPasswordRequest,
   otpRequest,
