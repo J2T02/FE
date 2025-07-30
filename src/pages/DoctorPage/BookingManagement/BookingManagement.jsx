@@ -31,13 +31,12 @@ const BookingManagement = () => {
   const { doctorInfo } = useContext(DoctorStoreContext);
   const today = dayjs();
   const [dateRange, setDateRange] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("2"); // Mặc định là "Đã xác nhận"
+  const [selectedStatus, setSelectedStatus] = useState("3"); // Mặc định là "Checkin"
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
 
-  useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
@@ -61,7 +60,7 @@ const BookingManagement = () => {
         setBookings([]);
       }
     };
-
+  useEffect(() => {
     if (doctorInfo?.docId) fetchBookings();
   }, [doctorInfo?.docId]);
 
@@ -152,7 +151,10 @@ const BookingManagement = () => {
     return (
       <BookingDetailPage
         bookingId={selectedBookingId}
-        onBack={() => setSelectedBookingId(null)}
+        onBack={() => {
+        setSelectedBookingId(null);
+        fetchBookings(); // ✅ GỌI LẠI API để lấy danh sách mới
+      }}
       />
     );
   }

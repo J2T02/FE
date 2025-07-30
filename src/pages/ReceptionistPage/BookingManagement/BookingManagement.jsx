@@ -37,7 +37,7 @@ const BookingManagement = () => {
   const [bookings, setBookings] = useState([]);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
 
-  useEffect(() => {
+
     const fetchBookings = async () => {
       try {
         const res = await GetAllBooking();
@@ -58,6 +58,7 @@ const BookingManagement = () => {
         setBookings([]);
       }
     };
+  useEffect(() => {
     fetchBookings();
   }, []);
 
@@ -185,7 +186,10 @@ const BookingManagement = () => {
     return (
       <BookingDetailPage
         bookingId={selectedBookingId}
-        onBack={() => setSelectedBookingId(null)}
+        onBack={() => {
+        setSelectedBookingId(null);
+        fetchBookings(); // ✅ GỌI LẠI API để lấy danh sách mới
+      }}
       />
     );
   }
