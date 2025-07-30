@@ -35,21 +35,29 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const handleRedirectByRole = (role) => {
-    switch (role) {
+    console.log("Redirecting with role:", role, "type:", typeof role);
+    const numericRole = parseInt(role, 10);
+
+    switch (numericRole) {
       case 1:
       case 2:
+        console.log("Redirecting to admin");
         navigate("/admin");
         break;
       case 3:
+        console.log("Redirecting to receptionist");
         navigate("/receptionist");
         break;
       case 4:
+        console.log("Redirecting to home");
         navigate("/");
         break;
       case 5:
+        console.log("Redirecting to doctor page");
         navigate("/doctorpage");
         break;
       default:
+        console.log("Unknown role for redirect:", numericRole);
         message.warning("Vai trò không xác định!");
     }
   };
@@ -123,74 +131,87 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = async () => {
-  try {
-    const res = await loginByGoogle();
-    const url = res?.data?.url;
-    if (!url) {
-      message.error("Không lấy được link đăng nhập Google");
-      return;
-    }
-
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-
-    const popup = window.open(
-      url,
-      "GoogleLogin",
-      `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
-    );
-
-    if (!popup) {
-      message.error("Không thể mở cửa sổ đăng nhập Google");
-      return;
-    }
-
-    // ✅ Lắng nghe phản hồi từ popup
-    const handleMessage = (event) => {
-      if (!event.origin.includes("localhost")) return;
-
-      const { token, accId, roleId } = event.data || {};
-      if (token && accId && roleId) {
-        // 👉 Lưu cookie
-        Cookies.set("token", token);
-        switch (roleId) {
-          case 1:
-            Cookies.set("accAdId", accId);
-            break;
-          case 2:
-            Cookies.set("accManaId", accId);
-            break;
-          case 3:
-            Cookies.set("accRecepId", accId);
-            break;
-          case 4:
-            Cookies.set("accCusId", accId);
-            setAccCusId(accId);
-            break;
-          case 5:
-            Cookies.set("accDocId", accId);
-            break;
-          default:
-            break;
-        }
-
-        // 👉 Xoá sự kiện và đóng popup
-        window.removeEventListener("message", handleMessage);
-        popup.close();
-
-        // ✅ Chuyển toàn trang về http://localhost:5173/
-        window.location.href = "http://localhost:5173/";
+    try {
+      const res = await loginByGoogle();
+      const url = res?.data?.url;
+      if (!url) {
+        message.error("Không lấy được link đăng nhập Google");
+        return;
       }
-    };
 
-    window.addEventListener("message", handleMessage);
-  } catch (err) {
-    message.error("Không thể đăng nhập bằng Google");
-  }
-};
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
 
+      const popup = window.open(
+        url,
+        "GoogleLogin",
+        `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
+      );
+
+      if (!popup) {
+        message.error("Không thể mở cửa sổ đăng nhập Google");
+        return;
+      }
+
+      // ✅ Lắng nghe phản hồi từ popup
+      const handleMessage = (event) => {
+        if (!event.origin.includes("localhost")) return;
+
+        const { token, accId, roleId } = event.data || {};
+
+        if (token && accId && roleId !== undefined) {
+          // 👉 Lưu cookie
+          Cookies.set("token", token);
+
+          // Convert roleId to number if it's a string
+          const numericRoleId = parseInt(roleId, 10);
+          console.log("Numeric roleId:", numericRoleId);
+
+          switch (numericRoleId) {
+            case 1:
+              Cookies.set("accAdId", accId);
+              break;
+            case 2:
+              Cookies.set("accManaId", accId);
+              break;
+            case 3:
+              Cookies.set("accRecepId", accId);
+              break;
+            case 4:
+              Cookies.set("accCusId", accId);
+              setAccCusId(accId);
+              break;
+            case 5:
+              Cookies.set("accDocId", accId);
+              break;
+            default:
+              break;
+          }
+
+          // 👉 Xoá sự kiện và đóng popup
+          window.removeEventListener("message", handleMessage);
+
+          // Fix Cross-Origin-Opener-Policy error by checking if popup is still accessible
+          try {
+            if (popup && !popup.closed) {
+              popup.close();
+            }
+          } catch (error) {
+            console.log("Could not close popup:", error.message);
+          }
+
+          // ✅ Redirect based on role
+          handleRedirectByRole(numericRoleId);
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+    } catch (err) {
+      message.error("Không thể đăng nhập bằng Google");
+    }
+  };
 
   return (
     <div

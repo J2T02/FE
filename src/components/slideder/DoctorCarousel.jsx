@@ -10,7 +10,6 @@ import Cookies from "js-cookie";
 const { Title, Text } = Typography;
 
 const DoctorCarousel = ({ doctors = [] }) => {
-  console.log(doctors);
   const navigate = useNavigate();
 
   const { token } = theme.useToken();
