@@ -29,8 +29,8 @@ const { Option } = Select;
 
 const BookingManagement = () => {
   const today = dayjs();
-  const [dateRange, setDateRange] = useState([today, today]);
-  const [selectedShift, setSelectedShift] = useState(null);
+  const [dateRange, setDateRange] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("1"); // Mặc định là "Chờ xác nhận"
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -46,6 +46,7 @@ const BookingManagement = () => {
             workDate: item.schedule?.workDate || "",
             slotStart: item.slot?.slotStart?.slice(0, 5) || "",
             slotEnd: item.slot?.slotEnd?.slice(0, 5) || "",
+            statusId: item.status?.statusId,
             status: item.status?.statusName || "",
           }));
           setBookings(mapped);
@@ -58,7 +59,7 @@ const BookingManagement = () => {
     };
     fetchBookings();
   }, []);
-
+  console.log(bookings);
   const getStatusColor = (status) => {
     switch (status) {
       case "Đã xác nhận":
@@ -178,22 +179,10 @@ const BookingManagement = () => {
       });
     }
 
-    if (selectedShift) {
-      filtered = filtered.filter((b) => {
-        const time = dayjs(b.slotStart, "HH:mm");
-        if (selectedShift === "sang") {
-          return (
-            time.isSameOrAfter(dayjs("08:00", "HH:mm")) &&
-            time.isBefore(dayjs("12:00", "HH:mm"))
-          );
-        } else if (selectedShift === "chieu") {
-          return (
-            time.isSameOrAfter(dayjs("13:00", "HH:mm")) &&
-            time.isBefore(dayjs("17:00", "HH:mm"))
-          );
-        }
-        return true;
-      });
+    if (selectedStatus && selectedStatus !== "all") {
+      filtered = filtered.filter(
+        (b) => b.statusId === parseInt(selectedStatus)
+      );
     }
 
     if (searchKeyword.trim() !== "") {
@@ -207,7 +196,7 @@ const BookingManagement = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [dateRange, selectedShift, searchKeyword, bookings]);
+  }, [dateRange, selectedStatus, searchKeyword, bookings]);
 
   if (selectedBookingId !== null) {
     return (
@@ -247,14 +236,18 @@ const BookingManagement = () => {
                   onChange={(values) => setDateRange(values)}
                 />
                 <Select
-                  allowClear
-                  placeholder="Chọn ca làm việc"
+                  placeholder="Chọn trạng thái"
                   style={{ width: 180 }}
-                  value={selectedShift}
-                  onChange={(value) => setSelectedShift(value)}
+                  value={selectedStatus}
+                  onChange={(value) => setSelectedStatus(value)}
                 >
-                  <Option value="sang">Ca sáng (08:00 - 12:00)</Option>
-                  <Option value="chieu">Ca chiều (13:00 - 17:00)</Option>
+                  <Option value="all">Tất cả trạng thái</Option>
+                  <Option value="1">Chờ xác nhận</Option>
+                  <Option value="2">Đã xác nhận</Option>
+                  <Option value="3">Checkin</Option>
+                  <Option value="4">Đang khám</Option>
+                  <Option value="5">Đã khám</Option>
+                  <Option value="6">Đã hủy</Option>
                 </Select>
               </Space>
             </Col>
