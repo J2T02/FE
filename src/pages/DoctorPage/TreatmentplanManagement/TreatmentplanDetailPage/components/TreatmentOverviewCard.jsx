@@ -22,9 +22,11 @@ const getStatusTag = (status) => {
     case 1:
       return <Tag color="blue">Đang điều trị</Tag>;
     case 2:
-      return <Tag color="green">Đã hoàn thành</Tag>;
+      return <Tag color="green">Thành công</Tag>;
     case 3:
-      return <Tag color="red">Đã hủy</Tag>;
+      return <Tag color="red">Thất bại</Tag>;
+    case 4:
+      return <Tag color="red">Đã hủy</Tag>
     default:
       return <Tag>Không xác định</Tag>;
   }
@@ -138,8 +140,9 @@ export default function TreatmentOverviewCard({ treatmentPlan, onUpdate }) {
               style={{ width: "100%" }}
             >
               <Option value={1}>Đang điều trị</Option>
-              <Option value={2}>Đã hoàn thành</Option>
-              <Option value={3}>Đã hủy</Option>
+              <Option value={2}>Thành công</Option>
+              <Option value={3}>Thất bại</Option>
+              <Option value={4}>Đã hủy</Option>
             </Select>
           ) : (
             getStatusTag(status)
