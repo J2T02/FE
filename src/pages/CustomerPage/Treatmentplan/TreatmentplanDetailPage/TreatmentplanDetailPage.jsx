@@ -414,7 +414,6 @@ export default function TreatmentPlanDetailPage() {
                   </Title>
 
                   <Rate
-                    allowHalf
                     value={feedbackData[docId || "service"]?.star || 0}
                     onChange={(value) => handleStarChange(value, docId)}
                     style={{ fontSize: 22, color: "#ee4d2d" }}

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Typography, Card, Tag, message, Spin, Space, Button } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { StoreContext } from "../../../../contexts/StoreProvider";
 import { getTreatmentListForCustomer } from "../../../../apis/treatmentService";
@@ -45,6 +46,19 @@ const ListTreatmentplan = ({ customerId }) => {
   return (
     <div style={{ padding: 24, background: "#fff0f4", minHeight: "100vh" }}>
       <Card>
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(-1)}
+            style={{
+              backgroundColor: "#f78db3",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Quay lại
+          </Button>
+        </div>
         <Title level={3}>📋 Hồ sơ điều trị của bạn</Title>
         {loading ? (
           <Spin />
