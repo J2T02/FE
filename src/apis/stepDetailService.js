@@ -5,7 +5,7 @@ const getStepDetailList = async () => {
 };
 const getStepDetailListByDoctorIdStatus1 = async (doctorId) => {
   return await axiosClients.get(
-    `/StepDetail/GetStepDetailsByDoctorIdAndStatus=1/${doctorId}`
+    `/StepDetail/GetStepDetailsByDoctorIdAndStatusIs1/${doctorId}`
   );
 };
 const getStepDetailDetail = async (id) => {

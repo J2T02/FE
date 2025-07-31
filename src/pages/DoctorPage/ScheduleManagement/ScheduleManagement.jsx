@@ -218,10 +218,10 @@ const ScheduleManagement = () => {
       const stepRes = await getStepDetailListByDoctorIdStatus1(
         doctorInfo.docId
       );
-      console.log(stepDetails);
-      console.log("2");
+      console.log(stepRes, 'here');
+      
       let steps = [];
-      if (stepRes?.data?.data && Array.isArray(stepRes.data.data)) {
+      if (bookingRes?.data?.data && Array.isArray(stepRes.data.data)) {
         steps = stepRes.data.data.map((item) => {
           let duration = "60 phút";
           if (item.docSchedule?.slotStart && item.docSchedule?.slotEnd) {
