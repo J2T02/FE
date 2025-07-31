@@ -18,7 +18,9 @@ const ListTreatmentplan = ({ customerId }) => {
   const [treatments, setTreatments] = useState([]);
   const [loading, setLoading] = useState(false);
   const { customerInfo } = useContext(StoreContext);
-  const cusId = customerId || customerInfo?.cusId;
+  console.log(customerInfo);
+  const cusId = customerInfo?.cusId;
+  console.log(cusId);
   const navigate = useNavigate();
   useEffect(() => {
     if (cusId) {
@@ -30,6 +32,7 @@ const ListTreatmentplan = ({ customerId }) => {
     try {
       setLoading(true);
       const res = await getTreatmentListForCustomer(cusId);
+      console.log(res, "res");
       if (res?.data?.success && Array.isArray(res.data.data)) {
         setTreatments(res.data.data);
       } else {
@@ -42,7 +45,7 @@ const ListTreatmentplan = ({ customerId }) => {
       setLoading(false);
     }
   };
-
+  console.log(treatments);
   return (
     <div style={{ padding: 24, background: "#fff0f4", minHeight: "100vh" }}>
       <Card>

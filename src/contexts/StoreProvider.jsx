@@ -32,6 +32,7 @@ export const StoreProvider = ({ children }) => {
       // Fetch customer info
       GetCustomerInfo(accCusId)
         .then((res) => {
+          console.log(res);
           if (res.data.success) {
             setCustomerInfo(res.data.data);
           } else {

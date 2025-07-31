@@ -280,7 +280,7 @@ const routers = [
     path: "/admin/treatmentplandetail/:id",
     component: lazy(() =>
       import(
-        "~pages/AdminPage/TreatmentplanManagement/TreatmentplanDetailPage/TreatmentplanDetailPage"
+        "~pages/ReceptionistPage/TreatmentplanDetailPage/TreatmentplanDetailPage"
       )
     ),
   },

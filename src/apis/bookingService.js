@@ -60,7 +60,7 @@ const BookingDetail = async (id) => {
 };
 
 const GetCustomerInfo = async (id) => {
-  return await axiosClients.get(`/Customer/${id}`);
+  return await axiosClients.get(`/Customer/GetCustomerDetailByAccId/${id}`);
 };
 
 export {
