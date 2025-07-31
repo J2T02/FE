@@ -57,7 +57,7 @@ const ForgotPasswordStepPage = () => {
 
   const handleEmailSubmit = async (values) => {
     try {
-      const res = await forgotPasswordRequest({ emailOrPhone: values.email });
+      const res = await forgotPasswordRequest({ email: values.email });
       if (res && res.data && res.data.success) {
         setEmail(values.email);
         setResendTimer(30);

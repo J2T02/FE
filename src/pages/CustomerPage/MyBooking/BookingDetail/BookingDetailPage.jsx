@@ -43,7 +43,7 @@ export default function BookingDetailPage() {
   const isDisable =
     bookingData?.status?.statusId !== 1 && bookingData?.status?.statusId !== 2;
   // unPaid
-  const unPaid = bookingData?.payments[0] == null;
+  const unPaid = bookingData?.payments[0].statusId == 1;
 
   return (
     <Layout
