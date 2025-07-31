@@ -18,6 +18,9 @@ const getAccountById = async (accId) => {
 const createAccount = async (body) => {
   return await axiosClients.post(`/Account/CreateAccount`, body);
 };
+const updateDoctor = async (body) => {
+  return await axiosClients.put(`/Doctor`, body);
+};
 export {
   GetAllAccount,
   getAccountByRoleId,
@@ -25,4 +28,5 @@ export {
   getAccountById,
   createAccount,
   dashboardRevenue,
+  updateDoctor,
 };
