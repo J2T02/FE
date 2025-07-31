@@ -113,7 +113,7 @@ export default function ManagerRevenueDashboardPage() {
       </Title>
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8} xs={24} sm={12} md={8}>
+        <Col span={12} xs={24} sm={12}>
           <Card bordered={false} loading={loading}>
             <Statistic
               title="Tổng doanh thu"
@@ -125,21 +125,12 @@ export default function ManagerRevenueDashboardPage() {
             />
           </Card>
         </Col>
-        <Col span={8} xs={24} sm={12} md={8}>
+        <Col span={12} xs={24} sm={12}>
           <Card bordered={false} loading={loading}>
             <Statistic
               title="Số lượng booking"
               value={dashboardData.totalBookings || 0}
               prefix={<CalendarOutlined style={{ color: PINK }} />}
-            />
-          </Card>
-        </Col>
-        <Col span={8} xs={24} sm={12} md={8}>
-          <Card bordered={false} loading={loading}>
-            <Statistic
-              title="Số lượng hồ sơ đang điều trị"
-              value={dashboardData.totalTreatmentPlans || 0}
-              prefix={<FileTextOutlined style={{ color: YELLOW }} />}
             />
           </Card>
         </Col>
@@ -202,19 +193,7 @@ export default function ManagerRevenueDashboardPage() {
       </Row>
 
       <Row gutter={16} style={{ marginTop: 24 }}>
-        <Col span={12}>
-          <Card title="🔥 Dịch vụ phổ biến nhất" loading={loading}>
-            {dashboardData.topService ? (
-              <Space direction="vertical">
-                <Text strong>{dashboardData.topService.serviceName}</Text>
-                <Text>{dashboardData.topService.usageCount} lượt sử dụng</Text>
-              </Space>
-            ) : (
-              <Text>Không có dữ liệu</Text>
-            )}
-          </Card>
-        </Col>
-        <Col span={12}>
+        <Col span={24}>
           <Card title="🏥 Bác sĩ có nhiều booking nhất" loading={loading}>
             {dashboardData.topDoctor ? (
               <Space>
