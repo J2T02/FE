@@ -22,18 +22,9 @@ import { data } from "react-router-dom";
 const { Option } = Select;
 
 const drugOptions = [
-  "Follitropin alfa",
-  "Follitropin beta",
-  "Urofollitropin",
-  "Menotropins",
-  "Lutropin alfa",
+  "Clomiphene Citrate",
   "hCG",
-  "Triptorelin",
-  "Leuprolide",
-  "Cetrorelix",
-  "Ganirelix",
-  "Buserelin",
-  "Nafarelin",
+  "Utrogestan",
 ];
 
 const AddStepModal = ({
@@ -252,18 +243,20 @@ const AddStepModal = ({
           </Row>
         ))}
 
-        <Button
-          type="dashed"
-          block
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setShowDrugFields(true);
-            setDrugFields([...drugFields, { key: drugFields.length }]);
-          }}
-          style={{ color: "#f78db3" }}
-        >
-          Thêm thuốc
-        </Button>
+        {drugFields.length === 0 && (
+          <Button
+            type="dashed"
+            block
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setShowDrugFields(true);
+              setDrugFields([{ key: 0 }]);
+            }}
+            style={{ color: "#f78db3" }}
+          >
+            Thêm thuốc
+          </Button>
+        )}
       </Form>
     </Modal>
   );
