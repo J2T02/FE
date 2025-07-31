@@ -60,12 +60,12 @@ const ReceptionistPanel = () => {
     {
       key: "1",
       icon: <CalendarOutlined style={{ fontSize: 20 }} />,
-      label: "Quản lý booking",
+      label: "Quản lý lịch hẹn",
     },
     {
       key: "2",
       icon: <FileTextOutlined style={{ fontSize: 20 }} />,
-      label: "Quản lý hồ sơ bệnh án",
+      label: "Hồ sơ bệnh án",
     },
   ];
 

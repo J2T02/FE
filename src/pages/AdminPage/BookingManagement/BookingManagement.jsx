@@ -121,7 +121,7 @@ const BookingManagement = () => {
 
   const columns = [
     {
-      title: "Mã Booking",
+      title: "Mã lịch hẹn",
       dataIndex: "bookingId",
       render: (id) => <b>#{id}</b>,
     },

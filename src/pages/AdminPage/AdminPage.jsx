@@ -130,7 +130,7 @@ const AdminPanel = () => {
             Danh sách bệnh án
           </Menu.Item>
           <Menu.Item key="9" icon={<CalendarOutlined style={{ fontSize: 20 }} />}>
-            Danh sách đặt lịch
+            Danh sách lịch hẹn
           </Menu.Item>
         </Menu>
       </Sider>

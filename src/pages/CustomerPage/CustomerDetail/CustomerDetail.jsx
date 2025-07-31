@@ -329,7 +329,7 @@ const CustomerDetail = () => {
             <Title level={5}>Lịch sử đặt khám</Title>
             <Table
               columns={[
-                { title: "Mã booking", dataIndex: "bookingId" },
+                { title: "Mã lịch hẹn", dataIndex: "bookingId" },
                 {
                   title: "Ngày",
                   dataIndex: ["doctorSchedule", "workDate"],

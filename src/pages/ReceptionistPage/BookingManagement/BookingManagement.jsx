@@ -31,7 +31,7 @@ const { Option } = Select;
 const BookingManagement = () => {
   const today = dayjs();
   const [dateRange, setDateRange] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("1"); // Mặc định là "Chờ xác nhận"
+  const [selectedStatus, setSelectedStatus] = useState("2"); // Mặc định là "Đã xác nhận"
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -104,7 +104,7 @@ const BookingManagement = () => {
 
   const columns = [
     {
-      title: "Mã Booking",
+      title: "Mã lịch hẹn",
       dataIndex: "bookingId",
       render: (id) => <b>#{id}</b>,
     },

@@ -73,7 +73,7 @@ const DoctorPanel = () => {
     {
       key: "2",
       icon: <CalendarOutlined style={{ fontSize: 20 }} />,
-      label: "Quản lý booking",
+      label: "Quản lý lịch hẹn",
     },
     {
       key: "3",

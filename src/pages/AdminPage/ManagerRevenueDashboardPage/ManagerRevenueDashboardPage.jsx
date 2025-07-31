@@ -109,7 +109,7 @@ export default function ManagerRevenueDashboardPage() {
   return (
     <Layout style={{ padding: 24, background: LIGHT_PINK, minHeight: "100vh" }}>
       <Title level={3} style={{ color: PINK }}>
-        💰 Dashboard Doanh thu
+        💰 Tổng quan doanh thu
       </Title>
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
@@ -128,7 +128,7 @@ export default function ManagerRevenueDashboardPage() {
         <Col span={12} xs={24} sm={12}>
           <Card bordered={false} loading={loading}>
             <Statistic
-              title="Số lượng booking"
+              title="Số lượng đặt lịch"
               value={dashboardData.totalBookings || 0}
               prefix={<CalendarOutlined style={{ color: PINK }} />}
             />

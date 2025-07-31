@@ -458,6 +458,29 @@ const DoctorScheduleSelection = ({
   }
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+      <div
+        style={{
+          backgroundColor: "#f6ffed",
+          border: "1px solid #b7eb8f",
+          padding: 16,
+          borderRadius: 8,
+          marginBottom: 24,
+        }}
+      >
+        <Title level={4} style={{ color: "#52c41a", marginBottom: 8 }}>
+          🩺 Đặt lịch khám tư vấn chuyên sâu
+        </Title>
+        <Paragraph style={{ marginBottom: 0 }}>
+          Chào mừng bạn đến với bước đầu tiên trong hành trình chăm sóc sức khỏe! Đây là <strong>lịch hẹn tư vấn ban đầu</strong>, giúp bác sĩ chẩn đoán chính xác và đưa ra phương án điều trị phù hợp nhất với tình trạng của bạn.
+          <br />
+          👉 Giá mỗi lượt tư vấn:{" "}
+          <Text strong style={{ fontSize: 40, color: "#fa541c" }}>
+            200.000 VNĐ
+          </Text>
+          <br />
+          📅 Vui lòng chọn <strong>bác sĩ</strong> và <strong>thời gian khám</strong> phù hợp bên dưới để hoàn tất đặt lịch.
+        </Paragraph>
+      </div>
       <Modal
         title={modalDoctor?.accountInfo?.fullName || "Thông tin bác sĩ"}
         open={isModalVisible}

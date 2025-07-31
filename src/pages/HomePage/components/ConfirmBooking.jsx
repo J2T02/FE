@@ -99,6 +99,18 @@ const ConfirmBooking = ({
           >
             <Text>{getDoctorName()}</Text>
           </Descriptions.Item>
+
+          <Descriptions.Item
+            label={
+              <Space>
+                💰
+                <Text strong>Giá tiền</Text>
+              </Space>
+            }
+          >
+            <Text style={{ color: "#f78db3", fontWeight: 500, fontSize: 20 }}>200.000 VNĐ</Text>
+          </Descriptions.Item>
+
         </Descriptions>
 
         {(data.wifeName || data.husName) && (

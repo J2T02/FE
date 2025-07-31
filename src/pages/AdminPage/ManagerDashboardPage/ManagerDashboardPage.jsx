@@ -217,7 +217,7 @@ export default function ManagerDashboardPage() {
   return (
     <Layout style={{ padding: 24, background: LIGHT_PINK, minHeight: "100vh" }}>
       <Title level={3} style={{ color: PINK }}>
-        ❤️ Manager Dashboard
+        ❤️ Tổng quan dịch vụ
       </Title>
 
       <Row gutter={16} style={{ marginBottom: 16 }}>
