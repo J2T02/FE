@@ -44,7 +44,7 @@ const validateFile = (file) => {
   return true;
 };
 
-const CreateDoctor = ({ onBack }) => {
+const CreateDoctor = ({ onBack, onSuccess }) => {
   const [form] = Form.useForm();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(false); // Thêm state loading
@@ -116,6 +116,12 @@ const CreateDoctor = ({ onBack }) => {
           console.log(res);
           if (res.data.success) {
             message.success("Đã tạo bác sĩ thành công!");
+            // Gọi onSuccess thay vì onBack để refresh list
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              onBack();
+            }
           } else {
             message.error(res.data.message);
           }
@@ -127,7 +133,6 @@ const CreateDoctor = ({ onBack }) => {
       form.resetFields();
       setCertificates([]);
       setAvatarFile(null);
-      onBack();
     } finally {
       setLoading(false); // Kết thúc loading dù thành công hay thất bại
     }

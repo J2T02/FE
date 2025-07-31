@@ -28,6 +28,10 @@ const DoctorListTable = () => {
 
   const handleMouseEnter = async () => {
     if (doctors.length > 0 || loading) return;
+    await fetchDoctors();
+  };
+
+  const fetchDoctors = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -44,15 +48,23 @@ const DoctorListTable = () => {
     }
   };
 
+  const handleCreateSuccess = async () => {
+    // Refresh danh sách sau khi tạo bác sĩ thành công
+    await fetchDoctors();
+    setIsCreatingDoctor(false);
+  };
+
   const filteredDoctors = useMemo(() => {
     return doctors.filter((doctor) => {
-      const matchesSearch =
-        `${doctor.accountInfo?.fullName || ""} ${doctor.accountInfo?.mail || ""}`
-          .toLowerCase()
-          .includes(search.toLowerCase());
+      const matchesSearch = `${doctor.accountInfo?.fullName || ""} ${
+        doctor.accountInfo?.mail || ""
+      }`
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "all" || doctor.status?.statusId === Number(statusFilter);
+        statusFilter === "all" ||
+        doctor.status?.statusId === Number(statusFilter);
 
       return matchesSearch && matchesStatus;
     });
@@ -114,13 +126,19 @@ const DoctorListTable = () => {
       <DoctorDetailManagement
         doctorId={selectedDoctorId}
         onBack={() => setSelectedDoctorId(null)}
+        onUpdateSuccess={handleCreateSuccess}
       />
     );
   }
 
   // ✅ Giữ nguyên tạo bác sĩ
   if (isCreatingDoctor) {
-    return <CreateDoctor onBack={() => setIsCreatingDoctor(false)} />;
+    return (
+      <CreateDoctor
+        onBack={() => setIsCreatingDoctor(false)}
+        onSuccess={handleCreateSuccess}
+      />
+    );
   }
 
   return (

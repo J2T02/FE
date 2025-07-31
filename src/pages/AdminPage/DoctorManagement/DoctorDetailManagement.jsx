@@ -57,7 +57,7 @@ const validateFile = (file) => {
   return true;
 };
 
-const DoctorDetailManagement = ({ doctorId, onBack }) => {
+const DoctorDetailManagement = ({ doctorId, onBack, onUpdateSuccess }) => {
   const { token } = theme.useToken();
   const [doctor, setDoctor] = useState(null);
   const [feedbacks, setFeedbacks] = useState([]);
@@ -83,13 +83,14 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
         const resDoctor = await getDoctorInfo(doctorId);
         if (resDoctor?.data?.success) {
           const d = resDoctor.data.data;
+          console.log(d);
           setDoctor(d);
           setFormData({
             fullName: d.accountInfo.fullName || "",
             gender: d.gender || "",
             yob: d.yob ? dayjs(d.yob) : null,
             eduId: d.eduInfo?.eduId || null,
-            status: d.accountInfo?.status || 1, // Lấy status từ API
+            status: d.status.statusId || 1, // Lấy status từ API
           });
         }
 
@@ -243,7 +244,13 @@ const DoctorDetailManagement = ({ doctorId, onBack }) => {
         message.success("Cập nhật thành công!");
         setEditMode(false);
         setNewCertificates([]);
-        // Refresh data sau khi update thành công
+
+        // Gọi onUpdateSuccess để refresh list nếu có
+        if (onUpdateSuccess) {
+          onUpdateSuccess();
+        }
+
+        // Refresh data local sau khi update thành công
         const resDoctor = await getDoctorInfo(doctorId);
         if (resDoctor?.data?.success) {
           setDoctor(resDoctor.data.data);
