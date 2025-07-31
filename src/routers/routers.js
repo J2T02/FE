@@ -164,7 +164,7 @@ const routers = [
   {
     path: "/customer/customerinfoform",
     component: lazy(() =>
-      import("~pages/HomePage/CustomerInfo/CustomerInfoForm")
+      import("~pages/CustomerPage/CustomerInfo/CustomerInfoForm")
     ),
   },
   {
@@ -183,10 +183,6 @@ const routers = [
   {
     path: "/receptionistsignin",
     component: lazy(() => import("~pages/ReceptionistPage/LoginReceptionist")),
-  },
-  {
-    path: "/receptionist",
-    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPanel")),
   },
   // doctor
   {
@@ -335,7 +331,7 @@ const routers = [
   //receptionist
   {
     path: "/receptionist",
-    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPage")),
+    component: lazy(() => import("~pages/ReceptionistPage/ReceptionistPanel")),
   },
   {
     path: "/receptionist/bookingdetail/:id",
@@ -397,7 +393,7 @@ const routers = [
   {
     path: "/bookingUpdate/:id",
     component: lazy(() =>
-      import("~pages/HomePage/BookingPage/UpdateBookingPage")
+      import("~pages/HomePage/BookingPage/BookingUpdatePage")
     ),
   },
   {
