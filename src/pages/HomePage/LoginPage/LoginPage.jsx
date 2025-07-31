@@ -258,7 +258,7 @@ const LoginPage = () => {
                 fontWeight: "bold",
                 color: "#d63384",
               }}
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/")}
             >
               Quay lại
             </Button>

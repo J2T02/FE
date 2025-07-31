@@ -268,7 +268,7 @@ function Header() {
               flex: "none",
             }}
           >
-            {customerInfo ? (
+            {userInfo ? (
               <>
                 <Button
                   type="primary"

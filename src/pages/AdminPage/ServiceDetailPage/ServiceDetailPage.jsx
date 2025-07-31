@@ -12,9 +12,12 @@ import {
   Modal,
   Space,
   message,
+  Spin,
 } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
+import { GetServiceById, UpdateService } from "../../../apis/service";
+import { createTreatmentStep } from "../../../apis/treatmentService";
 
 const { Title, Text } = Typography;
 
@@ -38,12 +41,19 @@ const mockServiceDetail = {
   ],
 };
 
-const ServiceDetailPage = ({ serId, onBack }) => {
+const ServiceDetailPage = ({
+  serId,
+  treatmentSteps = [],
+  onBack,
+  onStepCreated,
+}) => {
   const [form] = Form.useForm();
   const [service, setService] = useState(null);
   const [editingStep, setEditingStep] = useState(null);
   const [stepModalOpen, setStepModalOpen] = useState(false);
   const [stepList, setStepList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const params = useParams();
 
@@ -51,19 +61,94 @@ const ServiceDetailPage = ({ serId, onBack }) => {
   const id = serId ?? params.id;
 
   useEffect(() => {
-    // 👇 Giả lập fetch dữ liệu theo id
-    setService(mockServiceDetail); // Sau này thay bằng API gọi theo `id`
-    setStepList(mockServiceDetail.TreatmentSteps);
-    form.setFieldsValue({
-      Ser_Name: mockServiceDetail.Ser_Name,
-      Price: mockServiceDetail.Price,
-      Description: mockServiceDetail.Description,
-    });
+    const fetchServiceDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await GetServiceById(id);
+        if (res?.data?.success && res.data.data) {
+          const serviceData = res.data.data;
+
+          // Map dữ liệu từ API sang format component
+          const mappedService = {
+            Ser_ID: serviceData.serId,
+            Ser_Name: serviceData.serName,
+            Price: serviceData.price,
+            Description: serviceData.description,
+            File_Path: serviceData.filePath || "/imgdefault.jpg",
+            TreatmentSteps: [], // Sẽ được fetch riêng nếu cần
+          };
+
+          setService(mappedService);
+
+          // Map treatment steps từ props
+          if (treatmentSteps && treatmentSteps.length > 0) {
+            const mappedSteps = treatmentSteps.map((step) => ({
+              TS_ID: step.tsId,
+              Step_Name: step.stepName,
+              Description: step.description,
+            }));
+            setStepList(mappedSteps);
+          } else {
+            setStepList([]);
+          }
+
+          // Set form values
+          form.setFieldsValue({
+            Ser_Name: mappedService.Ser_Name,
+            Price: mappedService.Price,
+            Description: mappedService.Description,
+          });
+        } else {
+          setError("Không tìm thấy thông tin dịch vụ");
+        }
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin dịch vụ:", err);
+        setError("Có lỗi xảy ra khi tải thông tin dịch vụ");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchServiceDetail();
+    }
   }, [form, id]);
 
-  const handleServiceUpdate = (values) => {
-    message.success("Cập nhật dịch vụ thành công!");
-    setService({ ...service, ...values });
+  // Cập nhật stepList khi treatmentSteps thay đổi
+  useEffect(() => {
+    if (treatmentSteps && treatmentSteps.length > 0) {
+      const mappedSteps = treatmentSteps.map((step) => ({
+        TS_ID: step.tsId,
+        Step_Name: step.stepName,
+        Description: step.description,
+      }));
+      setStepList(mappedSteps);
+    } else {
+      setStepList([]);
+    }
+  }, [treatmentSteps]);
+
+  const handleServiceUpdate = async (values) => {
+    try {
+      const updateData = {
+        serName: values.Ser_Name,
+        price: values.Price,
+        description: values.Description,
+      };
+
+      const res = await UpdateService(id, updateData);
+      if (res?.data?.success) {
+        message.success("Cập nhật dịch vụ thành công!");
+        setService({ ...service, ...values });
+      } else {
+        message.error("Có lỗi xảy ra khi cập nhật dịch vụ");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật dịch vụ:", error);
+      message.error("Có lỗi xảy ra khi cập nhật dịch vụ");
+    }
   };
 
   const openEditStep = (step) => {
@@ -71,23 +156,76 @@ const ServiceDetailPage = ({ serId, onBack }) => {
     setStepModalOpen(true);
   };
 
-  const handleStepSubmit = (values) => {
+  const handleStepSubmit = async (values) => {
     if (editingStep) {
       setStepList((prev) =>
-        prev.map((s) => (s.TS_ID === editingStep.TS_ID ? { ...s, ...values } : s))
+        prev.map((s) =>
+          s.TS_ID === editingStep.TS_ID ? { ...s, ...values } : s
+        )
       );
       message.success("Cập nhật giai đoạn thành công!");
     } else {
-      const newStep = {
-        TS_ID: Date.now(),
-        ...values,
-      };
-      setStepList((prev) => [...prev, newStep]);
-      message.success("Thêm giai đoạn mới thành công!");
+      // Thêm giai đoạn mới
+      try {
+        const stepData = {
+          stepName: values.Step_Name,
+          description: values.Description,
+          serId: serId,
+        };
+
+        const res = await createTreatmentStep(stepData);
+        if (res?.data?.success) {
+          message.success("Thêm giai đoạn mới thành công!");
+
+          // Gọi callback để refresh danh sách
+          if (onStepCreated) {
+            onStepCreated();
+          }
+        } else {
+          message.error("Có lỗi xảy ra khi thêm giai đoạn");
+        }
+      } catch (error) {
+        console.error("Lỗi khi thêm giai đoạn:", error);
+        message.error("Có lỗi xảy ra khi thêm giai đoạn");
+      }
     }
     setStepModalOpen(false);
     setEditingStep(null);
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#fff0f4",
+        }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#fff0f4",
+          color: "red",
+          fontSize: "16px",
+        }}
+      >
+        {error}
+      </div>
+    );
+  }
 
   if (!service) return null;
 
@@ -125,14 +263,24 @@ const ServiceDetailPage = ({ serId, onBack }) => {
         <Form layout="vertical" form={form} onFinish={handleServiceUpdate}>
           <Row gutter={24}>
             <Col xs={24} md={12}>
-              <Form.Item label="Tên dịch vụ" name="Ser_Name" rules={[{ required: true }]}>
+              <Form.Item
+                label="Tên dịch vụ"
+                name="Ser_Name"
+                rules={[{ required: true }]}
+              >
                 <Input />
               </Form.Item>
-              <Form.Item label="Giá tiền" name="Price" rules={[{ required: true }]}>
+              <Form.Item
+                label="Giá tiền"
+                name="Price"
+                rules={[{ required: true }]}
+              >
                 <InputNumber
                   min={0}
                   style={{ width: "100%" }}
-                  formatter={(v) => `${v} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                  formatter={(v) =>
+                    `${v} ₫`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  }
                   parser={(v) => v.replace(/\D/g, "")}
                 />
               </Form.Item>
@@ -240,7 +388,12 @@ const ServiceDetailPage = ({ serId, onBack }) => {
           >
             <Input.TextArea />
           </Form.Item>
-          <Button type="primary" htmlType="submit" id="stepFormSubmit" style={{ display: "none" }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            id="stepFormSubmit"
+            style={{ display: "none" }}
+          >
             Submit
           </Button>
         </Form>

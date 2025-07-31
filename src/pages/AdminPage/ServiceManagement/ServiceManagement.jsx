@@ -14,6 +14,10 @@ import axios from "axios"; // ✅ giữ nguyên
 import ServiceDetailPage from "../ServiceDetailPage/ServiceDetailPage"; // ✅ giữ nguyên
 import CreateService from "./CreateService/CreateService"; // ➕ thêm import để load tab tạo mới
 import { GetAllService } from "../../../apis/service";
+import {
+  getTreatmentStepList,
+  createTreatmentStep,
+} from "../../../apis/treatmentService";
 const { Title } = Typography;
 
 const ServiceManagement = () => {
@@ -22,9 +26,11 @@ const ServiceManagement = () => {
   const [searchKeyword, setSearchKeyword] = useState(""); // ✅ giữ nguyên
   const [selectedServiceId, setSelectedServiceId] = useState(null); // ✅ giữ nguyên
   const [creatingService, setCreatingService] = useState(false); // ➕ thêm state để bật tab tạo mới
+  const [treatmentSteps, setTreatmentSteps] = useState([]); // ➕ thêm state để lưu danh sách treatment steps
 
   useEffect(() => {
     fetchServices();
+    fetchTreatmentSteps();
   }, []);
 
   const fetchServices = async () => {
@@ -42,6 +48,25 @@ const ServiceManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTreatmentSteps = async () => {
+    try {
+      const res = await getTreatmentStepList();
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setTreatmentSteps(res.data.data);
+      } else {
+        setTreatmentSteps([]);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách treatment steps:", error);
+      setTreatmentSteps([]);
+    }
+  };
+
+  const handleStepCreated = () => {
+    // Refresh treatment steps sau khi tạo mới
+    fetchTreatmentSteps();
   };
 
   const filteredServices = services.filter((item) =>
@@ -85,10 +110,17 @@ const ServiceManagement = () => {
 
   // ✅ Nếu đang xem chi tiết
   if (selectedServiceId !== null) {
+    // Lọc treatment steps theo serId
+    const filteredSteps = treatmentSteps.filter(
+      (step) => step.serviceInfo?.serId === selectedServiceId
+    );
+
     return (
       <ServiceDetailPage
         serId={selectedServiceId}
+        treatmentSteps={filteredSteps}
         onBack={() => setSelectedServiceId(null)}
+        onStepCreated={handleStepCreated}
       />
     );
   }
