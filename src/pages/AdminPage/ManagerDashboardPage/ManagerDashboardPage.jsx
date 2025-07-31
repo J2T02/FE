@@ -33,6 +33,7 @@ import {
 import dayjs from "dayjs";
 import { distrubteService } from "../../../apis/service";
 import { getTreatmentList } from "../../../apis/treatmentService";
+import { getAllFeedback } from "../../../apis/feedbackService";
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
@@ -109,57 +110,17 @@ const feedbackList = [
   },
 ];
 
-const customers = [
-  { Cus_ID: 1, Acc_ID: 1 },
-  { Cus_ID: 2, Acc_ID: 2 },
-  { Cus_ID: 3, Acc_ID: 3 },
-];
-
-const accounts = [
-  {
-    Acc_ID: 1,
-    Full_Name: "dangnguyen551",
-    Img: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    Acc_ID: 2,
-    Full_Name: "lethanhhoa",
-    Img: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    Acc_ID: 3,
-    Full_Name: "phamthutrang",
-    Img: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    Acc_ID: 4,
-    Full_Name: "drnguyenvana",
-    Img: "https://i.pravatar.cc/150?img=4",
-  },
-  {
-    Acc_ID: 5,
-    Full_Name: "drtranthib",
-    Img: "https://i.pravatar.cc/150?img=5",
-  },
-];
-
-const doctors = [
-  { Doc_ID: 1, Acc_ID: 4 },
-  { Doc_ID: 2, Acc_ID: 5 },
-];
-
 export default function ManagerDashboardPage() {
   const {
     token: { borderRadiusLG },
   } = theme.useToken();
 
-  const [filterType, setFilterType] = useState("month");
-  const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [statusFilter, setStatusFilter] = useState(null);
   const [serviceData, setServiceData] = useState([]);
   const [treatmentData, setTreatmentData] = useState([]);
+  const [feedbackData, setFeedbackData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [treatmentLoading, setTreatmentLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   // Fetch service distribution data
   useEffect(() => {
@@ -189,8 +150,10 @@ export default function ManagerDashboardPage() {
       setTreatmentLoading(true);
       try {
         const response = await getTreatmentList();
+
         if (response.data.success) {
           setTreatmentData(response.data.data);
+          console.log(treatmentData);
         } else {
           message.error("Không thể tải dữ liệu hồ sơ điều trị");
         }
@@ -205,70 +168,58 @@ export default function ManagerDashboardPage() {
     fetchTreatmentData();
   }, []);
 
-  const filteredPlans = useMemo(() => {
-    return treatmentData.filter((plan) => {
-      const planDate = dayjs(plan.startDate);
-      if (filterType === "month") {
-        return (
-          planDate.month() === selectedDate.month() &&
-          planDate.year() === selectedDate.year()
-        );
-      } else if (filterType === "quarter") {
-        return (
-          Math.floor(planDate.month() / 3) ===
-            Math.floor(selectedDate.month() / 3) &&
-          planDate.year() === selectedDate.year()
-        );
-      } else if (filterType === "year") {
-        return planDate.year() === selectedDate.year();
+  // Fetch feedback data
+  useEffect(() => {
+    const fetchFeedbackData = async () => {
+      setFeedbackLoading(true);
+      try {
+        const response = await getAllFeedback();
+        if (response.data.success) {
+          setFeedbackData(response.data.data);
+        } else {
+          message.error("Không thể tải dữ liệu đánh giá");
+        }
+      } catch (error) {
+        console.error("Error fetching feedback data:", error);
+        message.error("Có lỗi xảy ra khi tải dữ liệu đánh giá");
+      } finally {
+        setFeedbackLoading(false);
       }
-      return true;
-    });
-  }, [filterType, selectedDate, treatmentData]);
+    };
+
+    fetchFeedbackData();
+  }, []);
+
+  const filteredPlans = useMemo(() => treatmentData, [treatmentData]);
 
   const filteredFeedback = useMemo(() => {
-    // Collect all feedbacks from treatment plans
-    const allFeedbacks = treatmentData.flatMap((plan) =>
-      plan.feedbacks.map((fb) => ({
-        ...fb,
-        tpId: plan.tpId,
-        serviceName: plan.serviceInfo?.serName,
-        customerName: plan.cusInfo?.accInfo?.fullName,
-        customerImg: plan.cusInfo?.accInfo?.img,
-        doctorName: plan.doctorInfo?.accountInfo?.fullName,
-        startDate: plan.startDate,
-        status: plan.status?.statusId,
+    // Transform feedback data from API to match UI format
+    return feedbackData
+      .map((fb) => ({
+        fbId: fb.treatmentPlanId, // Using treatmentPlanId as unique key
+        star: fb.star,
+        createAt: fb.createAt,
+        content: fb.content,
+        tpId: fb.treatmentPlanId,
+        customerName: fb.cus?.accCus?.fullName,
+        customerImg: fb.cus?.accCus?.img,
+        doctorName: fb.doctorInfo?.accountInfo?.fullName,
+        serviceName: "IVF", // Default service name, can be enhanced later
       }))
-    );
-
-    return allFeedbacks
-      .filter((fb) => {
-        const date = dayjs(fb.createAt);
-        const matchTime =
-          (filterType === "month" &&
-            date.month() === selectedDate.month() &&
-            date.year() === selectedDate.year()) ||
-          (filterType === "quarter" &&
-            Math.floor(date.month() / 3) ===
-              Math.floor(selectedDate.month() / 3) &&
-            date.year() === selectedDate.year()) ||
-          (filterType === "year" && date.year() === selectedDate.year());
-
-        const matchStatus = statusFilter == null || fb.status === statusFilter;
-
-        return matchTime && matchStatus;
-      })
-      .sort((a, b) => b.star - a.star);
-  }, [filterType, selectedDate, statusFilter, treatmentData]);
+      .sort((a, b) => (b.star || 0) - (a.star || 0));
+  }, [feedbackData]);
 
   const total = filteredPlans.length;
   const statusCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
   const serviceCounts = {};
 
   filteredPlans.forEach((plan) => {
-    statusCounts[plan.Status] = (statusCounts[plan.Status] || 0) + 1;
-    const name = serviceMap[plan.Ser_ID];
-    serviceCounts[name] = (serviceCounts[name] || 0) + 1;
+    statusCounts[plan.status?.statusId] =
+      (statusCounts[plan.status?.statusId] || 0) + 1;
+    const name = plan.serviceInfo?.serName;
+    if (name) {
+      serviceCounts[name] = (serviceCounts[name] || 0) + 1;
+    }
   });
 
   // Transform API data for pie chart with percentage
@@ -286,27 +237,6 @@ export default function ManagerDashboardPage() {
         ❤️ Tổng quan dịch vụ
       </Title>
 
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col>
-          <Select
-            value={filterType}
-            onChange={setFilterType}
-            options={[
-              { value: "month", label: "Theo tháng" },
-              { value: "quarter", label: "Theo quý" },
-              { value: "year", label: "Theo năm" },
-            ]}
-          />
-        </Col>
-        <Col>
-          <DatePicker
-            picker={filterType}
-            value={selectedDate}
-            onChange={setSelectedDate}
-          />
-        </Col>
-      </Row>
-
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={4} xs={24} sm={12} md={8} lg={4}>
           <Card>
@@ -321,7 +251,7 @@ export default function ManagerDashboardPage() {
           <Card>
             <Statistic
               title="Đang điều trị"
-              value={statusCounts[1]}
+              value={statusCounts[1] || 0}
               prefix={<ClockCircleTwoTone twoToneColor={YELLOW} />}
             />
           </Card>
@@ -330,7 +260,7 @@ export default function ManagerDashboardPage() {
           <Card>
             <Statistic
               title="Đã thành công"
-              value={statusCounts[2]}
+              value={statusCounts[2] || 0}
               prefix={<CheckCircleTwoTone twoToneColor={GREEN} />}
             />
           </Card>
@@ -339,7 +269,7 @@ export default function ManagerDashboardPage() {
           <Card>
             <Statistic
               title="Thất bại"
-              value={statusCounts[3]}
+              value={statusCounts[3] || 0}
               prefix={<FrownTwoTone twoToneColor={GRAY} />}
             />
           </Card>
@@ -348,7 +278,7 @@ export default function ManagerDashboardPage() {
           <Card>
             <Statistic
               title="Đã hủy"
-              value={statusCounts[4]}
+              value={statusCounts[4] || 0}
               prefix={<CloseCircleTwoTone twoToneColor={RED} />}
             />
           </Card>
@@ -387,41 +317,18 @@ export default function ManagerDashboardPage() {
         </Spin>
       </Card>
 
-      <Card
-        title="📝 Đánh giá từ bệnh nhân"
-        extra={
-          <Select
-            allowClear
-            placeholder="Lọc theo trạng thái"
-            style={{ width: 200 }}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { value: 2, label: "Thành công" },
-              { value: 3, label: "Thất bại" },
-              { value: 4, label: "Đã hủy" },
-            ]}
-          />
-        }
-      >
-        {filteredFeedback.map((fb) => {
-          const tp = treatmentPlans.find((tp) => tp.TP_ID === fb.TP_ID);
-          const cus = customers.find((c) => c.Cus_ID === tp?.Cus_ID);
-          const acc = accounts.find((a) => a.Acc_ID === cus?.Acc_ID);
-          const doctor = doctors.find((d) => d.Doc_ID === fb.Doc_ID);
-          const doctorAcc = accounts.find((a) => a.Acc_ID === doctor?.Acc_ID);
-          const serviceName = serviceMap[tp?.Ser_ID];
-
-          return (
+      <Card title="📝 Đánh giá từ bệnh nhân">
+        <Spin spinning={feedbackLoading}>
+          {filteredFeedback.map((fb, index) => (
             <Card
-              key={fb.FB_ID}
+              key={`${fb.fbId}-${index}`}
               style={{ marginBottom: 16 }}
               bodyStyle={{ padding: 16 }}
             >
               <Row align="middle" gutter={12}>
                 <Col>
                   <img
-                    src={acc?.Img}
+                    src={fb.customerImg || "https://i.pravatar.cc/150?img=1"}
                     alt="avatar"
                     style={{
                       width: 48,
@@ -432,35 +339,36 @@ export default function ManagerDashboardPage() {
                   />
                 </Col>
                 <Col flex="auto">
-                  <div style={{ fontWeight: "bold" }}>{acc?.Full_Name}</div>
+                  <div style={{ fontWeight: "bold" }}>{fb.customerName}</div>
 
-                  {tp?.TP_ID && (
+                  {fb.tpId && (
                     <div style={{ color: "#888", fontSize: 13, marginTop: 2 }}>
-                      Mã bệnh án: {tp.TP_ID}
+                      Mã bệnh án: {fb.tpId}
                     </div>
                   )}
 
-                  {doctorAcc?.Full_Name && (
+                  {fb.doctorName && (
                     <div style={{ color: "#888", fontSize: 13 }}>
-                      Bác sĩ: {doctorAcc.Full_Name}
+                      Bác sĩ: {fb.doctorName}
                     </div>
                   )}
 
                   <div style={{ color: "#999", marginTop: 2 }}>
-                    {fb.CreateAt} | Dịch vụ điều trị: {serviceName}
+                    {dayjs(fb.createAt).format("DD/MM/YYYY")} | Dịch vụ điều
+                    trị: {fb.serviceName}
                   </div>
 
                   <div style={{ marginTop: 4 }}>
-                    {Array.from({ length: fb.Star }, (_, i) => (
+                    {Array.from({ length: fb.star }, (_, i) => (
                       <StarFilled key={i} style={{ color: "#faad14" }} />
                     ))}
                   </div>
                 </Col>
               </Row>
-              <div style={{ marginTop: 12 }}>{fb.Content}</div>
+              <div style={{ marginTop: 12 }}>{fb.content}</div>
             </Card>
-          );
-        })}
+          ))}
+        </Spin>
       </Card>
     </Layout>
   );

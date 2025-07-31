@@ -24,9 +24,31 @@ import {
   getTestQualityResultStatusList,
   updateTest,
 } from "../../../../apis/testService";
+import { uploadFileToCloudinary } from "../../../../utils/cloudinaryUtils";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
+
+// File validation constants
+const MAX_FILE_SIZE_MB = 5;
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+];
+
+const validateFile = (file) => {
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    message.error("Chỉ chấp nhận file .pdf, .jpg, .jpeg, .png");
+    return false;
+  }
+  if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
+    message.error("Kích thước file không được vượt quá 5MB");
+    return false;
+  }
+  return true;
+};
 
 // Mapping dữ liệu
 const TEST_TYPE_MAP = {
@@ -67,6 +89,7 @@ export default function TestDetailPage() {
   const [testStatusList, setTestStatusList] = useState([]);
   const [testQualityResultStatusList, setTestQualityResultStatusList] =
     useState([]);
+  const [testFile, setTestFile] = useState(null);
 
   useEffect(() => {
     async function fetchTestDetail() {
@@ -142,19 +165,32 @@ export default function TestDetailPage() {
   }, [testId, form]);
 
   const handleSave = async () => {
+    setLoading(true);
     try {
       const values = await form.validateFields();
+
+      // Upload file to Cloudinary if there's a new file
+      let filePath = testDetail.File_Path || "";
+      if (testFile) {
+        try {
+          filePath = await uploadFileToCloudinary(testFile);
+        } catch (err) {
+          message.error("Tải file lên Cloudinary thất bại");
+          throw err;
+        }
+      }
+
       // Build payload for updateTest
       const payload = {
         resultDate: dayjs().format("YYYY-MM-DD"),
         note: values.Note,
-        filePath: testDetail.File_Path || "",
+        filePath: filePath,
         status: values.Status,
         testType: testDetail.TestType_ID,
         testQualityStatus: values.TQS_ID,
       };
       console.log(payload);
-      setLoading(true);
+
       await updateTest(testDetail.Test_ID, payload)
         .then((res) => {
           if (res.data.success) {
@@ -166,25 +202,29 @@ export default function TestDetailPage() {
               TQS_ID: values.TQS_ID,
               Note: values.Note,
               ResultDay: payload.resultDate,
+              File_Path: filePath,
             }));
+            setTestFile(null); // Reset file state after successful upload
           } else {
             message.error(res.data.message || "Cập nhật thất bại");
           }
         })
         .catch((err) => {
           message.error("Cập nhật thất bại");
-        })
-        .finally(() => setLoading(false));
+        });
     } catch (err) {
       message.error("Vui lòng điền đủ thông tin");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpload = (info) => {
-    if (info.file.status === "done") {
-      const fakeURL = URL.createObjectURL(info.file.originFileObj);
-      setTestDetail((prev) => ({ ...prev, File_Path: fakeURL }));
-      message.success(`Tải file thành công`);
+    if (info.fileList && info.fileList.length > 0) {
+      setTestFile(info.fileList[0].originFileObj);
+      message.success(`Đã chọn file: ${info.fileList[0].name}`);
+    } else {
+      setTestFile(null);
     }
   };
 
@@ -284,12 +324,13 @@ export default function TestDetailPage() {
               <Col span={24}>
                 <Form.Item label={<Text strong>Kết quả xét nghiệm (PDF)</Text>}>
                   <Upload
-                    name="file"
-                    customRequest={({ onSuccess }) =>
-                      setTimeout(() => onSuccess("ok"), 500)
-                    }
+                    beforeUpload={(file) => {
+                      if (!validateFile(file)) return Upload.LIST_IGNORE;
+                      return false;
+                    }}
                     onChange={handleUpload}
-                    showUploadList={false}
+                    maxCount={1}
+                    showUploadList={{ showRemoveIcon: true }}
                   >
                     <Button
                       style={{
@@ -298,7 +339,7 @@ export default function TestDetailPage() {
                       }}
                       icon={<UploadOutlined />}
                     >
-                      Tải lên
+                      Chọn file
                     </Button>
                   </Upload>
                   {testDetail.File_Path && (
