@@ -33,6 +33,10 @@ import { getTreatmentDetail } from "../../../../apis/treatmentService";
 import { getStepDetailByTreatmentPlanId } from "../../../../apis/stepDetailService";
 import { getTestByTreatmentPlanId } from "../../../../apis/testService";
 import { getBioSampleByPlanId } from "../../../../apis/bioSampleService";
+import {
+  feedbackForTreatmentPlan,
+  feedBackForDoctor,
+} from "../../../../apis/feedbackService";
 const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
@@ -98,6 +102,7 @@ export default function TreatmentPlanDetailPage() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [feedbackData, setFeedbackData] = useState({});
 
   useEffect(() => {
     setLoading(true);
@@ -133,7 +138,34 @@ export default function TreatmentPlanDetailPage() {
               : undefined,
             stepDetails: [], // Will be set by step detail API
           });
-          if ([2, 3, 4].includes(d.status?.statusId)) setShowFeedbackForm(true);
+
+          // Set feedbacks từ API response
+          if (d.feedbacks && Array.isArray(d.feedbacks)) {
+            const mappedFeedbacks = d.feedbacks.map((fb) => ({
+              fbId: fb.treatmentPlanId || fb.doctorId,
+              docId: fb.doctorId,
+              doctorName: fb.doctorId
+                ? d.doctorInfo?.accountInfo?.fullName
+                : null,
+              star: fb.star,
+              createAt: fb.createAt,
+              content: fb.content,
+              customerName: `Gia đình anh ${fb.cus?.husName} và chị ${fb.cus?.wifeName}`,
+            }));
+            setFeedbacks(mappedFeedbacks);
+          } else {
+            setFeedbacks([]);
+          }
+
+          // Chỉ hiển thị form feedback khi đã hoàn thành điều trị VÀ chưa có feedback nào
+          if (
+            [2, 3, 4].includes(d.status?.statusId) &&
+            (!d.feedbacks || d.feedbacks.length === 0)
+          ) {
+            setShowFeedbackForm(true);
+          } else {
+            setShowFeedbackForm(false);
+          }
         } else {
           setError("Không tìm thấy hồ sơ điều trị");
         }
@@ -210,19 +242,10 @@ export default function TreatmentPlanDetailPage() {
   }, [tpId]);
 
   useEffect(() => {
-  if (!tpId) return;
-  fetch(`/api/feedback/byTreatmentPlan/${tpId}`)
-    .then((res) => res.json())
-    .then((res) => {
-      if (res.success && Array.isArray(res.data)) {
-        setFeedbacks(res.data);
-      }
-    })
-    .catch(() => {
-      console.error("Lỗi khi tải phản hồi");
-    });
-}, [tpId]);
-
+    if (!tpId) return;
+    // Fetch feedbacks từ API getTreatmentDetail (đã có trong phần fetchData)
+    // Feedbacks sẽ được set trong fetchData từ apiData.feedbacks
+  }, [tpId]);
 
   const getFeedbackTargets = () => {
     if (!treatmentPlan) return [];
@@ -262,18 +285,70 @@ export default function TreatmentPlanDetailPage() {
 
   const renderFeedbackForm = () => {
     const targets = getFeedbackTargets();
-    const handleSubmit = () => {
-      console.log(
-        "📨 Gửi đánh giá:",
-        feedbacks.map((f) => ({
-          TP_ID: tpId,
-          Doc_ID: f.docId,
-          Star: f.star,
-          Content: f.content,
-        }))
-      );
-      message.success("💖 Cảm ơn bạn đã gửi đánh giá!");
-      setShowFeedbackForm(false);
+
+    const handleStarChange = (value, docId) => {
+      setFeedbackData((prev) => ({
+        ...prev,
+        [docId || "service"]: {
+          ...prev[docId || "service"],
+          star: value,
+        },
+      }));
+    };
+
+    const handleContentChange = (e, docId) => {
+      setFeedbackData((prev) => ({
+        ...prev,
+        [docId || "service"]: {
+          ...prev[docId || "service"],
+          content: e.target.value,
+        },
+      }));
+    };
+
+    const handleSubmit = async () => {
+      try {
+        const promises = [];
+
+        // Gửi feedback cho dịch vụ
+        if (feedbackData.service?.star && feedbackData.service?.content) {
+          const serviceFeedback = {
+            tpId: tpId,
+            docId: treatmentPlan.doctor?.docId || 0, // Lấy docId từ treatmentPlan
+            star: feedbackData.service.star,
+            content: feedbackData.service.content,
+          };
+          promises.push(feedbackForTreatmentPlan(serviceFeedback));
+        }
+
+        // Gửi feedback cho từng bác sĩ
+        targets.forEach((target) => {
+          if (
+            target.docId &&
+            feedbackData[target.docId]?.star &&
+            feedbackData[target.docId]?.content
+          ) {
+            const doctorFeedback = {
+              docId: target.docId,
+              star: feedbackData[target.docId].star,
+              content: feedbackData[target.docId].content,
+            };
+            promises.push(feedBackForDoctor(doctorFeedback));
+          }
+        });
+
+        if (promises.length > 0) {
+          await Promise.all(promises);
+          message.success("💖 Cảm ơn bạn đã gửi đánh giá!");
+          setShowFeedbackForm(false);
+          setFeedbackData({});
+        } else {
+          message.warning("Vui lòng nhập đánh giá trước khi gửi!");
+        }
+      } catch (error) {
+        console.error("Lỗi khi gửi feedback:", error);
+        message.error("Có lỗi xảy ra khi gửi đánh giá!");
+      }
     };
     return (
       <motion.div
@@ -340,6 +415,7 @@ export default function TreatmentPlanDetailPage() {
 
                   <Rate
                     allowHalf
+                    value={feedbackData[docId || "service"]?.star || 0}
                     onChange={(value) => handleStarChange(value, docId)}
                     style={{ fontSize: 22, color: "#ee4d2d" }}
                   />
@@ -347,6 +423,7 @@ export default function TreatmentPlanDetailPage() {
                   <Input.TextArea
                     rows={3}
                     placeholder="Chia sẻ cảm nhận chân thực của bạn..."
+                    value={feedbackData[docId || "service"]?.content || ""}
                     onChange={(e) => handleContentChange(e, docId)}
                     style={{
                       marginTop: 12,
@@ -581,191 +658,242 @@ export default function TreatmentPlanDetailPage() {
             </Row>
 
             <Tabs
-  defaultActiveKey="process"
-  type="card"
-  size="middle"
-  style={{ backgroundColor: "white", padding: 8, borderRadius: 12 }}
-  tabBarGutter={12}
-  items={[
-    {
-      key: "process",
-      label: "Quá trình điều trị",
-      children: (
-        <Card
-          title="Quá trình điều trị"
-          bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
-          size="small"
-        >
-          <div style={{ maxHeight: 200, overflowY: "auto" }}>
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {treatmentPlan.stepDetails.map((step) => (
-                <Card
-                  key={step.SD_ID}
-                  type="inner"
-                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                  size="small"
-                >
-                  <Row justify="space-between" align="middle">
-                    <Col flex="auto">
-                      <Text strong style={{ fontSize: "14px" }}>
-                        {step.Step_Name}
-                      </Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        Ngày: {step.PlanDate} | BS: {step.doc?.fullName}
-                      </Text>
-                    </Col>
-                    <Col>
-                      <Link
-                        onClick={() =>
-                          navigate(`/stepdetail/${step.SD_ID}`)
-                        }
-                        style={{ color: "#f78db3", fontSize: "12px" }}
+              defaultActiveKey="process"
+              type="card"
+              size="middle"
+              style={{ backgroundColor: "white", padding: 8, borderRadius: 12 }}
+              tabBarGutter={12}
+              items={[
+                {
+                  key: "process",
+                  label: "Quá trình điều trị",
+                  children: (
+                    <Card
+                      title="Quá trình điều trị"
+                      bodyStyle={{ backgroundColor: "#fff7fa", padding: 16 }}
+                      size="small"
+                    >
+                      <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                        <Space
+                          direction="vertical"
+                          size="small"
+                          style={{ width: "100%" }}
+                        >
+                          {treatmentPlan.stepDetails.map((step) => (
+                            <Card
+                              key={step.SD_ID}
+                              type="inner"
+                              style={{
+                                borderLeft: "3px solid #f78db3",
+                                padding: 8,
+                              }}
+                              size="small"
+                            >
+                              <Row justify="space-between" align="middle">
+                                <Col flex="auto">
+                                  <Text strong style={{ fontSize: "14px" }}>
+                                    {step.Step_Name}
+                                  </Text>
+                                  <br />
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: "12px" }}
+                                  >
+                                    Ngày: {step.PlanDate} | BS:{" "}
+                                    {step.doc?.fullName}
+                                  </Text>
+                                </Col>
+                                <Col>
+                                  <Link
+                                    onClick={() =>
+                                      navigate(`/stepdetail/${step.SD_ID}`)
+                                    }
+                                    style={{
+                                      color: "#f78db3",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Xem chi tiết
+                                  </Link>
+                                </Col>
+                              </Row>
+                            </Card>
+                          ))}
+                        </Space>
+                      </div>
+                    </Card>
+                  ),
+                },
+                tests.length > 0 && {
+                  key: "tests",
+                  label: "Xét nghiệm",
+                  children: (
+                    <Card
+                      title="Danh sách xét nghiệm"
+                      bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
+                      size="small"
+                    >
+                      <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                        <Space
+                          direction="vertical"
+                          size="small"
+                          style={{ width: "100%" }}
+                        >
+                          {tests.map((test) => (
+                            <Card
+                              key={test.Test_ID}
+                              type="inner"
+                              style={{
+                                borderLeft: "3px solid #f78db3",
+                                padding: 8,
+                              }}
+                              size="small"
+                            >
+                              <Row justify="space-between" align="middle">
+                                <Col flex="auto">
+                                  <Text strong style={{ fontSize: "14px" }}>
+                                    {TEST_TYPE_MAP[test.TestType_ID] ||
+                                      "Không rõ"}
+                                  </Text>
+                                  <br />
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: "12px" }}
+                                  >
+                                    {test.TestDate} | {test.Person} |{" "}
+                                    {TEST_STATUS[test.Status]} |{" "}
+                                    {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
+                                  </Text>
+                                </Col>
+                                <Col>
+                                  <Link
+                                    style={{
+                                      color: "#f78db3",
+                                      fontSize: "12px",
+                                    }}
+                                    onClick={() =>
+                                      navigate(`/testdetail/${test.Test_ID}`)
+                                    }
+                                  >
+                                    Xem chi tiết
+                                  </Link>
+                                </Col>
+                              </Row>
+                            </Card>
+                          ))}
+                        </Space>
+                      </div>
+                    </Card>
+                  ),
+                },
+                biosamples.length > 0 && {
+                  key: "biosamples",
+                  label: "Mẫu sinh học",
+                  children: (
+                    <Card
+                      title="Danh sách mẫu sinh học"
+                      bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+                      size="small"
+                    >
+                      <div style={{ maxHeight: 160, overflowY: "auto" }}>
+                        <Space
+                          direction="vertical"
+                          size="small"
+                          style={{ width: "100%" }}
+                        >
+                          {biosamples.map((bs) => (
+                            <Card
+                              key={bs.BS_ID}
+                              type="inner"
+                              style={{
+                                borderLeft: "3px solid #f78db3",
+                                padding: 8,
+                              }}
+                              size="small"
+                            >
+                              <Row justify="space-between" align="middle">
+                                <Col flex="auto">
+                                  <Text strong style={{ fontSize: "14px" }}>
+                                    {bs.BS_Name}
+                                  </Text>
+                                  <br />
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: "12px" }}
+                                  >
+                                    {bs.CollectionDate} |{" "}
+                                    {BIO_SAMPLE_STATUS[bs.Status]} |{" "}
+                                    {BIO_QUALITY_STATUS[bs.BQS_ID]}
+                                  </Text>
+                                </Col>
+                                <Col>
+                                  <Link
+                                    style={{
+                                      color: "#f78db3",
+                                      fontSize: "12px",
+                                    }}
+                                    onClick={() =>
+                                      navigate(`/biosampledetail/${bs.BS_ID}`)
+                                    }
+                                  >
+                                    Xem chi tiết
+                                  </Link>
+                                </Col>
+                              </Row>
+                            </Card>
+                          ))}
+                        </Space>
+                      </div>
+                    </Card>
+                  ),
+                },
+                feedbacks.length > 0 && {
+                  key: "feedbacks",
+                  label: `Phản hồi (${feedbacks.length})`,
+                  children: (
+                    <Card
+                      title="Phản hồi từ khách hàng"
+                      bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
+                    >
+                      <Space
+                        direction="vertical"
+                        size="small"
+                        style={{ width: "100%" }}
                       >
-                        Xem chi tiết
-                      </Link>
-                    </Col>
-                  </Row>
-                </Card>
-              ))}
-            </Space>
-          </div>
-        </Card>
-      ),
-    },
-    tests.length > 0 && {
-      key: "tests",
-      label: "Xét nghiệm",
-      children: (
-        <Card
-          title="Danh sách xét nghiệm"
-          bodyStyle={{ backgroundColor: "#fef2f6", padding: 16 }}
-          size="small"
-        >
-          <div style={{ maxHeight: 160, overflowY: "auto" }}>
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {tests.map((test) => (
-                <Card
-                  key={test.Test_ID}
-                  type="inner"
-                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                  size="small"
-                >
-                  <Row justify="space-between" align="middle">
-                    <Col flex="auto">
-                      <Text strong style={{ fontSize: "14px" }}>
-                        {TEST_TYPE_MAP[test.TestType_ID] || "Không rõ"}
-                      </Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        {test.TestDate} | {test.Person} |{" "}
-                        {TEST_STATUS[test.Status]} |{" "}
-                        {TEST_QUALITY_RESULT_STATUS[test.TQS_ID]}
-                      </Text>
-                    </Col>
-                    <Col>
-                      <Link
-                        style={{ color: "#f78db3", fontSize: "12px" }}
-                        onClick={() => navigate(`/testdetail/${test.Test_ID}`)}
-                      >
-                        Xem chi tiết
-                      </Link>
-                    </Col>
-                  </Row>
-                </Card>
-              ))}
-            </Space>
-          </div>
-        </Card>
-      ),
-    },
-    biosamples.length > 0 && {
-      key: "biosamples",
-      label: "Mẫu sinh học",
-      children: (
-        <Card
-          title="Danh sách mẫu sinh học"
-          bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
-          size="small"
-        >
-          <div style={{ maxHeight: 160, overflowY: "auto" }}>
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {biosamples.map((bs) => (
-                <Card
-                  key={bs.BS_ID}
-                  type="inner"
-                  style={{ borderLeft: "3px solid #f78db3", padding: 8 }}
-                  size="small"
-                >
-                  <Row justify="space-between" align="middle">
-                    <Col flex="auto">
-                      <Text strong style={{ fontSize: "14px" }}>
-                        {bs.BS_Name}
-                      </Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        {bs.CollectionDate} | {BIO_SAMPLE_STATUS[bs.Status]} |{" "}
-                        {BIO_QUALITY_STATUS[bs.BQS_ID]}
-                      </Text>
-                    </Col>
-                    <Col>
-                      <Link
-                        style={{ color: "#f78db3", fontSize: "12px" }}
-                        onClick={() =>
-                          navigate(`/biosampledetail/${bs.BS_ID}`)
-                        }
-                      >
-                        Xem chi tiết
-                      </Link>
-                    </Col>
-                  </Row>
-                </Card>
-              ))}
-            </Space>
-          </div>
-        </Card>
-      ),
-    },
-    feedbacks.length > 0 && {
-      key: "feedbacks",
-      label: `Phản hồi (${feedbacks.length})`,
-      children: (
-        <Card
-          title="Phản hồi từ khách hàng"
-          bodyStyle={{ backgroundColor: "#fff0f5", padding: 16 }}
-        >
-          <Space direction="vertical" size="small" style={{ width: "100%" }}>
-            {feedbacks.map((fb) => (
-              <Card
-                key={fb.fbId}
-                type="inner"
-                size="small"
-                style={{ borderLeft: "3px solid #f78db3" }}
-              >
-                <Row justify="space-between">
-                  <Col>
-                    <Text strong style={{ fontSize: 14 }}>
-                      {fb.doctorName ? `BS. ${fb.doctorName}` : "Dịch vụ"}
-                    </Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Ngày đánh giá: {dayjs(fb.createAt).format("DD/MM/YYYY")}
-                    </Text>
-                  </Col>
-                  <Col>
-                    <Rate disabled value={fb.star} />
-                  </Col>
-                </Row>
-                <Divider style={{ margin: "8px 0" }} />
-                <Text>{fb.content}</Text>
-              </Card>
-            ))}
-          </Space>
-        </Card>
-      ),
-    },
-  ].filter(Boolean)}
-/>
+                        {feedbacks.map((fb) => (
+                          <Card
+                            key={fb.fbId}
+                            type="inner"
+                            size="small"
+                            style={{ borderLeft: "3px solid #f78db3" }}
+                          >
+                            <Row justify="space-between">
+                              <Col>
+                                <Text strong style={{ fontSize: 14 }}>
+                                  {fb.doctorName
+                                    ? `BS. ${fb.doctorName}`
+                                    : "Dịch vụ"}
+                                </Text>
+                                <br />
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  Ngày đánh giá:{" "}
+                                  {dayjs(fb.createAt).format("DD/MM/YYYY")}
+                                </Text>
+                              </Col>
+                              <Col>
+                                <Rate disabled value={fb.star} />
+                              </Col>
+                            </Row>
+                            <Divider style={{ margin: "8px 0" }} />
+                            <Text>{fb.content}</Text>
+                          </Card>
+                        ))}
+                      </Space>
+                    </Card>
+                  ),
+                },
+              ].filter(Boolean)}
+            />
           </Space>
         )}
       </Content>

@@ -42,7 +42,11 @@ export const BookingProvider = ({ children }) => {
     try {
       const res = await GetAllService();
       if (res?.data?.success && Array.isArray(res.data.data)) {
-        setServiceList(res.data.data);
+        // Lọc ra service có serId khác 1
+        const filteredServices = res.data.data.filter(
+          (service) => service.serId !== 1
+        );
+        setServiceList(filteredServices);
       } else {
         setServiceList([]);
       }

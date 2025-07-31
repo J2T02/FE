@@ -14,8 +14,8 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<div>loading...</div>}>
         <ConfigProvider locale={viVN}>
-          <StoreProvider>
-            <BookingProvider>
+          <BookingProvider>
+            <StoreProvider>
               <Routes>
                 {routers.map((item, index) => {
                   return (
@@ -27,8 +27,8 @@ function App() {
                   );
                 })}
               </Routes>
-            </BookingProvider>
-          </StoreProvider>
+            </StoreProvider>
+          </BookingProvider>
         </ConfigProvider>
       </Suspense>
     </BrowserRouter>

@@ -76,7 +76,11 @@ const TEST_QUALITY_RESULT_STATUS = {
   4: "Âm tính",
 };
 
-export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedded = false }) {
+export default function TreatmentPlanDetailPage({
+  tpId: propTPId,
+  onBack,
+  embedded = false,
+}) {
   const params = useParams();
   const tpId = propTPId ?? parseInt(params?.id);
   const navigate = useNavigate();
@@ -143,6 +147,22 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
         );
         setTreatmentPlan(mappedTreatmentPlan);
 
+        // Map feedbacks từ API
+        if (apiData.feedbacks && Array.isArray(apiData.feedbacks)) {
+          const mappedFeedbacks = apiData.feedbacks.map((fb) => ({
+            fbId: fb.treatmentPlanId, // Sử dụng treatmentPlanId làm fbId
+            docId: fb.doctorId,
+            doctorName: apiData.doctorInfo.accountInfo.fullName, // Lấy tên bác sĩ từ doctorInfo
+            star: fb.star,
+            createAt: fb.createAt,
+            content: fb.content,
+            customerName: `Gia đình anh ${fb.cus?.husName} và chị ${fb.cus?.wifeName}`,
+          }));
+          setFeedbacks(mappedFeedbacks);
+        } else {
+          setFeedbacks([]);
+        }
+
         // Lấy danh sách mẫu sinh học từ API
         const bioSampleRes = await getBioSampleByPlanId(tpId);
         if (
@@ -199,23 +219,6 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
 
   useEffect(() => {
     fetchData();
-    setFeedbacks([
-  {
-    fbId: 1,
-    docId: treatmentPlan?.doctor?.docId ?? 2,
-    doctorName: "TS. Nguyễn Văn A",
-    star: 5,
-    createAt: "2025-07-28",
-    content: "Bác sĩ rất tận tâm, tôi rất hài lòng!",
-  },
-  {
-    fbId: 2,
-    docId: null,
-    star: 4,
-    createAt: "2025-07-29",
-    content: "Dịch vụ tư vấn nhanh chóng, nhẹ nhàng.",
-  },
-  ]);
   }, [tpId]);
 
   const getStatusTag = (status) => {
@@ -250,81 +253,83 @@ export default function TreatmentPlanDetailPage({ tpId: propTPId, onBack, embedd
 
   if (!treatmentPlan) return null;
   const tabItems = [
-  {
-    key: "process",
-    label: "Quá trình điều trị",
-    children: (
-      <TreatmentProcessCard
-        tpId={treatmentPlan.TP_ID}
-        stepDetails={treatmentPlan.stepDetails}
-        doctorId={treatmentPlan.doctor?.docId}
-        serviceId={treatmentPlan.service?.Ser_ID}
-        latestTSID={treatmentPlan.stepDetails?.[0]?.TS_ID}
-        onRefresh={fetchData}
-      />
-    ),
-  },
-];
+    {
+      key: "process",
+      label: "Quá trình điều trị",
+      children: (
+        <TreatmentProcessCard
+          tpId={treatmentPlan.TP_ID}
+          stepDetails={treatmentPlan.stepDetails}
+          doctorId={treatmentPlan.doctor?.docId}
+          serviceId={treatmentPlan.service?.Ser_ID}
+          latestTSID={treatmentPlan.stepDetails?.[0]?.TS_ID}
+          onRefresh={fetchData}
+        />
+      ),
+    },
+  ];
 
-if (tests.length > 0) {
-  tabItems.push({
-    key: "tests",
-    label: "Xét nghiệm",
-    children: (
-      <TestListCard tests={tests} tpId={tpId} />
-    ),
-  });
-}
+  if (tests.length > 0) {
+    tabItems.push({
+      key: "tests",
+      label: "Xét nghiệm",
+      children: <TestListCard tests={tests} tpId={tpId} />,
+    });
+  }
 
-if (biosamples.length > 0) {
-  tabItems.push({
-    key: "biosamples",
-    label: "Mẫu sinh học",
-    children: (
-      <BioSampleListCard biosamples={biosamples} tpId={tpId} />
-    ),
-  });
-}
+  if (biosamples.length > 0) {
+    tabItems.push({
+      key: "biosamples",
+      label: "Mẫu sinh học",
+      children: <BioSampleListCard biosamples={biosamples} tpId={tpId} />,
+    });
+  }
 
-if (feedbacks.length > 0) {
-  tabItems.push({
-    key: "feedback",
-    label: "Phản hồi",
-    children: (
-      <Space direction="vertical" style={{ width: "100%" }}>
-        {feedbacks.map((fb) => (
-          <Card
-            key={fb.fbId}
-            title={
-              <Space>
-                <Text strong>Đánh giá:</Text>
-                <span>
-                  {Array.from({ length: fb.star }).map((_, idx) => (
-                    <span key={idx}>⭐</span>
-                  ))}
-                </span>
-              </Space>
-            }
-            extra={
-              <Text type="secondary">
-                Ngày đánh giá:{" "}
-                {new Date(fb.createAt).toLocaleDateString("vi-VN")}
-              </Text>
-            }
-            bodyStyle={{ backgroundColor: "#fff0f5" }}
-          >
-            <p>{fb.content}</p>
-            {fb.docId && fb.doctorName && (
-              <Text type="secondary">
-                Phản hồi về bác sĩ: {fb.doctorName}
-              </Text>
-            )}
-          </Card>
-        ))}
-      </Space>
-    ),
-  });
-}
+  if (feedbacks.length > 0) {
+    tabItems.push({
+      key: "feedback",
+      label: "Phản hồi",
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }}>
+          {feedbacks.map((fb) => (
+            <Card
+              key={fb.fbId}
+              title={
+                <Space>
+                  <Text strong>Đánh giá:</Text>
+                  <span>
+                    {Array.from({ length: fb.star }).map((_, idx) => (
+                      <span key={idx}>⭐</span>
+                    ))}
+                  </span>
+                </Space>
+              }
+              extra={
+                <Text type="secondary">
+                  Ngày đánh giá:{" "}
+                  {new Date(fb.createAt).toLocaleDateString("vi-VN")}
+                </Text>
+              }
+              bodyStyle={{ backgroundColor: "#fff0f5" }}
+            >
+              <p>{fb.content}</p>
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary">
+                  <strong>Khách hàng:</strong> {fb.customerName}
+                </Text>
+                <br />
+                {fb.docId && fb.doctorName && (
+                  <Text type="secondary">
+                    <strong>Phản hồi về bác sĩ:</strong> {fb.doctorName}
+                  </Text>
+                )}
+              </div>
+            </Card>
+          ))}
+        </Space>
+      ),
+    });
+  }
 
   return (
     <Layout style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
