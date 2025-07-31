@@ -17,7 +17,7 @@ const getInfo = async () => {
   return await axiosClients.get(`/Account`);
 };
 const forgotPasswordRequest = async (body) => {
-  return await axiosClients.post("/Account/Otp/request", body);
+  return await axiosClients.post("/Account/OtpChangePassword/request", body);
 };
 const otpRequest = async (body) => {
   return await axiosClients.post("/Account/Otp/request", body);
