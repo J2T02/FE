@@ -1,5 +1,5 @@
 // ... giữ nguyên import
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Layout,
   Row,
@@ -10,7 +10,9 @@ import {
   Tag,
   Select,
   DatePicker,
-  theme
+  theme,
+  Spin,
+  message,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -29,7 +31,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import dayjs from "dayjs";
-
+import { distrubteService } from "../../../apis/service";
+import { getTreatmentList } from "../../../apis/treatmentService";
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
@@ -153,10 +156,58 @@ export default function ManagerDashboardPage() {
   const [filterType, setFilterType] = useState("month");
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [statusFilter, setStatusFilter] = useState(null);
+  const [serviceData, setServiceData] = useState([]);
+  const [treatmentData, setTreatmentData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [treatmentLoading, setTreatmentLoading] = useState(false);
+
+  // Fetch service distribution data
+  useEffect(() => {
+    const fetchServiceData = async () => {
+      setLoading(true);
+      try {
+        const response = await distrubteService();
+        if (response.data.success) {
+          setServiceData(response.data.data);
+        } else {
+          message.error("Không thể tải dữ liệu thống kê dịch vụ");
+        }
+      } catch (error) {
+        console.error("Error fetching service data:", error);
+        message.error("Có lỗi xảy ra khi tải dữ liệu thống kê");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServiceData();
+  }, []);
+
+  // Fetch treatment plans data
+  useEffect(() => {
+    const fetchTreatmentData = async () => {
+      setTreatmentLoading(true);
+      try {
+        const response = await getTreatmentList();
+        if (response.data.success) {
+          setTreatmentData(response.data.data);
+        } else {
+          message.error("Không thể tải dữ liệu hồ sơ điều trị");
+        }
+      } catch (error) {
+        console.error("Error fetching treatment data:", error);
+        message.error("Có lỗi xảy ra khi tải dữ liệu hồ sơ điều trị");
+      } finally {
+        setTreatmentLoading(false);
+      }
+    };
+
+    fetchTreatmentData();
+  }, []);
 
   const filteredPlans = useMemo(() => {
-    return treatmentPlans.filter((plan) => {
-      const planDate = dayjs(plan.StartDate);
+    return treatmentData.filter((plan) => {
+      const planDate = dayjs(plan.startDate);
       if (filterType === "month") {
         return (
           planDate.month() === selectedDate.month() &&
@@ -173,12 +224,26 @@ export default function ManagerDashboardPage() {
       }
       return true;
     });
-  }, [filterType, selectedDate]);
+  }, [filterType, selectedDate, treatmentData]);
 
   const filteredFeedback = useMemo(() => {
-    return feedbackList
+    // Collect all feedbacks from treatment plans
+    const allFeedbacks = treatmentData.flatMap((plan) =>
+      plan.feedbacks.map((fb) => ({
+        ...fb,
+        tpId: plan.tpId,
+        serviceName: plan.serviceInfo?.serName,
+        customerName: plan.cusInfo?.accInfo?.fullName,
+        customerImg: plan.cusInfo?.accInfo?.img,
+        doctorName: plan.doctorInfo?.accountInfo?.fullName,
+        startDate: plan.startDate,
+        status: plan.status?.statusId,
+      }))
+    );
+
+    return allFeedbacks
       .filter((fb) => {
-        const date = dayjs(fb.CreateAt);
+        const date = dayjs(fb.createAt);
         const matchTime =
           (filterType === "month" &&
             date.month() === selectedDate.month() &&
@@ -189,15 +254,12 @@ export default function ManagerDashboardPage() {
             date.year() === selectedDate.year()) ||
           (filterType === "year" && date.year() === selectedDate.year());
 
-        const matchStatus =
-          statusFilter == null ||
-          treatmentPlans.find((tp) => tp.TP_ID === fb.TP_ID)?.Status ===
-            statusFilter;
+        const matchStatus = statusFilter == null || fb.status === statusFilter;
 
         return matchTime && matchStatus;
       })
-      .sort((a, b) => b.Star - a.Star);
-  }, [filterType, selectedDate, statusFilter]);
+      .sort((a, b) => b.star - a.star);
+  }, [filterType, selectedDate, statusFilter, treatmentData]);
 
   const total = filteredPlans.length;
   const statusCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
@@ -209,9 +271,13 @@ export default function ManagerDashboardPage() {
     serviceCounts[name] = (serviceCounts[name] || 0) + 1;
   });
 
-  const pieData = Object.entries(serviceCounts).map(([name, value]) => ({
-    name,
-    value,
+  // Transform API data for pie chart with percentage
+  const totalCount = serviceData.reduce((sum, item) => sum + item.count, 0);
+  const pieData = serviceData.map((item) => ({
+    name: item.serName,
+    value: item.count,
+    percentage:
+      totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : 0,
   }));
 
   return (
@@ -290,28 +356,35 @@ export default function ManagerDashboardPage() {
       </Row>
 
       <Card title="📊 Phân bố dịch vụ" style={{ marginBottom: 32 }}>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              label
-            >
-              {pieData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <Spin spinning={loading}>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label={({ name, percentage }) => `${name}: ${percentage}%`}
+              >
+                {pieData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value, name) => [
+                  `${value} (${((value / totalCount) * 100).toFixed(1)}%)`,
+                  name,
+                ]}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </Spin>
       </Card>
 
       <Card

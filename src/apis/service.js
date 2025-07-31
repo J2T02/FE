@@ -12,4 +12,13 @@ const CreateService = async (body) => {
 const UpdateService = async (id, body) => {
   return await axiosClients.put(`/Services/UpdateService/${id}`, body);
 };
-export { GetAllService, GetServiceById, CreateService, UpdateService };
+const distrubteService = async () => {
+  return await axiosClients.get("/Services/ServiceUsageCounts");
+};
+export {
+  GetAllService,
+  GetServiceById,
+  CreateService,
+  UpdateService,
+  distrubteService,
+};
