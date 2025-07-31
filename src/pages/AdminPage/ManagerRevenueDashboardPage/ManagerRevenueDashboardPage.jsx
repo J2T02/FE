@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Row,
@@ -11,6 +11,7 @@ import {
   Avatar,
   Space,
   theme,
+  message,
 } from "antd";
 import {
   DollarCircleOutlined,
@@ -28,9 +29,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween";
-import { getRevenue } from "../../../apis/revenueService";
-dayjs.extend(isBetween);
+import { dashboardRevenue } from "../../../apis/adminService";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -40,177 +39,72 @@ const LIGHT_PINK = "#FDE9EF";
 const GREEN = "#52c41a";
 const YELLOW = "#faad14";
 
-const mockPayments = [
-  {
-    Payment_ID: 1,
-    PaymentDate: "2025-07-01",
-    Amount: 5000000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-  {
-    Payment_ID: 2,
-    PaymentDate: "2025-07-03",
-    Amount: 4800000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-  {
-    Payment_ID: 3,
-    PaymentDate: "2025-07-04",
-    Amount: 3000000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-  {
-    Payment_ID: 4,
-    PaymentDate: "2025-07-05",
-    Amount: 4500000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-  {
-    Payment_ID: 5,
-    PaymentDate: "2025-07-06",
-    Amount: 3200000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-  {
-    Payment_ID: 6,
-    PaymentDate: "2025-07-08",
-    Amount: 3100000,
-    PaymentType_ID: 2,
-    Status_ID: 1,
-  },
-  {
-    Payment_ID: 7,
-    PaymentDate: "2025-07-09",
-    Amount: 4600000,
-    PaymentType_ID: 2,
-    Status_ID: 2,
-  },
-];
-
-const mockTreatmentPlans = [
-  { TP_ID: 1, StartDate: "2025-07-01", Ser_ID: 2 },
-  { TP_ID: 2, StartDate: "2025-07-03", Ser_ID: 2 },
-  { TP_ID: 3, StartDate: "2025-07-04", Ser_ID: 3 },
-  { TP_ID: 4, StartDate: "2025-07-05", Ser_ID: 2 },
-  { TP_ID: 5, StartDate: "2025-07-06", Ser_ID: 3 },
-  { TP_ID: 6, StartDate: "2025-07-08", Ser_ID: 3 },
-  { TP_ID: 7, StartDate: "2025-07-09", Ser_ID: 2 },
-];
-
-const mockBookings = [
-  { Booking_ID: 1, Date: "2025-07-01", Doc_ID: 1 },
-  { Booking_ID: 2, Date: "2025-07-02", Doc_ID: 2 },
-  { Booking_ID: 3, Date: "2025-07-03", Doc_ID: 1 },
-  { Booking_ID: 4, Date: "2025-07-04", Doc_ID: 2 },
-  { Booking_ID: 5, Date: "2025-07-05", Doc_ID: 1 },
-  { Booking_ID: 6, Date: "2025-07-05", Doc_ID: 1 },
-];
-
-const mockAccounts = [
-  { Acc_ID: 1, Full_Name: "Dr. A" },
-  { Acc_ID: 2, Full_Name: "Dr. B" },
-  { Acc_ID: 3, Full_Name: "Dr. C" },
-];
-
-const mockDoctors = [
-  { Doc_ID: 1, Acc_ID: 1 },
-  { Doc_ID: 2, Acc_ID: 2 },
-  { Doc_ID: 3, Acc_ID: 3 },
-];
-
-const serviceMap = {
-  1: "Khám tư vấn",
-  2: "IVF",
-  3: "IUI",
+// Mapping filter options to API period values
+const periodMapping = {
+  week: 1,
+  month: 2,
+  "3month": 3,
+  "6month": 4,
+  "9month": 5,
+  year: 6,
 };
 
 export default function ManagerRevenueDashboardPage() {
   const { token } = theme.useToken();
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [filterOption, setFilterOption] = useState("month");
+  const [loading, setLoading] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    totalRevenue: 0,
+    totalBookings: 0,
+    totalTreatmentPlans: 0,
+    revenueChart: [],
+    topService: null,
+    topDoctor: null,
+  });
 
-  const getStartEndDate = () => {
-    const now = selectedDate;
-    switch (filterOption) {
-      case "week":
-        return [now.startOf("week"), now.endOf("week")];
-      case "3month":
-        return [now.subtract(3, "month").startOf("month"), now.endOf("month")];
-      case "6month":
-        return [now.subtract(6, "month").startOf("month"), now.endOf("month")];
-      case "9month":
-        return [now.subtract(9, "month").startOf("month"), now.endOf("month")];
-      case "year":
-        return [now.subtract(1, "year").startOf("month"), now.endOf("month")];
-      default:
-        return [now.startOf("month"), now.endOf("month")];
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const period = periodMapping[filterOption];
+      const response = await dashboardRevenue(period);
+
+      console.log("Dashboard API Response:", response);
+      console.log("Dashboard Response data:", response.data);
+
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+        console.log("Set dashboard data:", response.data.data);
+      } else {
+        message.error("Không thể tải dữ liệu dashboard");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      message.error("Có lỗi xảy ra khi tải dữ liệu dashboard");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const [startDate, endDate] = getStartEndDate();
+  useEffect(() => {
+    fetchDashboardData();
+  }, [filterOption, selectedDate]);
 
-  const filteredPayments = mockPayments.filter(
-    (p) =>
-      p.Status_ID === 2 &&
-      dayjs(p.PaymentDate).isBetween(startDate, endDate, "day", "[]")
-  );
+  // Debug: Log when dashboardData changes
+  useEffect(() => {
+    console.log("Dashboard data updated:", dashboardData);
+    console.log("Total Revenue:", dashboardData.totalRevenue);
+    console.log("Total Bookings:", dashboardData.totalBookings);
+    console.log("Total Treatment Plans:", dashboardData.totalTreatmentPlans);
+  }, [dashboardData]);
 
-  const filteredPlans = mockTreatmentPlans.filter((plan) =>
-    dayjs(plan.StartDate).isBetween(startDate, endDate, "day", "[]")
-  );
-
-  const filteredBookings = mockBookings.filter((b) =>
-    dayjs(b.Date).isBetween(startDate, endDate, "day", "[]")
-  );
-
-  const totalRevenue = filteredPayments.reduce((sum, p) => sum + p.Amount, 0);
-  const totalBookings = filteredBookings.length;
-  const totalTreatmentPlans = filteredPlans.length;
-
-  const chartData = [];
-  const days = endDate.diff(startDate, "day");
-  for (let i = 0; i <= days; i++) {
-    const date = startDate.add(i, "day");
-    const revenue = filteredPayments
-      .filter((p) => dayjs(p.PaymentDate).isSame(date, "day"))
-      .reduce((sum, p) => sum + p.Amount, 0);
-    chartData.push({
-      name: date.format("DD/MM"),
-      DoanhThu: revenue,
-    });
-  }
-
-  const serviceStats = {};
-  filteredPlans.forEach((p) => {
-    if (p.Ser_ID !== 1) {
-      const name = serviceMap[p.Ser_ID];
-      serviceStats[name] = (serviceStats[name] || 0) + 1;
-    }
-  });
-
-  const topService = Object.entries(serviceStats).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
-
-  const doctorStats = {};
-  filteredBookings.forEach((b) => {
-    doctorStats[b.Doc_ID] = (doctorStats[b.Doc_ID] || 0) + 1;
-  });
-
-  const topDoctorEntry = Object.entries(doctorStats).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
-  const topDoctor = topDoctorEntry
-    ? mockDoctors.find((d) => d.Doc_ID === parseInt(topDoctorEntry[0]))
-    : null;
-  const topDoctorName = topDoctor
-    ? mockAccounts.find((a) => a.Acc_ID === topDoctor.Acc_ID)?.Full_Name
-    : null;
+  // Transform API chart data to match recharts format
+  const chartData = dashboardData.revenueChart.map((item) => ({
+    name: item.label,
+    DoanhThu: item.revenue,
+    Bookings: item.bookingCount,
+    TreatmentPlans: item.treatmentPlanCount,
+  }));
 
   return (
     <Layout style={{ padding: 24, background: LIGHT_PINK, minHeight: "100vh" }}>
@@ -220,28 +114,31 @@ export default function ManagerRevenueDashboardPage() {
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8} xs={24} sm={12} md={8}>
-          <Card bordered={false}>
+          <Card bordered={false} loading={loading}>
             <Statistic
               title="Tổng doanh thu"
-              value={totalRevenue.toLocaleString("vi-VN") + " VNĐ"}
+              value={
+                (dashboardData.totalRevenue || 0).toLocaleString("vi-VN") +
+                " VNĐ"
+              }
               prefix={<DollarCircleOutlined style={{ color: GREEN }} />}
             />
           </Card>
         </Col>
         <Col span={8} xs={24} sm={12} md={8}>
-          <Card bordered={false}>
+          <Card bordered={false} loading={loading}>
             <Statistic
               title="Số lượng booking"
-              value={totalBookings}
+              value={dashboardData.totalBookings || 0}
               prefix={<CalendarOutlined style={{ color: PINK }} />}
             />
           </Card>
         </Col>
         <Col span={8} xs={24} sm={12} md={8}>
-          <Card bordered={false}>
+          <Card bordered={false} loading={loading}>
             <Statistic
               title="Số lượng hồ sơ đang điều trị"
-              value={totalTreatmentPlans}
+              value={dashboardData.totalTreatmentPlans || 0}
               prefix={<FileTextOutlined style={{ color: YELLOW }} />}
             />
           </Card>
@@ -252,9 +149,14 @@ export default function ManagerRevenueDashboardPage() {
         <Col span={24}>
           <Card
             title="📊 Doanh thu theo thời gian"
+            loading={loading}
             extra={
               <Space>
-                <Select value={filterOption} onChange={setFilterOption}>
+                <Select
+                  value={filterOption}
+                  onChange={setFilterOption}
+                  style={{ width: 120 }}
+                >
                   <Option value="week">Tuần này</Option>
                   <Option value="month">Tháng này</Option>
                   <Option value="3month">3 tháng</Option>
@@ -275,12 +177,23 @@ export default function ManagerRevenueDashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  formatter={(value, name) => [
+                    value.toLocaleString("vi-VN") +
+                      (name === "DoanhThu" ? " VNĐ" : ""),
+                    name === "DoanhThu"
+                      ? "Doanh thu"
+                      : name === "Bookings"
+                      ? "Booking"
+                      : "Hồ sơ điều trị",
+                  ]}
+                />
                 <Line
                   type="monotone"
                   dataKey="DoanhThu"
                   stroke={PINK}
                   strokeWidth={3}
+                  name="Doanh thu"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -290,11 +203,11 @@ export default function ManagerRevenueDashboardPage() {
 
       <Row gutter={16} style={{ marginTop: 24 }}>
         <Col span={12}>
-          <Card title="🔥 Dịch vụ phổ biến nhất">
-            {topService ? (
+          <Card title="🔥 Dịch vụ phổ biến nhất" loading={loading}>
+            {dashboardData.topService ? (
               <Space direction="vertical">
-                <Text strong>{topService[0]}</Text>
-                <Text>{topService[1]} lượt sử dụng</Text>
+                <Text strong>{dashboardData.topService.serviceName}</Text>
+                <Text>{dashboardData.topService.usageCount} lượt sử dụng</Text>
               </Space>
             ) : (
               <Text>Không có dữ liệu</Text>
@@ -302,13 +215,15 @@ export default function ManagerRevenueDashboardPage() {
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="🏥 Bác sĩ có nhiều booking nhất">
-            {topDoctorName ? (
+          <Card title="🏥 Bác sĩ có nhiều booking nhất" loading={loading}>
+            {dashboardData.topDoctor ? (
               <Space>
                 <Avatar icon={<UserOutlined />} />
                 <Space direction="vertical">
-                  <Text strong>{topDoctorName}</Text>
-                  <Text>{topDoctorEntry[1]} lượt đặt khám</Text>
+                  <Text strong>{dashboardData.topDoctor.doctorName}</Text>
+                  <Text>
+                    {dashboardData.topDoctor.bookingCount} lượt đặt khám
+                  </Text>
                 </Space>
               </Space>
             ) : (

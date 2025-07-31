@@ -3,6 +3,9 @@ import axiosClients from "./axiosClients";
 const GetAllAccount = async () => {
   return await axiosClients.get("/Account/getAllAccounts");
 };
+const dashboardRevenue = async (period) => {
+  return await axiosClients.get(`/DashboardRevenue/revenue?period=${period}`);
+};
 const getAccountByRoleId = async (roleId) => {
   return await axiosClients.get(`/Account/roleId?roleId=${roleId}`);
 };
@@ -21,4 +24,5 @@ export {
   isActiveAccount,
   getAccountById,
   createAccount,
+  dashboardRevenue,
 };
