@@ -100,7 +100,7 @@ const DoctorCarousel = ({ doctors = [] }) => {
                 }}
               >
                 <Avatar
-                  src={doc.img}
+                  src={doc.img || "/khanhtuyensinh.jpg"}
                   size={200}
                   style={{ marginBottom: 12 }}
                   onClick={() => navigate(`/doctordetail/${doc.docId}`)}

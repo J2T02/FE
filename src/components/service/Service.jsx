@@ -27,7 +27,7 @@ const Service = ({ services }) => {
           >
             <Col xs={24} md={12}>
               <img
-                src={service.filePath}
+                src={service.filePath || "/IVF.jpg"}
                 alt={service.serName}
                 style={{ width: "100%", borderRadius: 10 }}
               />
@@ -38,10 +38,7 @@ const Service = ({ services }) => {
                 {service.serName}
               </Title>
               <Paragraph style={{ fontSize: 16, lineHeight: "1.6em" }}>
-                {service.description} Lorem ipsum dolor sit amet consectetur
-                adipisicing elit. Architecto molestias, tempore quasi, in
-                placeat laborum, a repudiandae amet porro at voluptate ut
-                obcaecati quia numquam itaque iure. Unde, molestiae quia!
+                {service.description}
               </Paragraph>
               <Button
                 type="primary"

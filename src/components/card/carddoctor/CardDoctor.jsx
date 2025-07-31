@@ -55,7 +55,7 @@ const CardDoctor = ({ doctor }) => {
           }}
         />
         <img
-          src={img}
+          src={img || "/khanhtuyensinh.jpg"}
           alt={accountInfo.fullName}
           style={{
             position: "relative",

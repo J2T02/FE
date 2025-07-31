@@ -15,7 +15,7 @@ function ServiceDetail() {
       <Header />
       <ServiceBanner
         title={serviceData?.serName}
-        img={serviceData?.filePath}
+        img={serviceData?.filePath || "/IVF.jpg"}
         price={serviceData?.price}
       />
       <div style={{ padding: 24, margin: "64px 0" }}>
