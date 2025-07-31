@@ -22,40 +22,16 @@ import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
-const mockAccounts = [
-  {
-    accId: 1,
-    roleId: 2,
-    fullName: "Phạm Minh Đức",
-    phone: "0901234567",
-    mail: "duc.pham@example.com",
-    isActive: true,
-    createAt: "2023-01-10T08:00:00Z",
-    img: "",
-  },
-  {
-    accId: 2,
-    roleId: 3,
-    fullName: "Lê Thị Hương",
-    phone: "0938765432",
-    mail: "huong.le@example.com",
-    isActive: false,
-    createAt: "2022-07-01T08:00:00Z",
-    img: "",
-  },
-];
-
-const AccountDetailPage = ({ accId, onBack }) => {
-  const [account, setAccount] = useState(null);
+const AccountDetailPage = ({ account, onUpdateActiveStatus, onBack }) => {
+  const [currentAccount, setCurrentAccount] = useState(account);
 
   useEffect(() => {
-    const found = mockAccounts.find((acc) => acc.accId === parseInt(accId));
-    if (found) {
-      setAccount(found);
+    if (account) {
+      setCurrentAccount(account);
     } else {
       message.error("Không tìm thấy tài khoản");
     }
-  }, [accId]);
+  }, [account]);
 
   const renderRole = (roleId) => {
     switch (roleId) {
@@ -68,18 +44,23 @@ const AccountDetailPage = ({ accId, onBack }) => {
     }
   };
 
-  const toggleActiveStatus = () => {
-    if (!account) return;
-    const newStatus = !account.isActive;
-    setAccount({ ...account, isActive: newStatus });
-    message.success(
-      `Tài khoản đã được ${newStatus ? "kích hoạt" : "ngưng hoạt động"} thành công`
-    );
+  const toggleActiveStatus = async () => {
+    if (!currentAccount) return;
+    const newStatus = !currentAccount.isActive;
+
+    // Gọi API để cập nhật backend
+    if (onUpdateActiveStatus) {
+      await onUpdateActiveStatus(currentAccount.accId, newStatus);
+    }
   };
 
   const renderStatusTagWithButton = (isActive) => (
     <Space>
-      {isActive ? <Tag color="green">Đang hoạt động</Tag> : <Tag color="red">Ngưng hoạt động</Tag>}
+      {isActive ? (
+        <Tag color="green">Đang hoạt động</Tag>
+      ) : (
+        <Tag color="red">Ngưng hoạt động</Tag>
+      )}
       <Button
         icon={<PoweroffOutlined />}
         size="small"
@@ -91,7 +72,7 @@ const AccountDetailPage = ({ accId, onBack }) => {
           padding: "0 8px",
           height: 24,
           backgroundColor: "white",
-                color: "#f78db3",
+          color: "#f78db3",
         }}
       >
         {isActive ? "Tắt" : "Bật"}
@@ -99,7 +80,7 @@ const AccountDetailPage = ({ accId, onBack }) => {
     </Space>
   );
 
-  if (!account) return null;
+  if (!currentAccount) return null;
 
   return (
     <div
@@ -118,7 +99,11 @@ const AccountDetailPage = ({ accId, onBack }) => {
           boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
         }}
       >
-        <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 24 }}
+        >
           <Col>
             <Button
               icon={<ArrowLeftOutlined />}
@@ -143,8 +128,8 @@ const AccountDetailPage = ({ accId, onBack }) => {
           <Col xs={24} sm={8} style={{ textAlign: "center" }}>
             <Avatar
               size={120}
-              src={account.img || null}
-              icon={!account.img && <UserOutlined />}
+              src={currentAccount.img || null}
+              icon={!currentAccount.img && <UserOutlined />}
               style={{
                 backgroundColor: "#f0f0f0",
                 border: "1px solid #d9d9d9",
@@ -154,18 +139,18 @@ const AccountDetailPage = ({ accId, onBack }) => {
 
           <Col xs={24} sm={16}>
             <Title level={4} style={{ marginBottom: 4 }}>
-              {account.fullName}
+              {currentAccount.fullName}
             </Title>
             <Space direction="vertical" size={4}>
               <Text>
                 <MailOutlined style={{ marginRight: 8 }} />
-                {account.mail}
+                {currentAccount.mail}
               </Text>
               <Text>
                 <PhoneOutlined style={{ marginRight: 8 }} />
-                {account.phone}
+                {currentAccount.phone}
               </Text>
-              {renderStatusTagWithButton(account.isActive)}
+              {renderStatusTagWithButton(currentAccount.isActive)}
             </Space>
           </Col>
         </Row>
@@ -174,14 +159,14 @@ const AccountDetailPage = ({ accId, onBack }) => {
 
         <Row gutter={[0, 16]}>
           <Col span={24}>
-            <Text strong>Chức vụ:</Text> {renderRole(account.roleId)}
+            <Text strong>Chức vụ:</Text> {renderRole(currentAccount.roleId)}
           </Col>
           <Col span={24}>
             <Text strong>Ngày bắt đầu công tác:</Text>{" "}
-            {dayjs(account.createAt).format("DD/MM/YYYY")}
+            {dayjs(currentAccount.createAt).format("DD/MM/YYYY")}
           </Col>
           <Col span={24}>
-            <Text type="secondary">Mã tài khoản: #{account.accId}</Text>
+            <Text type="secondary">Mã tài khoản: #{currentAccount.accId}</Text>
           </Col>
         </Row>
       </Card>

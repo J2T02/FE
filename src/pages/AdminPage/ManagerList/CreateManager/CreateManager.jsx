@@ -5,28 +5,21 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
-const CreateManager = ({ onBack }) => {
+const CreateManager = ({ onBack, onCreateManager }) => {
   const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
-    const newManager = {
-      accId: Math.floor(Math.random() * 10000), // Tạm thời giả lập ID
-      roleId: 3,
+  const handleSubmit = async (values) => {
+    const managerData = {
       fullName: values.fullname,
-      password: values.phone, // Password mặc định là số điện thoại
       phone: values.phone,
       mail: values.mail,
-      isActive: true,
-      createAt: dayjs().format(),
-      img: null,
+      img: null, // Có thể thêm field upload image sau
     };
 
-    // Giả lập gọi API để lưu vào DB ở đây
-    console.log("Thông tin quản lý mới:", newManager);
-    message.success("Đã tạo tài khoản quản lý thành công!");
-
-    form.resetFields();
-    onBack();
+    // Gọi API để tạo manager mới
+    if (onCreateManager) {
+      await onCreateManager(managerData);
+    }
   };
 
   return (
@@ -34,11 +27,12 @@ const CreateManager = ({ onBack }) => {
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={onBack}
-        style={{ marginBottom: 20,
-            backgroundColor: "#f78db3",
-            color: "white",
-            border: "none",
-         }}
+        style={{
+          marginBottom: 20,
+          backgroundColor: "#f78db3",
+          color: "white",
+          border: "none",
+        }}
       >
         Quay lại
       </Button>

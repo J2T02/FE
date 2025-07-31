@@ -5,36 +5,35 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
-const CreateReceptionist = ({ onBack }) => {
+const CreateReceptionist = ({ onBack, onCreateReceptionist }) => {
   const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
-    const newReceptionist = {
-      accId: Math.floor(Math.random() * 10000), // giả lập ID tự tăng từ DB
-      roleId: 3,
+  const handleSubmit = async (values) => {
+    const receptionistData = {
       fullName: values.fullname,
-      password: values.phone,
       phone: values.phone,
       mail: values.mail,
-      isActive: true,
-      createAt: dayjs().format(),
-      img: null,
+      img: null, // Có thể thêm field upload image sau
     };
 
-    console.log("Thông tin lễ tân mới:", newReceptionist);
-    message.success("Đã tạo tài khoản lễ tân thành công!");
-
-    form.resetFields();
-    onBack();
+    // Gọi API để tạo receptionist mới
+    if (onCreateReceptionist) {
+      await onCreateReceptionist(receptionistData);
+    }
   };
 
   return (
     <Card bordered={false}>
-      <Button icon={<ArrowLeftOutlined />} onClick={onBack} 
-      style={{ marginBottom: 20, 
-        backgroundColor: "#f78db3",
-        color: "white",
-        border: "none", }}>
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={onBack}
+        style={{
+          marginBottom: 20,
+          backgroundColor: "#f78db3",
+          color: "white",
+          border: "none",
+        }}
+      >
         Quay lại
       </Button>
 
