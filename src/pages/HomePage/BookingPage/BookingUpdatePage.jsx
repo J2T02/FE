@@ -11,7 +11,7 @@ import {
   mockDoctors,
   mockDoctorSchedules,
   mockAvailableDoctorsByDateSlot,
-} from "../../../apis/MockData";
+} from "../../../apis/mockData";
 
 const { Step } = Steps;
 
