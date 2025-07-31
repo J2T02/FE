@@ -58,8 +58,9 @@ const EDUCATION_LEVELS = {
 };
 
 const MESSAGES = {
-  PAST_DATE_WARNING: "Không thể chọn ngày trong quá khứ.",
-  PAST_DATE_ERROR: "Không thể đặt lịch cho ngày trong quá khứ.",
+  PAST_DATE_WARNING: "Không thể chọn ngày trong quá khứ hoặc ngày hiện tại.",
+  PAST_DATE_ERROR:
+    "Không thể đặt lịch cho ngày trong quá khứ hoặc ngày hiện tại.",
   SELECT_DATE_SLOT: "Vui lòng chọn ngày và ca khám.",
   NO_SCHEDULE: "Bác sĩ này chưa có lịch khám trong thời gian tới.",
   SCHEDULE_ERROR: "Không thể tải lịch khám của bác sĩ.",
@@ -271,8 +272,11 @@ const DoctorScheduleSelection = ({
 
   const disabledDate = useCallback(
     (current) => {
-      // Don't allow past dates
-      if (current && current < dayjs().startOf("day")) {
+      // Don't allow past dates and current date
+      if (
+        current &&
+        (current.isBefore(dayjs(), "day") || current.isSame(dayjs(), "day"))
+      ) {
         return true;
       }
 
@@ -311,7 +315,11 @@ const DoctorScheduleSelection = ({
         );
       }
 
-      if (selectedDate && selectedDate < dayjs().startOf("day")) {
+      if (
+        selectedDate &&
+        (selectedDate.isBefore(dayjs(), "day") ||
+          selectedDate.isSame(dayjs(), "day"))
+      ) {
         return message.error(MESSAGES.PAST_DATE_ERROR);
       }
 
@@ -391,7 +399,10 @@ const DoctorScheduleSelection = ({
 
   const handleDateSelect = useCallback((date) => {
     try {
-      if (date && date < dayjs().startOf("day")) {
+      if (
+        date &&
+        (date.isBefore(dayjs(), "day") || date.isSame(dayjs(), "day"))
+      ) {
         message.warning(MESSAGES.PAST_DATE_WARNING);
         return;
       }
@@ -419,7 +430,11 @@ const DoctorScheduleSelection = ({
         return message.warning(MESSAGES.SELECT_DATE_SLOT);
       }
 
-      if (selectedDate && selectedDate < dayjs().startOf("day")) {
+      if (
+        selectedDate &&
+        (selectedDate.isBefore(dayjs(), "day") ||
+          selectedDate.isSame(dayjs(), "day"))
+      ) {
         return message.error(MESSAGES.PAST_DATE_ERROR);
       }
 
@@ -471,14 +486,18 @@ const DoctorScheduleSelection = ({
           🩺 Đặt lịch khám tư vấn chuyên sâu
         </Title>
         <Paragraph style={{ marginBottom: 0 }}>
-          Chào mừng bạn đến với bước đầu tiên trong hành trình chăm sóc sức khỏe! Đây là <strong>lịch hẹn tư vấn ban đầu</strong>, giúp bác sĩ chẩn đoán chính xác và đưa ra phương án điều trị phù hợp nhất với tình trạng của bạn.
+          Chào mừng bạn đến với bước đầu tiên trong hành trình chăm sóc sức
+          khỏe! Đây là <strong>lịch hẹn tư vấn ban đầu</strong>, giúp bác sĩ
+          chẩn đoán chính xác và đưa ra phương án điều trị phù hợp nhất với tình
+          trạng của bạn.
           <br />
           👉 Giá mỗi lượt tư vấn:{" "}
           <Text strong style={{ fontSize: 40, color: "#fa541c" }}>
             200.000 VNĐ
           </Text>
           <br />
-          📅 Vui lòng chọn <strong>bác sĩ</strong> và <strong>thời gian khám</strong> phù hợp bên dưới để hoàn tất đặt lịch.
+          📅 Vui lòng chọn <strong>bác sĩ</strong> và{" "}
+          <strong>thời gian khám</strong> phù hợp bên dưới để hoàn tất đặt lịch.
         </Paragraph>
       </div>
       <Modal
@@ -790,7 +809,8 @@ const DoctorScheduleSelection = ({
                   )}
                   <div style={{ marginTop: 8 }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      ⚠️ Không thể đặt lịch cho ngày trong quá khứ
+                      ⚠️ Không thể đặt lịch cho ngày trong quá khứ và ngày hiện
+                      tại
                     </Text>
                   </div>
                 </div>

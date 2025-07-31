@@ -218,6 +218,8 @@ const ScheduleManagement = () => {
       const stepRes = await getStepDetailListByDoctorIdStatus1(
         doctorInfo.docId
       );
+      console.log(stepDetails);
+      console.log("2");
       let steps = [];
       if (stepRes?.data?.data && Array.isArray(stepRes.data.data)) {
         steps = stepRes.data.data.map((item) => {
@@ -472,7 +474,7 @@ const ScheduleManagement = () => {
       };
     });
   };
-  
+
   if (showRegisterSchedule) {
     return (
       <RegisterSchedulePage onBack={() => setShowRegisterSchedule(false)} />
